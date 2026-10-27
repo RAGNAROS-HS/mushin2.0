@@ -8,13 +8,6 @@
   --rule: #d6d3ca;
   --fill: #dedbd3;
   --accent: #b3121f;
-
-  /* Project lifecycle states. */
-  --st-active:       #15803d;
-  --st-complete:     #1d4ed8;
-  --st-limbo:        #b45309;
-  --st-discontinued: #6b7280;
-  --st-abandoned:    #b3121f;
 }
 
 html[data-theme="dark"] {
@@ -24,12 +17,6 @@ html[data-theme="dark"] {
   --line: #282b29;
   --rule: #1e211f;
   --fill: #151817;
-
-  --st-active:       #4ade80;
-  --st-complete:     #7ab3fb;
-  --st-limbo:        #fbbf24;
-  --st-discontinued: #9ca3af;
-  --st-abandoned:    #f87171;
 }
 
 /* ------------------------------------------------------------------ base */
@@ -202,83 +189,37 @@ input {
 
 .section--hero .cells { margin-top: 46px; }
 
-.cells--cards { grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); }
+/* Cards draw their own hairlines so empty slots in the last row stay blank. */
+.cells--cards {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  background: none;
+  border: 0;
+}
 
 .card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 18px 16px 16px;
+  display: block;
+  padding: 14px;
   background: var(--bg);
-  min-height: 208px;
-}
-/* Each project carries its own accent colour from the sister site. */
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--pc, var(--line));
-}
-.card:hover { background: var(--fill); }
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  color: var(--dim);
-  font-size: 11.5px;
+  outline: 1px solid var(--line);
 }
 
-.card-slug { margin-top: 12px; font-size: 15px; }
+.card-slug { font-size: 14px; }
 
 .card-desc {
-  margin-top: 9px;
+  margin-top: 6px;
   color: var(--dim);
-  font-size: 12.5px;
-  line-height: 1.65;
-}
-
-.card-tags {
-  margin-top: 13px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.card-tags span {
-  padding: 1px 6px;
-  border: 1px solid var(--line);
-  color: var(--dim);
-  font-size: 10.5px;
-}
-
-.card-foot {
-  margin-top: auto;
-  padding-top: 14px;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  color: var(--dim);
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 /* --------------------------------------------------------------- status */
 
-.status { font-size: 10.5px; white-space: nowrap; }
+.status { white-space: nowrap; }
 .status::before { content: "\25CF\00a0"; }
-.status[data-status="active"]       { color: var(--st-active); }
-.status[data-status="complete"]     { color: var(--st-complete); }
-.status[data-status="limbo"]        { color: var(--st-limbo); }
-.status[data-status="discontinued"] { color: var(--st-discontinued); }
-.status[data-status="abandoned"]    { color: var(--st-abandoned); }
 
 /* Which hands built it — mirrors data/tools.yaml on the sister site. */
 .tool { white-space: nowrap; }
 .tool::before { content: "\2317\00a0"; }
-.tool[data-tool="hand"]        { color: #16a34a; }
-.tool[data-tool="claude-code"] { color: #d97706; }
-.tool[data-tool="antigravity"] { color: #db2777; }
 
 /* ------------------------------------------------------------------ tree */
 
@@ -314,6 +255,22 @@ input {
   min-width: 170px;
   text-align: right;
 }
+.when a { color: var(--dim); }
+.when a:hover { color: var(--ink); }
+
+/* Detail lines under an entry, hanging-indented behind a dash. */
+.row--note { line-height: 1.75; padding: 1px 0; }
+.row--note + .row:not(.row--note) { padding-top: 6px; }
+.row-note {
+  max-width: 96ch;
+  padding-left: 2ch;
+  text-indent: -2ch;
+  color: var(--dim);
+  font-size: 12.5px;
+}
+.row-note::before { content: "- "; }
+.row-note a { color: var(--dim); border-bottom: 1px dotted var(--line); }
+.row-note a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 
 /* --------------------------------------------------------------- console */
 
@@ -372,12 +329,7 @@ input {
 
 .section--proj { padding: 30px 0 48px; }
 
-.proj-idx {
-  color: var(--pc, var(--dim));
-  font-size: 12.5px;
-}
-
-.name--proj { margin-top: 10px; font-size: clamp(30px, 5.4vw, 54px); }
+.name--proj { font-size: clamp(30px, 5.4vw, 54px); }
 
 .proj-sum {
   margin: 20px 0 0;
@@ -395,7 +347,6 @@ input {
   font-size: 11.5px;
   color: var(--dim);
 }
-.proj-meta .card-tags { margin-top: 0; }
 
 /* ----------------------------------------------------------------- prose */
 
@@ -446,7 +397,7 @@ input {
 .prose blockquote {
   margin: 22px 0;
   padding: 2px 0 2px 16px;
-  border-left: 2px solid var(--pc, var(--line));
+  border-left: 2px solid var(--line);
   color: var(--dim);
   max-width: 74ch;
 }

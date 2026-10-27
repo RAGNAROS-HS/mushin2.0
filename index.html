@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hugo Sokołowski-Katzer</title>
-<meta name="description" content="Hugo Sokołowski-Katzer — infrastructure engineering. IT and information security operations, self-hosted Linux infrastructure, MSc AI student.">
+<meta name="description" content="Hugo Sokołowski-Katzer — system administration. IT support, identity management and information security at Swapfiets, operations automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="styles.css?v=3">
 <script>
 // Set the theme before first paint so there is no flash of the wrong palette.
 (function () {
@@ -48,17 +48,17 @@
     <div class="prompt">$ whoami</div>
     <h1 class="name">Hugo<br>Sokołowski-Katzer</h1>
     <div class="ruled-row">
-      <span data-i18n="role">infrastructure engineering</span>
+      <span data-i18n="role">system administration</span>
       <span class="rule rule--dashed"></span>
-      <span>Europe/Amsterdam</span>
+      <span data-i18n="loc">Europe/Amsterdam · EU citizen</span>
     </div>
-    <p class="bio" data-i18n="bio">Two years of IT and information security operations, moving into infrastructure engineering. Identity lifecycle, disaster recovery testing and incident response in production, plus self-hosted Linux infrastructure I provision, harden and run myself. MSc AI student preparing for LFCS and CKA, drawn to systems that report healthy while quietly producing degraded output.</p>
+    <p class="bio" data-i18n="bio">I came to computer science out of broad curiosity about technology, and learned how it actually works inside a company at Swapfiets. Over a year there I moved from IT support to identity management and information security for 1,100 employees. Seeing AI reshape that company led me to an MSc in AI, and at Talk360 I used it to automate everyday operations. Through all of it, what kept drawing me back was the infrastructure underneath. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.</p>
 
     <div class="cells">
       <a class="cell" href="https://github.com/RAGNAROS-HS"><span>github</span><span class="dim">/RAGNAROS-HS &rarr;</span></a>
       <a class="cell" href="https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"><span>linkedin</span><span class="dim">/in/hugo-s-k &rarr;</span></a>
       <a class="cell" href="mailto:hugo.s.katzer@gmail.com"><span>mail</span><span class="dim">hugo.s.katzer@ &rarr;</span></a>
-      <a class="cell" id="cv-link" href="pdfs/CV2_0.pdf"><span data-i18n="cv">resume</span><span class="dim">.pdf &rarr;</span></a>
+      <a class="cell" id="cv-link" href="pdfs/CV3_0.pdf"><span data-i18n="cv">resume</span><span class="dim">.pdf &rarr;</span></a>
     </div>
   </section>
 
@@ -74,83 +74,112 @@
         <span class="pre">~/career/</span>
         <div class="row-line"><span class="label"></span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
+
       <div class="row row--head">
         <span class="pre">├── </span>
         <div class="row-line"><span class="label" data-i18n="b1">work/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r1">Data, Automation &amp; AI Intern</span><span class="rule rule--dotted"></span><span class="meta">Talk360 · Amsterdam</span><span class="when" data-i18n="w1">apr 2026 – june 2026</span></div>
+        <div class="row-line"><span class="label" data-i18n="r1">Data, Automation &amp; AI Intern</span><span class="rule rule--dotted"></span><span class="meta">Talk360 · Amsterdam</span><span class="when" data-i18n="w1">apr 2026 – may 2026</span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t1">Built production monitoring for live telecom traffic on self-hosted n8n, using statistical process control to flag anomalies</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t2">Automated detection of fraud patterns that led to bans of spammers</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t3">Automated flagging of customers with poor call experiences and routed customer support to them</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t4">Replaced manual reporting with scheduled aggregation across internal databases</span></div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label">swapfiets/</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="sm">Amsterdam · contract extended twice</span><span class="when" data-i18n="sw">jun 2024 – aug 2025</span></div>
       </div>
       <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r2">AI Team</span><span class="rule rule--dotted"></span><span class="meta">Futurist Law Lab · Amsterdam</span><span class="when" data-i18n="w2">feb 2026 – may 2026</span></div>
+        <span class="pre">│       ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r2">Information Security Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w2">jun 2025 – aug 2025</span></div>
       </div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s1">Mapped SOC 2 controls in Vanta and collected supporting evidence across systems</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s2">Investigated security incidents, incl. damage control after a malicious insider</span></div>
       <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r3">Information Security Intern</span><span class="rule rule--dotted"></span><span class="meta">Swapfiets · Amsterdam</span><span class="when" data-i18n="w3">jun 2025 – jul 2025</span></div>
+        <span class="pre">│       ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r3">IT Intern, general IT</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w3">dec 2024 – jun 2025</span></div>
       </div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s3">Owned identity lifecycle in Okta and AccessOwl; automated parts of HR onboarding</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s4">Initiated and led disaster recovery tests; a simulated loss of IT-team devices exposed a gap that would have cut access to a quarter of managed accounts</span></div>
       <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r4">IT Intern</span><span class="rule rule--dotted"></span><span class="meta">Swapfiets · Amsterdam</span><span class="when" data-i18n="w4">jun 2024 – may 2025</span></div>
+        <span class="pre">│       └── </span>
+        <div class="row-line"><span class="label" data-i18n="r4">IT Support Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w4">jun 2024 – dec 2024</span></div>
       </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r5">Shop Assistant</span><span class="rule rule--dotted"></span><span class="meta">VU Amsterdam SPAR</span><span class="when" data-i18n="w5">jan 2024 – jun 2024</span></div>
+      <div class="row row--note"><span class="pre">│           </span><span class="row-note" data-i18n="s5">Main IT support for 1,100 employees across multiple countries: devices (Meraki MDM), roles and access</span></div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b2">homelab/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="r6">Housekeeper</span><span class="rule rule--dotted"></span><span class="meta">Radisson Hotel &amp; Suites Amsterdam South</span><span class="when" data-i18n="w6">jul 2023 – aug 2023</span></div>
+        <div class="row-line"><span class="label" data-i18n="h0">3-node Proxmox cluster</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE · MikroTik · Docker · Linux</span><span class="when"><a href="https://github.com/RAGNAROS-HS/HomeLab">github/HomeLab &rarr;</a></span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h1">Clustered Proxmox VE across three bare-metal nodes</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h2">Configured VLANs and DHCP on a MikroTik router to segment the lab network</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h3">Run containerised services with Docker across the cluster</span></div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b3">skills/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="k1">systems</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="km1">Linux (Ubuntu), bash, SSH, nginx, reverse proxying, package and service management</span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="k2">virtualisation</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE, Docker</span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="k3">identity</span><span class="rule rule--dotted"></span><span class="meta">Okta, AccessOwl, Meraki MDM</span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="k4">code</span><span class="rule rule--dotted"></span><span class="meta">Python, Bash, C, Git, n8n, REST APIs, LangChain, RAG</span><span class="when"></span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b2">education/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label" data-i18n="b4">education/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="e1">MSc Artificial Intelligence</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em1">AI for Health · VU / UvA</span><span class="when" data-i18n="ew">in progress</span></div>
+        <div class="row-line"><span class="label" data-i18n="e1">MSc Artificial Intelligence</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em1">AI for Health · VU / UvA</span><span class="when" data-i18n="ew1">2025 – jun 2027 (expected)</span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="en1">Coursework: Evolutionary Computing, Knowledge Representation, Brain Imaging, Natural Language Processing, Experimental Design and Data Analysis</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="en2">Master project (from November 2026): collapse detection with simulated shadows and NN similarity scoring</span></div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="e2">BSc Computer Science</span><span class="rule rule--dotted"></span><span class="meta">Vrije Universiteit Amsterdam</span><span class="when">2022 – 2025</span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="en3">Systems coursework: Operating Systems, Computer Networks, Computer Organization, Databases</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note"><a href="projects/bachelor-thesis.html" data-i18n="en4">Bachelor thesis: hybrid detection of building collapse after the 2023 earthquake in Antakya</a></span></div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b5">certs/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="e2">BSc Computer Science</span><span class="rule rule--dotted"></span><span class="meta">Vrije Universiteit Amsterdam</span><span class="when" data-i18n="ew2">completed</span></div>
+        <div class="row-line"><span class="label" data-i18n="c1">VLOS UAV operator</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="e3">Secondary school</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em3">K. I. Gałczyński School · Olsztyn, PL</span><span class="when" data-i18n="ew2">completed</span></div>
+        <div class="row-line"><span class="label" data-i18n="c2">WOPR 2nd Degree Lifeguard</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b3">certs/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="c1">LFCS</span><span class="rule rule--dotted"></span><span class="meta">Linux Foundation</span><span class="when" data-i18n="cw">preparing</span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="c2">CKA</span><span class="rule rule--dotted"></span><span class="meta">CNCF</span><span class="when" data-i18n="cw">preparing</span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="c3">UAV Operator Certificate</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="c4">Motorboat Helmsman</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="c5">WOPR 2nd Degree Lifeguard</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
-
-      <div class="row row--head">
-        <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b4">languages/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label" data-i18n="b6">languages/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
@@ -158,21 +187,39 @@
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="l2">English</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw2">Cambridge C2, grade A</span></div>
+        <div class="row-line"><span class="label" data-i18n="l2">English</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw2">Cambridge CAE, grade A · C2</span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="l3">German</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw3">DSD Stufe II, C1</span></div>
+        <div class="row-line"><span class="label" data-i18n="l3">German</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">DSD II · C1</span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b7">awards/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="a1">Go4Poland laureate</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="am1">Fundacja GPW · programme for Poles studying abroad</span><span class="when">2026</span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">└── </span>
-        <div class="row-line"><span class="label" data-i18n="b5">infra/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label" data-i18n="b8">other/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">    ├── </span>
+        <div class="row-line"><span class="label" data-i18n="o1">Shop Assistant</span><span class="rule rule--dotted"></span><span class="meta">SPAR VU Amsterdam</span><span class="when" data-i18n="ow1">jan 2024 – jun 2024</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">    ├── </span>
+        <div class="row-line"><span class="label" data-i18n="o2">Housekeeper</span><span class="rule rule--dotted"></span><span class="meta">Radisson Hotel &amp; Suites Amsterdam South</span><span class="when" data-i18n="ow2">jul 2023 – aug 2023</span></div>
       </div>
       <div class="row">
         <span class="pre">    └── </span>
-        <div class="row-line"><span class="label" data-i18n="i1">Self-hosted Linux infrastructure</span><span class="rule rule--dotted"></span><span class="meta">bare metal</span><span class="when" data-i18n="iw">provision · harden · maintain</span></div>
+        <div class="row-line"><span class="label" data-i18n="o3">Lifeguard</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="om3">Hotel Warmia Park · Pluski, PL</span><span class="when" data-i18n="ow3">jun 2022 – aug 2022</span></div>
       </div>
     </div>
   </section>
@@ -181,80 +228,58 @@
     <div class="sec-head">
       <span class="prompt">$ ls ~/projects</span>
       <span class="rule rule--dashed"></span>
-      <span class="prompt" id="projects-count">9 entries</span>
+      <span class="prompt" id="projects-count">10 entries</span>
     </div>
     <div class="cells cells--cards" id="projects-grid">
 
-      <a class="card" href="projects/stumberg.html" style="--pc:#6366f1">
-        <div class="card-top"><span>01</span><span class="status" data-status="discontinued">discontinued</span></div>
+      <div class="card">
+        <div class="card-slug">ijvm/</div>
+        <div class="card-desc" data-i18n="p0">Bytecode interpreter in C — stack machine and memory management</div>
+      </div>
+
+      <a class="card" href="projects/stumberg.html">
         <div class="card-slug">stumberg/</div>
-        <div class="card-desc" data-i18n="p1">Personal AI agent — LangGraph, four modes, persistent threads</div>
-        <div class="card-tags"><span>ML</span><span>Python</span><span>AI</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2025-12-03</span><span>&rarr;</span></div>
+        <div class="card-desc" data-i18n="p1">Agentic AI assistant with tool use and RAG</div>
       </a>
 
-      <a class="card" href="projects/simurgh.html" style="--pc:#0369a1">
-        <div class="card-top"><span>02</span><span class="status" data-status="complete">complete</span></div>
+      <a class="card" href="projects/simurgh.html">
         <div class="card-slug">simurgh/</div>
-        <div class="card-desc" data-i18n="p2">Chess impossibility recognition using a ResNet-20</div>
-        <div class="card-tags"><span>NN</span><span>Chess</span></div>
-        <div class="card-foot"><span class="tool" data-tool="antigravity">antigravity</span><span class="grow"></span><span>2026-03-13</span><span>&rarr;</span></div>
+        <div class="card-desc" data-i18n="p2">Chess impossibility recognition with a ResNet-20</div>
       </a>
 
-      <a class="card" href="projects/zamin.html" style="--pc:#059669">
-        <div class="card-top"><span>03</span><span class="status" data-status="active">active</span></div>
+      <a class="card" href="projects/zamin.html">
         <div class="card-slug">zamin/</div>
-        <div class="card-desc" data-i18n="p3">Back to basics: ML algorithms written from scratch</div>
-        <div class="card-tags"><span>NN</span><span>Python</span><span>Linear Regression</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-02-11</span><span>&rarr;</span></div>
+        <div class="card-desc" data-i18n="p3">ML algorithms written from scratch</div>
       </a>
 
-      <a class="card" href="projects/halghe.html" style="--pc:#7c3aed">
-        <div class="card-top"><span>04</span><span class="status" data-status="active">active</span></div>
+      <a class="card" href="projects/halghe.html">
         <div class="card-slug">jadid-halghe/</div>
-        <div class="card-desc" data-i18n="p4">Teaching RL agents to dominate an agar.io clone</div>
-        <div class="card-tags"><span>RL</span><span>Python</span><span>PyTorch</span><span>Game Engine</span></div>
-        <div class="card-foot"><span class="tool" data-tool="claude-code">claude-code</span><span class="grow"></span><span>2026-04-05</span><span>&rarr;</span></div>
+        <div class="card-desc" data-i18n="p4">RL agents for an agar.io clone</div>
       </a>
 
-      <a class="card" href="projects/tosach.html" style="--pc:#d97706">
-        <div class="card-top"><span>05</span><span class="status" data-status="limbo">limbo</span></div>
+      <a class="card" href="projects/tosach.html">
         <div class="card-slug">tosach/</div>
         <div class="card-desc" data-i18n="p5">Scene text recognition with a CRNN</div>
-        <div class="card-tags"><span>ML</span><span>Python</span><span>AI</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-27</span><span>&rarr;</span></div>
       </a>
 
-      <a class="card" href="projects/goswin.html" style="--pc:#374151">
-        <div class="card-top"><span>06</span><span class="status" data-status="active">active</span></div>
+      <a class="card" href="projects/goswin.html">
         <div class="card-slug">goswin/</div>
         <div class="card-desc" data-i18n="p6">n8n workflow automation, kept off GitHub</div>
-        <div class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-10</span><span>&rarr;</span></div>
       </a>
 
-      <a class="card" href="projects/mushin.html" style="--pc:#b45309">
-        <div class="card-top"><span>07</span><span class="status" data-status="active">active</span></div>
+      <a class="card" href="projects/mushin.html">
         <div class="card-slug">mushin/</div>
         <div class="card-desc" data-i18n="p7">This very website</div>
-        <div class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></div>
-        <div class="card-foot"><span class="tool" data-tool="claude-code">claude-code</span><span class="grow"></span><span>2026-02-23</span><span>&rarr;</span></div>
       </a>
 
-      <a class="card" href="projects/himantes.html" style="--pc:#db2777">
-        <div class="card-top"><span>08</span><span class="status" data-status="abandoned">abandoned</span></div>
+      <a class="card" href="projects/himantes.html">
         <div class="card-slug">himantes/</div>
         <div class="card-desc" data-i18n="p8">Pokémon type classifier and generator</div>
-        <div class="card-tags"><span>CNN</span><span>GAN</span><span>PyTorch</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-22</span><span>&rarr;</span></div>
       </a>
 
-      <a class="card" href="projects/bachelor-thesis.html" style="--pc:#475569">
-        <div class="card-top"><span>09</span><span class="status" data-status="complete">complete</span></div>
+      <a class="card" href="projects/bachelor-thesis.html">
         <div class="card-slug">bachelor-thesis/</div>
         <div class="card-desc" data-i18n="p9">Detecting collapsed buildings with UNET++</div>
-        <div class="card-tags"><span>CNN</span><span>Pytorch</span><span>VertexAI</span></div>
-        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2025-06-01</span><span>&rarr;</span></div>
       </a>
 
     </div>
@@ -273,6 +298,6 @@
 </div>
 
 </div>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
