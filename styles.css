@@ -141,6 +141,21 @@ input {
 
 /* ------------------------------------------------------------------ hero */
 
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 48px;
+  align-items: start;
+}
+
+.headshot {
+  display: block;
+  width: 200px;
+  height: auto;
+  background: var(--fill);
+  border: 1px solid var(--line);
+}
+
 .name {
   margin: 0;
   font-size: clamp(32px, 6.4vw, 66px);
@@ -502,6 +517,11 @@ input {
 }
 
 /* ---------------------------------------------------------------- narrow */
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .headshot { order: -1; width: 128px; margin: 14px 0 24px; }
+}
 
 @media (max-width: 560px) {
   .when { min-width: 0; text-align: left; }
