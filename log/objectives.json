@@ -1,0 +1,322 @@
+{
+  "exam": {
+    "code": "EX200",
+    "name": "Red Hat Certified System Administrator",
+    "rhel": "RHEL 10",
+    "target": "Q1 2027",
+    "booked": null,
+    "passed_exam": false,
+    "source": "https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam",
+    "fetched": "2026-11-23"
+  },
+  "groups": [
+    {
+      "id": "tools",
+      "name": "Understand and use essential tools",
+      "objectives": [
+        {
+          "id": "tools-01",
+          "text": "Access a shell prompt and issue commands with correct syntax"
+        },
+        {
+          "id": "tools-02",
+          "text": "Use input-output redirection (>, >>, |, 2>, etc.)"
+        },
+        {
+          "id": "tools-03",
+          "text": "Use grep and regular expressions to analyze text"
+        },
+        {
+          "id": "tools-04",
+          "text": "Access remote systems using SSH"
+        },
+        {
+          "id": "tools-05",
+          "text": "Log in and switch users in multi-user targets"
+        },
+        {
+          "id": "tools-06",
+          "text": "Archive, compress, unpack, and uncompress files using tar, gzip, and bzip2"
+        },
+        {
+          "id": "tools-07",
+          "text": "Create and edit text files"
+        },
+        {
+          "id": "tools-08",
+          "text": "Create, delete, copy, and move files and directories"
+        },
+        {
+          "id": "tools-09",
+          "text": "Create hard and soft links"
+        },
+        {
+          "id": "tools-10",
+          "text": "List, set, and change standard ugo/rwx permissions"
+        },
+        {
+          "id": "tools-11",
+          "text": "Locate, read, and use system documentation including man, info, and files in /usr/share/doc"
+        }
+      ]
+    },
+    {
+      "id": "software",
+      "name": "Manage software",
+      "objectives": [
+        {
+          "id": "software-01",
+          "text": "Configure access to RPM repositories"
+        },
+        {
+          "id": "software-02",
+          "text": "Install and remove RPM software packages"
+        },
+        {
+          "id": "software-03",
+          "text": "Configure access to Flatpak repositories"
+        },
+        {
+          "id": "software-04",
+          "text": "Install and remove Flatpak software packages"
+        }
+      ]
+    },
+    {
+      "id": "scripts",
+      "name": "Create simple shell scripts",
+      "objectives": [
+        {
+          "id": "scripts-01",
+          "text": "Conditionally execute code (use of: if, test, [], etc.)"
+        },
+        {
+          "id": "scripts-02",
+          "text": "Use Looping constructs (for, etc.) to process file, command line input"
+        },
+        {
+          "id": "scripts-03",
+          "text": "Process script inputs ($1, $2, etc.)"
+        },
+        {
+          "id": "scripts-04",
+          "text": "Processing output of shell commands within a script"
+        }
+      ]
+    },
+    {
+      "id": "running",
+      "name": "Operate running systems",
+      "objectives": [
+        {
+          "id": "running-01",
+          "text": "Boot, reboot, and shut down a system normally"
+        },
+        {
+          "id": "running-02",
+          "text": "Boot systems into different targets manually"
+        },
+        {
+          "id": "running-03",
+          "text": "Interrupt the boot process in order to gain access to a system"
+        },
+        {
+          "id": "running-04",
+          "text": "Identify CPU/memory intensive processes and kill processes"
+        },
+        {
+          "id": "running-05",
+          "text": "Adjust process scheduling"
+        },
+        {
+          "id": "running-06",
+          "text": "Manage tuning profiles"
+        },
+        {
+          "id": "running-07",
+          "text": "Locate and interpret system log files and journals"
+        },
+        {
+          "id": "running-08",
+          "text": "Preserve system journals"
+        },
+        {
+          "id": "running-09",
+          "text": "Start, stop, and check the status of network services"
+        },
+        {
+          "id": "running-10",
+          "text": "Securely transfer files between systems"
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "name": "Configure local storage",
+      "objectives": [
+        {
+          "id": "storage-01",
+          "text": "List, create, and delete partitions on GPT disks"
+        },
+        {
+          "id": "storage-02",
+          "text": "Create and remove physical volumes"
+        },
+        {
+          "id": "storage-03",
+          "text": "Assign physical volumes to volume groups"
+        },
+        {
+          "id": "storage-04",
+          "text": "Create and delete logical volumes"
+        },
+        {
+          "id": "storage-05",
+          "text": "Configure systems to mount file systems at boot by universally unique ID (UUID) or label"
+        },
+        {
+          "id": "storage-06",
+          "text": "Add new partitions and logical volumes, and swap to a system non-destructively"
+        }
+      ]
+    },
+    {
+      "id": "fs",
+      "name": "Create and configure file systems",
+      "objectives": [
+        {
+          "id": "fs-01",
+          "text": "Create, mount, unmount, and use VFAT, ext4, and XFS file systems"
+        },
+        {
+          "id": "fs-02",
+          "text": "Mount and unmount network file systems using NFS"
+        },
+        {
+          "id": "fs-03",
+          "text": "Configure autofs"
+        },
+        {
+          "id": "fs-04",
+          "text": "Extend existing logical volumes"
+        },
+        {
+          "id": "fs-05",
+          "text": "Diagnose and correct file permission problems"
+        }
+      ]
+    },
+    {
+      "id": "deploy",
+      "name": "Deploy, configure, and maintain systems",
+      "objectives": [
+        {
+          "id": "deploy-01",
+          "text": "Schedule tasks using at, cron and systemd timer units"
+        },
+        {
+          "id": "deploy-02",
+          "text": "Start and stop services and configure services to start automatically at boot"
+        },
+        {
+          "id": "deploy-03",
+          "text": "Configure systems to boot into a specific target automatically"
+        },
+        {
+          "id": "deploy-04",
+          "text": "Configure time service clients"
+        },
+        {
+          "id": "deploy-05",
+          "text": "Install and update software packages from Red Hat Content Delivery Network, a remote repository, or from the local file system"
+        },
+        {
+          "id": "deploy-06",
+          "text": "Modify the system bootloader"
+        }
+      ]
+    },
+    {
+      "id": "net",
+      "name": "Manage basic networking",
+      "objectives": [
+        {
+          "id": "net-01",
+          "text": "Configure IPv4 and IPv6 addresses"
+        },
+        {
+          "id": "net-02",
+          "text": "Configure hostname resolution"
+        },
+        {
+          "id": "net-03",
+          "text": "Configure network services to start automatically at boot"
+        },
+        {
+          "id": "net-04",
+          "text": "Restrict network access using firewalld and firewall-cmd"
+        }
+      ]
+    },
+    {
+      "id": "users",
+      "name": "Manage users and groups",
+      "objectives": [
+        {
+          "id": "users-01",
+          "text": "Create, delete, and modify local user accounts"
+        },
+        {
+          "id": "users-02",
+          "text": "Change passwords and adjust password aging for local user accounts"
+        },
+        {
+          "id": "users-03",
+          "text": "Create, delete, and modify local groups and group memberships"
+        },
+        {
+          "id": "users-04",
+          "text": "Configure privileged access"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Manage security",
+      "objectives": [
+        {
+          "id": "security-01",
+          "text": "Configure firewall settings using firewall-cmd/firewalld"
+        },
+        {
+          "id": "security-02",
+          "text": "Manage default file permissions"
+        },
+        {
+          "id": "security-03",
+          "text": "Configure key-based authentication for SSH"
+        },
+        {
+          "id": "security-04",
+          "text": "Set enforcing and permissive modes for SELinux"
+        },
+        {
+          "id": "security-05",
+          "text": "List and identify SELinux file and process context"
+        },
+        {
+          "id": "security-06",
+          "text": "Restore default file contexts"
+        },
+        {
+          "id": "security-07",
+          "text": "Manage SELinux port labels"
+        },
+        {
+          "id": "security-08",
+          "text": "Use Boolean settings to modify system SELinux settings"
+        }
+      ]
+    }
+  ]
+}

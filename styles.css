@@ -624,6 +624,9 @@ html[data-beaver="loud"][data-theme="dark"] {
 .pQ { fill: var(--px-Q); }
 .pD { fill: var(--px-D); }
 .pE { fill: var(--px-E); }
+.pR { fill: var(--px-R); }
+:root { --px-R: #b3121f; }
+html[data-theme="dark"] { --px-R: #d23a45; }
 
 svg.px {
   display: block;
@@ -673,33 +676,86 @@ svg.px {
 .beaver-mini.is-hopping { animation: bv-hop 0.3s steps(1) 1; }
 @keyframes bv-hop { 0% { transform: translateY(-6px); } 50% { transform: translateY(-3px); } 100% { transform: none; } }
 
-/* Margins: a Terraria-ish forest in the gutters, never behind text. */
-.forest-side {
-  --s: 5px;
-  display: none;
-  position: fixed;
-  top: 44px;
-  bottom: 42px;
-  width: calc((100vw - 1080px) / 2);
-  overflow: hidden;
-  pointer-events: none;
-  opacity: 0.55;
+/* ---------------------------------------------------------------- ~/log */
+
+.sysd {
+  margin: 28px 0 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--dim);
+  background: var(--fill);
+  border: 1px solid var(--line);
 }
-.forest-side--l {
-  left: 0;
-  -webkit-mask-image: linear-gradient(to right, #000 75%, transparent);
-  mask-image: linear-gradient(to right, #000 75%, transparent);
+.sysd .ok { color: var(--accent); }
+.sysd a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); }
+
+.dam-scene {
+  --s: 4px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+  min-height: 64px;
 }
-.forest-side--r {
-  right: 0;
-  -webkit-mask-image: linear-gradient(to left, #000 75%, transparent);
-  mask-image: linear-gradient(to left, #000 75%, transparent);
+
+.legend { margin: 0 0 22px; max-width: 78ch; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
+.legend a { color: var(--dim); text-decoration: underline; text-decoration-color: var(--line); }
+
+.groves { display: grid; gap: 18px; }
+.grove .row-line { font-size: 13px; }
+.grove-trees { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+.obj {
+  --s: 4px;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
 }
-.forest-side svg { position: absolute; bottom: 0; }
-.forest-side--l svg { left: 0; }
-.forest-side--r svg { right: 0; }
-html[data-beaver="loud"] .forest-side { opacity: 0.85; }
-@media (min-width: 1400px) { .forest-side { display: block; } }
+.obj:hover { background: var(--fill); }
+.obj[aria-pressed="true"] { border-color: var(--ink); background: var(--fill); }
+.obj.has-px .obj-fallback { display: none; }
+.obj-fallback { font-size: 11px; color: var(--dim); }
+
+.obj-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 16px;
+  margin-top: 22px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  border: 1px dashed var(--line);
+}
+.obj-detail-text { flex: 1; min-width: 0; }
+
+.wus { display: grid; }
+.wu {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px dotted var(--line);
+}
+.wu-date { color: var(--dim); white-space: nowrap; }
+.wu-title { min-width: 0; }
+.wu-meta { color: var(--dim); font-size: 12px; white-space: nowrap; }
+.wu-empty { margin: 4px 0 18px; font-size: 13px; color: var(--dim); }
+
+.objs { padding-left: 0; list-style: none; }
+.obj-inline { --s: 2px; display: inline-block; vertical-align: -2px; margin-right: 8px; }
+
+@media (max-width: 560px) {
+  .wu { flex-wrap: wrap; gap: 2px 10px; }
+  .wu .rule { display: none; }
+  .wu-title { flex-basis: 100%; order: 3; }
+}
 
 /* Status glyphs: a tree's life instead of a dot. */
 .status.has-px::before { content: none; }

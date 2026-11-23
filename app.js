@@ -7,6 +7,7 @@
   /* Every project with its own page under projects/. Order and group match
      the grid on the index: ops/ first, then ml/. */
   var PROJECTS = [
+    { slug: "log",             name: "RHCSA log",       status: "active",       group: "ops", href: "log/index.html" },
     { slug: "mushin",          name: "Mushin",          status: "active",       group: "ops" },
     { slug: "goswin",          name: "Goswin",          status: "active",       group: "ops" },
     { slug: "bachelor-thesis", name: "Bachelor Thesis", status: "complete",     group: "ml" },
@@ -27,6 +28,17 @@
       now: "open to full-time IT support roles · preparing for RHCSA (EX200), exam planned Q1 2027",
       g1: "infrastructure, automation, systems", g2: "study and side projects in machine learning",
       upd: "last updated", updw: "nov 2026",
+      n4: "log",
+      nowLive: "open to full-time IT support roles · RHCSA (EX200): {d} done · {p} practising of {n} objectives · exam planned {t}",
+      p10: "RHCSA practice log: weekly writeups and a bash script per chapter",
+      lg_intro: "Practice over memorising. I had read far into the RHCSA book, then started again from chapter one to take it slowly: every chapter gets a bash script that automates something it teaches, and every week a writeup of what I practised, what broke and what I scripted.",
+      lg_legend: "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam.",
+      lg_source: "objective list from Red Hat", lg_clear: "[clear filter]",
+      lg_none: "No writeups yet: the first one lands at the end of week one.",
+      lg_nomatch: "No writeup covers this objective yet.",
+      lg_cadence: "One writeup a week until the exam. Gaps stay visible.",
+      lg_scripts: "Scripts", lg_practised: "Objectives practised", lg_passed: "Passed in a timed mock exam",
+      lg_back: "back to the log",
       bio: "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
       b1: "work/", b2: "homelab/", b3: "skills/", b4: "education/",
       b5: "certs/", b6: "languages/", b7: "awards/", b8: "other/",
@@ -93,6 +105,17 @@
       now: "otwarty na pełny etat w IT support · przygotowuję się do RHCSA (EX200), egzamin planowany w Q1 2027",
       g1: "infrastruktura, automatyzacja, systemy", g2: "projekty z uczenia maszynowego: studia i hobby",
       upd: "ostatnia aktualizacja", updw: "listopad 2026",
+      n4: "dziennik",
+      nowLive: "otwarty na pełny etat w IT support · RHCSA (EX200): {d} zaliczonych · {p} w trakcie z {n} celów · egzamin planowany w {t}",
+      p10: "Dziennik nauki do RHCSA: cotygodniowe wpisy i skrypt w bashu do każdego rozdziału",
+      lg_intro: "Praktyka zamiast wkuwania. Przeczytałem już sporą część książki do RHCSA, ale zacząłem od nowa od pierwszego rozdziału, żeby iść powoli: każdy rozdział dostaje skrypt w bashu, który automatyzuje coś, czego uczy, a każdy tydzień wpis o tym, co przećwiczyłem, co się zepsuło i co oskryptowałem.",
+      lg_legend: "Każde drzewo to jeden oficjalny cel egzaminu. Stojące: jeszcze nie zacząłem. Nadgryzione: przećwiczone we wpisie. Ścięte: zaliczone na egzaminie próbnym na czas.",
+      lg_source: "lista celów od Red Hat", lg_clear: "[wyczyść filtr]",
+      lg_none: "Jeszcze nie ma wpisów: pierwszy pojawi się pod koniec pierwszego tygodnia.",
+      lg_nomatch: "Żaden wpis nie obejmuje jeszcze tego celu.",
+      lg_cadence: "Jeden wpis tygodniowo aż do egzaminu. Przerwy pozostają widoczne.",
+      lg_scripts: "Skrypty", lg_practised: "Przećwiczone cele", lg_passed: "Zaliczone na egzaminie próbnym na czas",
+      lg_back: "wróć do dziennika",
       bio: "Nie boję się zadawać pytań i drążę, dopóki naprawdę nie zrozumiem, dlaczego coś działa tak, a nie inaczej. Lubię łączyć pomysły z miejsc, które naturalnie się nie spotykają, ale pozostaję metodyczny: chcę znać mechanizm, a nie tylko powierzchnię. Brazylijskie jiu-jitsu ukształtowało mój sposób pracy: walczę dalej, gdy robi się gorąco, i nie boję się pobrudzić rąk. Lubię pracować blisko maszyny i dbać o to, by prawdziwe systemy produkcyjne działały wydajnie i bezpiecznie — tam, gdzie brak wiadomości to dobra wiadomość.",
       b1: "praca/", b2: "homelab/", b3: "umiejętności/", b4: "edukacja/",
       b5: "certyfikaty/", b6: "języki/", b7: "nagrody/", b8: "inne/",
@@ -174,6 +197,20 @@
   var theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
   var out = [];
   var logsGnawed = 0;
+  var rhcsa = null;   /* log/status.json, built by bin/build_log.py */
+
+  function loadStatus(cb) {
+    if (rhcsa) { cb(rhcsa); return; }
+    if (!window.fetch) { cb(null); return; }
+    fetch(ROOT + "log/status.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { rhcsa = j; cb(j); })
+      .catch(function () { cb(null); });
+  }
+
+  function fill(tpl, vals) {
+    return tpl.replace(/\{(\w)\}/g, function (m, k) { return vals[k] !== undefined ? vals[k] : m; });
+  }
 
   /* Pixel layer hooks (pixel.js). Optional: the site works without it. */
   function px(fn, arg) {
@@ -205,6 +242,15 @@
     }
 
     px("face", lang);
+
+    /* Live RHCSA counts in the hero line; static text stays if the fetch fails. */
+    var nowEl = document.querySelector('[data-i18n="now"]');
+    if (nowEl && rhcsa && rhcsa.counts) {
+      nowEl.textContent = fill(t.nowLive, {
+        d: rhcsa.counts.done, p: rhcsa.counts.practising, n: rhcsa.counts.total,
+        t: rhcsa.exam.booked || rhcsa.exam.target
+      });
+    }
 
     Array.prototype.forEach.call(langButtons, function (b) {
       var on = b.getAttribute("data-lang") === lang;
@@ -278,6 +324,10 @@
     window.location.href = ROOT + STRINGS[lang].cvfile;
   }
 
+  function projectHref(p) {
+    return ROOT + (p.href || "projects/" + p.slug + ".html");
+  }
+
   function run(raw) {
     var line = raw.trim();
     if (!line) return;
@@ -290,7 +340,7 @@
       case "help":
         push(line, [
           "help  ls [projects]  cd <section>  open <project>  whoami  cv  theme  lang <en|pl>  clear",
-          "systemctl status rhcsa  beaver [loud|quiet]",
+          "systemctl status rhcsa  tail log  beaver [loud|quiet]",
           "sections: " + SECTIONS.join(", "),
           "open <project> — see `ls projects` for slugs"
         ]);
@@ -318,7 +368,7 @@
           goTo(arg);
           push(line, ["-> /" + arg]);
         } else if (findProject(arg)) {
-          window.location.href = ROOT + "projects/" + findProject(arg).slug + ".html";
+          window.location.href = projectHref(findProject(arg));
         } else {
           push(line, ["cd: no such section: " + arg]);
         }
@@ -331,11 +381,18 @@
 
       case "systemctl":
         if (arg === "status" && (parts[2] || "").toLowerCase().replace(/\.service$/, "") === "rhcsa") {
-          push(line, [
-            "● rhcsa.service - Red Hat Certified System Administrator (EX200)",
-            "     Loaded: loaded (~/homelab; 3 proxmox nodes)",
-            "     Active: active (preparing) — exam planned Q1 2027"
-          ]);
+          loadStatus(function (s) {
+            var rows = [
+              "● rhcsa.service - Red Hat Certified System Administrator (EX200" + (s ? ", " + s.exam.rhel : "") + ")",
+              "     Active: active (preparing) · exam " + (s && s.exam.booked ? "booked " + s.exam.booked : "planned Q1 2027")
+            ];
+            if (s) {
+              rows.push("   Progress: " + s.counts.done + " done · " + s.counts.practising + " practising · " +
+                        s.counts.todo + " todo (" + s.counts.total + ")");
+              rows.push("    Scripts: " + s.scripts + " · writeups: " + s.writeups + "  → cd log");
+            }
+            push(line, rows);
+          });
         } else {
           push(line, ["usage: systemctl status rhcsa"]);
         }
@@ -346,7 +403,7 @@
         if (arg === "resume" || arg === "cv" || arg === "resume.pdf") { openCv(line); break; }
         var p = findProject(arg);
         if (p) {
-          window.location.href = ROOT + "projects/" + p.slug + ".html";
+          window.location.href = projectHref(p);
         } else {
           push(line, [cmd + ": no such project: " + arg, "try `ls projects`"]);
         }
@@ -368,6 +425,15 @@
         } else {
           push(line, ["usage: lang <en|pl>"]);
         }
+        break;
+
+      case "tail":
+        if (arg !== "log") { push(line, ["usage: tail log"]); break; }
+        loadStatus(function (s) {
+          if (!s) { push(line, ["tail: cannot read ~/log/status.json"]); return; }
+          if (!s.latest.length) { push(line, ["(no writeups yet)  → cd log"]); return; }
+          push(line, s.latest.map(function (e) { return e.date + "  " + e.title; }));
+        });
         break;
 
       case "beaver":
@@ -419,4 +485,5 @@
   applyLang();
   applyTheme();
   render();
+  if (document.querySelector('[data-i18n="now"]')) loadStatus(function (s) { if (s) applyLang(); });
 })();

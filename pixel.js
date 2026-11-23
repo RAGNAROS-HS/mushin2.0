@@ -1,4 +1,4 @@
-/* Pixel layer: the beaver, the forest in the page margins, and status glyphs.
+/* Pixel layer: the beaver, his hero scene, the ~/log dam and status glyphs.
    Sprites are text maps — one letter per palette slot, "." is empty — drawn
    as SVG rects. Colours live in styles.css as --px-* tokens, switched by
    data-theme (light/dark) and data-beaver (quiet/loud) on <html>.
@@ -158,20 +158,6 @@
     }
   }
 
-  function pine(cv, x, gy, h, seed) {
-    var rand = rng(seed), top = gy - h, base = gy - Math.round(h * 0.18);
-    var span = base - top, tier = Math.ceil(span / Math.max(3, Math.round(h / 14)));
-    trunk(cv, x, gy, Math.round(h * 0.22) + 2, 2);
-    for (var y = top; y <= base; y++) {
-      var t = (y - top) / span, inTier = ((y - top) % tier) / tier;
-      var half = Math.round((1 + t * h * 0.2) * (0.55 + 0.45 * inTier));
-      for (var i = -half; i <= half + 1; i++) {
-        if ((i === -half || i === half + 1) && rand() < 0.35) continue;
-        cv.set(x + i, y, ((i > 0 && rand() < 0.6) || rand() < 0.06) ? "V" : "W");
-      }
-    }
-  }
-
   function stump(cv, x, gy, w) {
     for (var i = 0; i < w; i++) cv.set(x + i, gy - 4, "G");
     cv.set(x + Math.floor(w / 2), gy - 4, "K");
@@ -195,37 +181,6 @@
     });
   }
 
-  function ground(cv, gy, seed) {
-    var rand = rng(seed);
-    for (var x = 0; x < cv.w; x++) {
-      if (rand() < 0.25) cv.set(x, gy - 1, "E");
-      cv.set(x, gy, "E");
-      for (var y = gy + 1; y < cv.h; y++) cv.set(x, y, rand() < 0.1 ? "Q" : "D");
-    }
-  }
-
-  /* Margins: tallest trees sit at the outer edge, so a narrow gutter
-     still shows a whole trunk and crops only the inner, smaller things. */
-  function sideLeft() {
-    var cv = new Canvas(96, 120), gy = 113;
-    ground(cv, gy, 7);
-    pine(cv, 30, gy, 96, 11);
-    oak(cv, 6, gy, 74, 3);
-    pile(cv, 48, gy);
-    stump(cv, 72, gy, 6);
-    return cv.rows();
-  }
-
-  function sideRight() {
-    var cv = new Canvas(96, 120), gy = 113;
-    ground(cv, gy, 9);
-    pine(cv, 82, gy, 100, 13);
-    oak(cv, 56, gy, 66, 17, true);
-    log(cv, 26, gy, 28, 19);
-    stump(cv, 16, gy, 6);
-    return cv.rows();
-  }
-
   function heroTree() {
     var cv = new Canvas(28, 34);
     oak(cv, 11, 34, 32, 23, true);
@@ -239,22 +194,49 @@
     return cv.rows();
   }
 
+  /* The red hat: earned only when the exam is passed (~/log). */
+  var HAT = [
+    "...RRRRRR.....................",
+    "..RRRRRRRR....................",
+    "RRRRRRRRRRRR.................."
+  ];
+
+  /* Dam: one log end per objective done, stacked in shrinking rows. */
+  function dam(n) {
+    var per = 12, rows = [], left = n;
+    while (left > 0) { rows.push(Math.min(per, left)); left -= per; per--; }
+    var cv = new Canvas(Math.max(6, 12 * 6), Math.max(6, rows.length * 6));
+    rows.forEach(function (count, r) {
+      for (var i = 0; i < count; i++) cv.blit(LOG_END, i * 6 + r * 3, cv.h - 6 - r * 6);
+    });
+    return cv.rows();
+  }
+
   /* -------------------------------------------------------------- beaver */
 
   var hosts = [];
   var state = { frame: "idle", asleep: false, last: Date.now() };
 
-  function host() {
+  function host(hat) {
     var el = document.createElement("span");
     el.className = "bv";
+    if (hat) el.setAttribute("data-hat", "1");
     el.innerHTML = '<span class="bv-sprite"></span><span class="bv-z" aria-hidden="true">z<sup>z</sup></span>';
     hosts.push(el);
     return el;
   }
 
   function draw() {
-    var html = svg(FRAMES[state.frame], "pixel beaver");
-    hosts.forEach(function (h) { h.firstChild.innerHTML = html; });
+    var f = FRAMES[state.frame];
+    var plain = svg(f, "pixel beaver"), hatted;
+    hosts.forEach(function (h) {
+      if (h.getAttribute("data-hat")) {
+        hatted = hatted || svg(HAT.concat(f), "pixel beaver wearing a red hat");
+        h.firstChild.innerHTML = hatted;
+      } else {
+        h.firstChild.innerHTML = plain;
+      }
+    });
   }
 
   function show(f) { state.frame = f; draw(); }
@@ -330,13 +312,23 @@
     scene.appendChild(host());
     scene.insertAdjacentHTML("beforeend", svg(heroLogs()));
   }
+  /* ~/log: the dam grows by one log per objective done. */
+  var damScene = document.getElementById("dam-scene");
+  if (damScene) {
+    var done = parseInt(damScene.getAttribute("data-done"), 10) || 0;
+    /* dam first: he faces left, towards his work */
+    if (done > 0) damScene.insertAdjacentHTML("beforeend", svg(dam(done), done + " logs in the dam"));
+    damScene.appendChild(host(damScene.getAttribute("data-hat") === "1"));
+  }
+
   if (mini) mini.appendChild(host());
   draw();
 
   /* One beaver at a time: the hero one, or — once it scrolls away, or on
      pages without a hero — the small one in the console bar. */
   if (mini) {
-    if (scene && "IntersectionObserver" in window) {
+    var big = scene || damScene;
+    if (big && "IntersectionObserver" in window) {
       mini.hidden = true;
       new IntersectionObserver(function (entries) {
         var heroVisible = entries[0].isIntersecting;
@@ -347,26 +339,10 @@
           void mini.offsetWidth;
           mini.classList.add("is-hopping");
         }
-      }).observe(scene);
+      }).observe(big);
     } else {
       mini.hidden = false;
     }
-  }
-
-  function forest() {
-    if (document.querySelector(".forest-side")) return;
-    [["l", sideLeft], ["r", sideRight]].forEach(function (s) {
-      var d = document.createElement("div");
-      d.className = "forest-side forest-side--" + s[0];
-      d.setAttribute("aria-hidden", "true");
-      d.innerHTML = svg(s[1]());
-      document.body.insertBefore(d, document.body.firstChild);
-    });
-  }
-  if (window.matchMedia) {
-    var wide = window.matchMedia("(min-width: 1400px)");
-    if (wide.matches) forest();
-    if (wide.addEventListener) wide.addEventListener("change", function (e) { if (e.matches) forest(); });
   }
 
   Array.prototype.forEach.call(document.querySelectorAll(".status[data-status]"), function (el) {
@@ -401,5 +377,13 @@
     }
   }, 1000);
 
-  window.HSKPixel = { key: key, shake: shake, chew: chew, theme: theme, face: face, mode: mode, wake: wake };
+  function sprite(name, label) {
+    var g = GLYPHS[name];
+    return g ? svg(g, label) : "";
+  }
+
+  window.HSKPixel = {
+    key: key, shake: shake, chew: chew, theme: theme, face: face, mode: mode, wake: wake,
+    sprite: sprite, STATUS_GLYPH: STATUS_GLYPH
+  };
 })();
