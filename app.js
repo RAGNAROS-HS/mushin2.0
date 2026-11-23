@@ -67,7 +67,6 @@
       o3: "Lifeguard", om3: "Hotel Warmia Park · Pluski, PL", ow3: "jun 2022 – aug 2022",
       entries: "entries",
       /* project one-liners */
-      p0: "Bytecode interpreter in C — stack machine and memory management",
       p1: "Agentic AI assistant with tool use and RAG",
       p2: "Chess impossibility recognition with a ResNet-20",
       p3: "ML algorithms written from scratch",
@@ -140,7 +139,6 @@
       o2: "Pracownik obsługi hotelowej", ow2: "lipiec 2023 – sierpień 2023",
       o3: "Ratownik", om3: "Hotel Warmia Park · Pluski", ow3: "czerwiec 2022 – sierpień 2022",
       entries: "pozycji",
-      p0: "Interpreter bajtkodu w C — maszyna stosowa i zarządzanie pamięcią",
       p1: "Agentowy asystent AI z użyciem narzędzi i RAG",
       p2: "Rozpoznawanie niemożliwych pozycji szachowych siecią ResNet-20",
       p3: "Algorytmy ML pisane od zera",

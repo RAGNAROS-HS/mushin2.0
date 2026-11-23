@@ -134,6 +134,10 @@ button {
   scroll-margin-top: 52px;
 }
 .section--hero { padding: 84px 0 68px; border-top: 0; }
+/* Homepage: the dashed `$ ls` heads already split the sections, so no
+   solid section borders and no dotted leaders (they still space the columns). */
+.home .section { border-top: 0; }
+.home .rule--dotted { opacity: 0; }
 .section--last { padding-bottom: 40px; }
 
 .sec-head {
@@ -239,10 +243,6 @@ button {
 
 .status { white-space: nowrap; }
 .status::before { content: "\25CF\00a0"; }
-
-/* Which hands built it — mirrors data/tools.yaml on the sister site. */
-.tool { white-space: nowrap; }
-.tool::before { content: "\2317\00a0"; }
 
 /* ------------------------------------------------------------------ tree */
 

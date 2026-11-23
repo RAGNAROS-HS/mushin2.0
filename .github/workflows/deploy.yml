@@ -34,4 +34,3 @@ jobs:
           tags: |
             ghcr.io/${{ steps.repo.outputs.name }}:${{ github.sha }}
             ghcr.io/${{ steps.repo.outputs.name }}:latest
-          #test2

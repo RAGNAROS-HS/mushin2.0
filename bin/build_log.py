@@ -354,7 +354,7 @@ def build_index(shell, data, by_id, entries, state, counts, n_scripts):
     desc = (f"RHCSA (EX200, {exam['rhel']}) practice log: {counts['done']} objectives done, "
             f"{counts['practising']} practising, {n_scripts} bash scripts, weekly writeups.")
     return page(shell, "RHCSA log — Hugo Sokołowski-Katzer", desc, f"{SITE}/log/", body,
-                '<script src="log.js?v=13"></script>')
+                '<script src="log.js?v=14"></script>')
 
 
 def build_entry(shell, e, by_id, state, newer, older):
@@ -408,7 +408,7 @@ def build_entry(shell, e, by_id, state, newer, older):
   </nav>'''
     desc = e["summary"] or f"RHCSA practice writeup, {e['date'].isoformat()}."
     return page(shell, f"{e['title']} — RHCSA log", desc, f"{SITE}/log/{e['slug']}.html", body,
-                '<script src="log.js?v=13"></script>')
+                '<script src="log.js?v=14"></script>')
 
 
 def build_readme(data):
