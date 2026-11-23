@@ -33,7 +33,7 @@ docker compose -f compose.yaml up -d --build   # the real image, no mount</code>
 
     <h2>The beaver</h2>
 
-    <p>The pixel beaver, his trees and what he builds are drawn in the browser from text sprite maps and small procedural generators (<code>pixel.js</code>), with no image files. The site is split in two: a plain about page for the CV, and <a href="../woods/index.html">the woods</a>, where each track (a weekly cert log, or notes) is a stand of its own tree species, every objective a tree, felled once passed, its log going into that track's build. The books I read live in the lodge. The beaver comes from the logo of an earlier project, <a href="stumberg.html">Stumberg</a>.</p>
+    <p>The pixel art is drawn in the browser from text sprite maps and a small isometric voxel renderer (<code>pixel.js</code>), with no image files. The site is split in two: a plain about page for the CV, and <a href="../cabin/index.html">the cabin</a>, a log cabin room where the laptop opens my weekly RHCSA log, the whiteboard my notes, and the bookshelf the books I read. The beaver comes from the logo of an earlier project, <a href="stumberg.html">Stumberg</a>.</p>
 
     <div class="note">
       <p>Previously, Mushin was a Hugo static site deployed by SFTP to a Cloudpanel VPS. Version 2.0 dropped the generator and moved to a container image, which is simpler to run and to roll back.</p>

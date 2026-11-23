@@ -4,12 +4,12 @@
 The site is two spaces:
 
   about (/)      plain and recruiter-first: who, where, career, CV, earlier work
-  the woods      the pixel world: tracks (weekly logs with objectives, and the
-  (/woods/)      notes track for opinions), and the shelf of books
+  the cabin      a pixel-art log cabin room: the desk (weekly tracks), the
+  (/cabin/)      whiteboard (notes), the bookshelf and odd easter eggs
 
 Reads   templates/shell.html       head, header and scripts shared by every page
         templates/home.html        the about page body (career tree is hand-written there)
-        templates/woods.html       the woods hub body
+        templates/cabin.html       the cabin room page
         content/projects/*.md      earlier work, one page each (front matter + Markdown or HTML)
         content/shelf.json         the books, by topic
         tracks/<slug>/track.json   a track: species, structure, cadence, objectives (optional)
@@ -40,18 +40,21 @@ DIST = ROOT / "dist"
 SITE = "https://hugokatzer.tech"
 OWNER = "Hugo Sokołowski-Katzer"
 
-STATIC_FILES = ("styles.css", "app.js", "pixel.js", "track.js")
+STATIC_FILES = ("styles.css", "app.js", "pixel.js", "track.js", "cabin.js")
 STATIC_DIRS = ("img", "pdfs")
 # Old public URLs that must keep working: path in dist -> target, from the site root.
-REDIRECTS = {"log/index.html": "woods/rhcsa/index.html"}
+REDIRECTS = {"log/index.html": "cabin/rhcsa/index.html"}
 
 # Must match what pixel.js can draw (SPECIES / STRUCTURES there).
 SPECIES = ("oak", "pine", "birch")
 STRUCTURES = ("cabin", "woodpile", "none")
 CADENCES = ("weekly", "none")
+# Objects in the cabin room that open a popup (pixel.js draws them); eggs in
+# content/cabin.json must name one of these.
+ROOM_OBJECTS = ("gi", "rack", "window", "mug")
+TONES = "CDEFH"   # spine colour per shelf topic, in shelf.json order (--px-C… in styles.css)
 STATES = ("active", "complete", "abandoned", "discontinued", "limbo")
 OBJ_STATES = ("todo", "practising", "done")
-TONES = "CDEFH"   # spine colours per shelf topic; must match TONES in pixel.js
 MONTHS = ("january", "february", "march", "april", "may", "june", "july",
           "august", "september", "october", "november", "december")
 
@@ -244,7 +247,6 @@ def load_shelf():
     data = json.loads((CONTENT / "shelf.json").read_text(encoding="utf-8"))
     if len(data["topics"]) > len(TONES):
         raise BuildError(f"content/shelf.json: at most {len(TONES)} topics (one spine colour each)")
-    # Each topic gets a spine colour slot, in order (--px-C, D, E, F, H in styles.css).
     topics = {t["id"]: dict(t, tone=TONES[i]) for i, t in enumerate(data["topics"])}
     books = {}
     for b in data["books"]:
@@ -255,8 +257,23 @@ def load_shelf():
             raise BuildError(f"content/shelf.json: {b['id']}: unknown topic {b['topic']!r}")
         if b["id"] in books:
             raise BuildError(f"content/shelf.json: duplicate book id {b['id']!r}")
-        books[b["id"]] = dict(b, cited=[], tone=topics[b["topic"]]["tone"])
+        books[b["id"]] = dict(b, cited=[], tone=topics[b["topic"]]["tone"], topic_label=topics[b["topic"]]["label"])
     return topics, books
+
+
+def load_cabin():
+    data = json.loads((CONTENT / "cabin.json").read_text(encoding="utf-8"))
+    eggs = []
+    for egg in data.get("eggs", []):
+        for field in ("id", "title", "text"):
+            if not egg.get(field):
+                raise BuildError(f"content/cabin.json: an egg is missing '{field}'")
+        if egg["id"] not in ROOM_OBJECTS:
+            raise BuildError(f"content/cabin.json: no object {egg['id']!r} in the room "
+                             f"(it has: {', '.join(ROOM_OBJECTS)})")
+        eggs.append({"id": egg["id"], "label": egg.get("label") or egg["id"],
+                     "title": egg["title"], "text": egg["text"]})
+    return eggs
 
 
 def load_projects():
@@ -393,7 +410,7 @@ def load_tracks(books):
             problems.append(str(e))
     if problems:
         raise BuildError("\n".join(problems))
-    # Weekly tracks first (they are the stands in the woods), then the journals.
+    # Weekly tracks first (they sit on the desk), then the journals.
     tracks.sort(key=lambda t: (t["cadence"] != "weekly", t["status"] != "active", t["slug"]))
     for b in books.values():
         if b.get("track") and b["track"] not in {t["slug"] for t in tracks}:
@@ -407,25 +424,6 @@ def load_tracks(books):
 
 # ------------------------------------------------------------------ fragments
 
-GLYPH = {"todo": "tree", "practising": "gnawed", "done": "log"}
-RING = {"todo": "t", "practising": "p", "done": "d"}
-
-
-def ticon(t):
-    """The track's icon: a small tree of its species (pixel.js draws it)."""
-    return f'<span class="ticon" data-ticon="{t["species"]}" aria-hidden="true"></span>'
-
-
-def ring(t):
-    """The ring strip: one block per objective, in objective order."""
-    if not t["by_id"]:
-        return ""
-    c = t["counts"]
-    codes = "".join(RING[t["state"][oid]] for oid in t["by_id"])
-    return (f'<span class="ring" data-species="{t["species"]}" data-ring="{codes}" role="img" '
-            f'aria-label="{c["done"]} of {c["total"]} objectives done, {c["practising"]} practising"></span>')
-
-
 def progress(t):
     """Plain-words progress for a track, e.g. '1/62 objectives · 3 weekly logs'."""
     n = len(t["entries"])
@@ -437,29 +435,9 @@ def progress(t):
     return " · ".join(bits)
 
 
-def pass_order(t):
-    """Passed objectives in the order they were first passed, with the date:
-    the structure is built from them, one piece each."""
-    seen, out = set(), []
-    for e in sorted(t["entries"], key=lambda e: (e["date"], e["slug"])):
-        for oid in e["passed"]:
-            if oid not in seen:
-                seen.add(oid)
-                out.append({"id": oid, "text": t["by_id"][oid]["text"], "date": e["date"].isoformat()})
-    return out
-
-
-def scene_attrs(t):
-    """Everything pixel.js needs to draw a track's build (or its growing tree)."""
-    c = t["counts"]
-    return (f'data-species="{t["species"]}" data-structure="{t["structure"]}" '
-            f'data-done="{c["done"]}" data-total="{c["total"]}" data-notes="{len(t["entries"])}" '
-            f'data-hat="{"1" if t["finished"] else "0"}" data-logs="{json_attr(pass_order(t))}"')
-
-
-def feed(items, prefix):
-    """Entries grouped by month, newest first. items: [(track, entry)].
-    prefix: path from the page to woods/."""
+def feed(items, prefix, show_track):
+    """Entries as one line each, grouped by month, newest first.
+    items: [(track, entry)]; prefix: path from the page to cabin/."""
     if not items:
         return ""
     out, month = [], None
@@ -471,23 +449,19 @@ def feed(items, prefix):
             out.append(f'    <div class="month"><h3 class="month-name">{m}</h3>')
             month = m
         objs = sorted(set(e["practised"]) | set(e["passed"]))
-        chapter = f'<span class="wu-chapter">{esc(e["chapter"])}</span>' if e["chapter"] else ""
-        meta = []
-        if objs:
-            meta.append(f'{len(objs)} obj')
-        if e["scripts"]:
-            meta.append(f'{len(e["scripts"])} script{"s" if len(e["scripts"]) != 1 else ""}')
-        if e["books"]:
-            meta.append(f'{len(e["books"])} book{"s" if len(e["books"]) != 1 else ""}')
-        summary = f'<span class="wu-sum">{esc(e["summary"])}</span>' if e["summary"] else ""
+        if show_track:
+            right = esc(t["name"])
+        else:
+            bits = []
+            if objs:
+                bits.append(f'{len(objs)} obj')
+            if e["scripts"]:
+                bits.append(f'{len(e["scripts"])} script{"s" if len(e["scripts"]) != 1 else ""}')
+            right = " · ".join(bits)
         out.append(
-            f'      <a class="wu" href="{prefix}{t["slug"]}/{e["slug"]}.html" data-track="{t["slug"]}" '
-            f'data-objs="{" ".join(objs)}">'
-            f'<span class="wu-head">{ticon(t)}<span class="wu-date">{e["label"]}</span>'
-            f'<span class="wu-track">{esc(t["name"])}</span>{chapter}</span>'
-            f'<span class="wu-title">{esc(e["title"])}</span>{summary}'
-            f'<span class="wu-foot"><span class="wu-meta">{" · ".join(meta)}</span>'
-            f'<span class="wu-go">read &rarr;</span></span></a>')
+            f'      <a class="row-line lrow" href="{prefix}{t["slug"]}/{e["slug"]}.html" data-objs="{" ".join(objs)}">'
+            f'<span class="lrow-when">{e["label"]}</span><span class="label">{esc(e["title"])}</span>'
+            f'<span class="rule rule--dotted"></span><span class="meta">{right}</span></a>')
     out.append("    </div>")
     return "\n".join(out)
 
@@ -531,9 +505,9 @@ def build_home(site, projects, tracks):
         if t.get("target"):
             bits.append(esc(t["target"]))
         bits.append(progress(t))
-        lines.append(f'<a href="woods/{t["slug"]}/index.html">{" · ".join(bits)}</a>')
+        lines.append(f'<a href="cabin/{t["slug"]}/index.html">{" · ".join(bits)}</a>')
     status = (f'    <p class="status-line">{"<br>".join(lines)} '
-              f'<a class="dim" href="woods/index.html">&rarr; the woods</a></p>') if lines else ""
+              f'<a class="dim" href="cabin/index.html">&rarr; the cabin</a></p>') if lines else ""
 
     rows = "\n".join(
         f'        <div class="row-line"><span class="label"><a class="label-link" href="projects/{p["slug"]}.html">'
@@ -581,134 +555,114 @@ def build_project(site, projects, p):
     site.page(f"projects/{p['slug']}.html", f"{p['title']} — {OWNER}", p["description"], main, "about")
 
 
-# --- the woods
+# --- the cabin
 
-def build_woods(site, tracks, books):
-    meta, body = parse_front_matter((TEMPLATES / "woods.html").read_text(encoding="utf-8"), "templates/woods.html")
-    places = [{"kind": "lodge", "href": "shelf/index.html", "label": "shelf", "n": len(books)}]
-    for t in tracks:
-        if t["structure"] != "none":
-            c = t["counts"]
-            places.append({"kind": "stand", "href": f'{t["slug"]}/index.html', "label": t["name"],
-                           "species": t["species"], "structure": t["structure"], "done": c["done"],
-                           "total": c["total"], "finished": t["finished"], "active": t["status"] == "active"})
-        else:
-            places.append({"kind": "board", "href": f'{t["slug"]}/index.html', "label": t["name"],
-                           "species": t["species"], "n": len(t["entries"])})
+def sec_head(left, right=""):
+    return (f'    <div class="sec-head">\n      <span class="prompt">{left}</span>\n'
+            f'      <span class="rule rule--dashed"></span>\n      <span class="prompt">{right}</span>\n    </div>')
+
+
+def build_cabin(site, tracks, books, eggs):
+    meta, body = parse_front_matter((TEMPLATES / "cabin.html").read_text(encoding="utf-8"), "templates/cabin.html")
+    weekly = [t for t in tracks if t["cadence"] == "weekly" and t["status"] == "active"]
+    notes = next((t for t in tracks if t["cadence"] == "none"), None)
+    room = {
+        "tracks": [{"href": f'{t["slug"]}/index.html', "name": t["name"], "title": t["title"],
+                    "done": t["counts"]["done"], "total": t["counts"]["total"],
+                    "last": t["entries"][0]["label"] if t["entries"] else ""} for t in weekly],
+        "notes": {"href": f'{notes["slug"]}/index.html', "count": len(notes["entries"]),
+                  "titles": [e["title"] for e in notes["entries"][:8]]} if notes else None,
+        "books": [{"id": b["id"], "title": b["title"], "author": b["author"], "tone": b["tone"],
+                   "topic": b["topic_label"],
+                   "cited": [{"label": f'{t["name"]} {e["label"]}', "href": f'{t["slug"]}/{e["slug"]}.html'}
+                             for t, e in b["cited"]]} for b in books.values()],
+        "eggs": eggs,
+    }
 
     rows = []
     for t in tracks:
-        last = t["entries"][0] if t["entries"] else None
-        latest = (f'<a class="trow-last" href="{t["slug"]}/{last["slug"]}.html">latest: {last["label"]} &rarr;</a>'
-                  if last else '<span class="trow-last dim">nothing yet</span>')
+        last = t["entries"][0]["label"] if t["entries"] else "nothing yet"
+        where = "desk" if t["cadence"] == "weekly" else "whiteboard"
+        right = f'{t["counts"]["done"]}/{t["counts"]["total"]} · ' if t["by_id"] else ""
         rows.append(
-            f'      <div class="trow" data-species="{t["species"]}">'
-            f'<a class="trow-name" href="{t["slug"]}/index.html">{ticon(t)}{esc(t["name"])}/</a>'
-            f'{ring(t)}<span class="trow-count">{progress(t)}</span>{latest}'
-            f'<span class="trow-sum">{esc(t["summary"])}</span></div>')
-    rows.append(
-        f'      <div class="trow"><a class="trow-name" href="shelf/index.html">'
-        f'<span class="ticon" data-ticon="book" aria-hidden="true"></span>shelf/</a>'
-        f'<span class="trow-count">{len(books)} books</span>'
-        f'<span class="trow-sum">What I read alongside the tracks, and where it shows up.</span></div>')
-
+            f'      <a class="row-line trow" href="{t["slug"]}/index.html">'
+            f'<span class="label">{esc(t["name"])}/</span><span class="trow-sum">{esc(t["summary"])}</span>'
+            f'<span class="rule rule--dotted"></span><span class="meta">{where}</span>'
+            f'<span class="when">{right}{last}</span></a>')
+    shelf = "\n".join(
+        f'        <a class="row-line" href="#book={b["id"]}"><span class="label">{esc(b["title"])}</span>'
+        f'<span class="rule rule--dotted"></span><span class="meta">{esc(b["author"])}</span></a>'
+        for b in books.values())
     items = sorted(((t, e) for t in tracks for e in t["entries"]),
                    key=lambda x: (x[1]["date"], x[0]["slug"]), reverse=True)
-    chips = " ".join(f'<a class="chip" href="#track={t["slug"]}" data-track="{t["slug"]}">{ticon(t)}{esc(t["name"])}</a>'
-                     for t in tracks)
     main = fill(body, {
-        "places": json_attr(places), "tracks": "\n".join(rows),
-        "chips": f'<a class="chip" href="#" data-track="">all</a> {chips}',
-        "feed": feed(items, ""), "n_entries": f'{len(items)} entr{"y" if len(items) == 1 else "ies"}',
-        "empty_hidden": " hidden" if items else "",
-    }, "templates/woods.html")
-    site.page("woods/index.html", meta["title"], meta["description"], main.strip("\n"), "woods",
-              body_class="woods", scripts=["track.js"])
+        "room": json_attr(room), "tracks": "\n".join(rows), "shelf": shelf, "n_books": len(books),
+        "feed": feed(items, "", True) or '    <p class="wu-empty">Nothing here yet.</p>',
+        "n_entries": f'{len(items)} entr{"y" if len(items) == 1 else "ies"}',
+    }, "templates/cabin.html")
+    site.page("cabin/index.html", meta["title"], meta["description"], main.strip("\n"), "cabin",
+              body_class="cabin", scripts=["cabin.js"])
 
 
 def build_track(site, t, books):
     state, counts, entries, slug = t["state"], t["counts"], t["entries"], t["slug"]
-    sections = []
-
-    sections.append(f'''  <section class="section" id="entries">
-    <div class="sec-head">
-      <span class="prompt">$ ls -t ~/woods/{esc(t["name"])}</span>
-      <span class="rule rule--dashed"></span>
-      <span class="prompt">{len(entries)}</span>
-    </div>
-    <div class="wus" id="wus">
-{feed([(t, e) for e in entries], "../")}
-    </div>
-    <p class="wu-empty" id="wu-empty"{" hidden" if entries else ""}>{"Nothing here yet." if not entries else "No entry covers this objective yet."}</p>
-  </section>''')
-
-    if t["by_id"]:
-        groves = []
-        for g in t["groups"]:
-            objs = g["objectives"]
-            done = sum(state[o["id"]] == "done" for o in objs)
-            prac = sum(state[o["id"]] == "practising" for o in objs)
-            trees = "".join(
-                f'<button type="button" class="obj" data-obj="{o["id"]}" data-state="{state[o["id"]]}" '
-                f'data-text="{esc(o["text"])}" aria-label="{esc(o["text"])} — {state[o["id"]]}" '
-                f'title="{esc(o["text"])}"><span class="obj-fallback">{state[o["id"]][0]}</span></button>'
-                for o in objs)
-            groves.append(
-                f'<div class="grove">\n'
-                f'  <div class="row-line"><span class="label">{esc(g["name"])}</span>'
-                f'<span class="rule rule--dotted"></span>'
-                f'<span class="meta">{prac} practising</span><span class="when">{done}/{len(objs)}</span></div>\n'
-                f'  <div class="grove-trees">{trees}</div>\n</div>')
-        source = ""
-        if t.get("source"):
-            source = f' <a href="{esc(t["source"]["url"])}">{esc(t["source"].get("label", "source"))}</a>'
-        label = f' · {esc(t["label"])}' if t.get("label") else ""
-        sections.append(f'''  <section class="section" id="objectives">
-    <div class="sec-head">
-      <span class="prompt">$ ls ~/woods/{esc(t["name"])}/objectives</span>
-      <span class="rule rule--dashed"></span>
-      <span class="prompt">{counts["total"]}{label}</span>
-    </div>
-    <p class="legend"><span>{esc(t.get("legend", ""))}</span>{source}</p>
-    <div class="groves" data-species="{t["species"]}">
-{chr(10).join(groves)}
-    </div>
+    sections = [f'''  <section class="section" id="entries">
+{sec_head(f"$ ls -t ~/cabin/{esc(t['name'])}", str(len(entries)))}
     <div class="obj-detail" id="obj-detail" hidden>
       <span class="obj-detail-text" id="obj-detail-text"></span>
       <button type="button" class="theme-toggle" id="obj-clear">[clear filter]</button>
     </div>
-  </section>''')
-
-    what = "the build" if t["structure"] != "none" else "the tree"
-    sections.append(f'''  <section class="section section--last" id="build">
-    <div class="sec-head">
-      <span class="prompt">$ ls ~/woods/{esc(t["name"])}/{what.split()[-1]}</span>
-      <span class="rule rule--dashed"></span>
-      <span class="prompt">{progress(t)}</span>
+    <div class="lrows" id="wus">
+{feed([(t, e) for e in entries], "../", False)}
     </div>
-    <div class="build-scene" id="build-scene" {scene_attrs(t)}></div>
+    <p class="wu-empty" id="wu-empty"{" hidden" if entries else ""}>{"Nothing here yet." if not entries else "No entry covers this objective yet."}</p>
+  </section>''']
+
+    if t["by_id"]:
+        groups = []
+        for g in t["groups"]:
+            objs = g["objectives"]
+            done = sum(state[o["id"]] == "done" for o in objs)
+            cells = "".join(
+                f'<button type="button" class="obj" data-obj="{o["id"]}" data-state="{state[o["id"]]}" '
+                f'data-text="{esc(o["text"])}" aria-label="{esc(o["text"])} — {state[o["id"]]}" '
+                f'title="{esc(o["text"])}"></button>'
+                for o in objs)
+            groups.append(
+                f'      <div class="row-line ogroup"><span class="label">{esc(g["name"])}</span>'
+                f'<span class="rule rule--dotted"></span><span class="ocells">{cells}</span>'
+                f'<span class="when">{done}/{len(objs)}</span></div>')
+        source = f' <a href="{esc(t["source"]["url"])}">{esc(t["source"].get("label", "source"))}</a>' if t.get("source") else ""
+        label = f' · {esc(t["label"])}' if t.get("label") else ""
+        sections.append(f'''  <section class="section section--last" id="objectives">
+{sec_head(f"$ ls ~/cabin/{esc(t['name'])}/objectives", f"{counts['done']}/{counts['total']}{label}")}
+    <p class="legend"><span class="obj obj--key" data-state="todo"></span>not started
+      <span class="obj obj--key" data-state="practising"></span>practised
+      <span class="obj obj--key" data-state="done"></span>{esc(t.get("passed_label", "done")).lower()}.
+      Click one to see the entries that cover it.{source}</p>
+    <div class="ogroups">
+{chr(10).join(groups)}
+    </div>
   </section>''')
+    else:
+        sections[0] = sections[0].replace('class="section" id="entries"', 'class="section section--last" id="entries"')
 
-    target = f'<span>{esc(t["target"])}</span>' if t.get("target") else ""
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/woods</a>/{esc(t["name"])}</div>
+    target = f' · {esc(t["target"])}' if t.get("target") else ""
+    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/cabin</a>/{esc(t["name"])}</div>
 
-  <section class="section section--proj" data-species="{t["species"]}">
+  <section class="section section--proj">
     <h1 class="name name--proj">{esc(t["title"])}</h1>
     <p class="proj-sum">{esc(t["intro"])}</p>
-    <div class="proj-meta">
-      {ring(t)}
-      <span>{progress(t)}</span>
-      {target}
-    </div>
+    <div class="proj-meta"><span>{progress(t)}{target}</span></div>
   </section>
 
 {chr(10).join(sections)}
 
   <nav class="proj-nav">
-    <a href="../index.html">&larr; back to the woods</a>
+    <a href="../index.html">&larr; back to the cabin</a>
   </nav>'''
     desc = f"{t['title']}: {progress(t)}. {t['summary']}."
-    site.page(f"woods/{slug}/index.html", f"{t['title']} — {OWNER}", desc, main, "woods",
+    site.page(f"cabin/{slug}/index.html", f"{t['title']} — {OWNER}", desc, main, "cabin",
               scripts=["track.js"])
 
     for i, e in enumerate(entries):
@@ -724,7 +678,7 @@ def build_entry(site, t, e, newer, older, books):
         if not ids:
             return ""
         items = "".join(
-            f'<li><a href="index.html#obj={oid}"><span class="obj-inline" data-glyph="{GLYPH[state[oid]]}"></span>'
+            f'<li><a href="index.html#obj={oid}"><span class="obj obj--key" data-state="{state[oid]}"></span>'
             f'{esc(by_id[oid]["text"])}</a> <span class="dim">· {esc(by_id[oid]["group"])}</span></li>'
             for oid in ids)
         return f'<h2>{heading}</h2>\n<ul class="objs">{items}</ul>'
@@ -743,10 +697,10 @@ def build_entry(site, t, e, newer, older, books):
     shelf = ""
     if e["books"]:
         items = "".join(
-            f'<li><a href="../shelf/index.html#book={b}"><span class="spine-chip" data-tone="{books[b]["tone"]}"></span>'
-            f'{esc(books[b]["title"])}</a> <span class="dim">· {esc(books[b]["author"])}</span></li>'
+            f'<li><a href="../index.html#book={b}">{esc(books[b]["title"])}</a> '
+            f'<span class="dim">· {esc(books[b]["author"])}</span></li>'
             for b in e["books"])
-        shelf = f'<h2>From the shelf</h2>\n<ul class="objs">{items}</ul>'
+        shelf = f'<h2>From the shelf</h2>\n<ul>{items}</ul>'
 
     nav = [f'<a href="index.html">&larr; {esc(t["name"])}</a>', '<span class="grow"></span>']
     if older:
@@ -754,23 +708,14 @@ def build_entry(site, t, e, newer, older, books):
     if newer:
         nav.append(f'<a href="{newer["slug"]}.html">{newer["label"]} &rarr;</a>')
 
-    counts = []
-    if e["practised"] or e["passed"]:
-        counts.append(f'{len(e["practised"])} practised · {len(e["passed"])} passed')
-    if e["scripts"]:
-        counts.append(f'{len(e["scripts"])} scripts')
-    chapter = f'<span>{esc(e["chapter"])}</span>' if e["chapter"] else ""
-    when = f'{e["label"]} · {e["date"].isoformat()}' if t["cadence"] == "weekly" else e["date"].isoformat()
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/woods</a>/<a href="index.html">{esc(t["name"])}</a>/{e["slug"]}</div>
+    bits = [f'{e["label"]} · {e["date"].isoformat()}' if t["cadence"] == "weekly" else e["date"].isoformat()]
+    if e["chapter"]:
+        bits.append(esc(e["chapter"]))
+    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/cabin</a>/<a href="index.html">{esc(t["name"])}</a>/{e["slug"]}</div>
 
-  <section class="section section--proj" data-species="{t["species"]}">
+  <section class="section section--proj">
     <h1 class="name name--proj">{esc(e["title"])}</h1>
-    <div class="proj-meta">
-      {ticon(t)}
-      <span>{when}</span>
-      {chapter}
-      {"".join(f"<span>{c}</span>" for c in counts)}
-    </div>
+    <div class="proj-meta">{"".join(f"<span>{b}</span>" for b in bits)}</div>
   </section>
 
   <article class="section prose">
@@ -785,51 +730,7 @@ def build_entry(site, t, e, newer, older, books):
     {" ".join(nav)}
   </nav>'''
     desc = e["summary"] or f"{t['title']}, {e['date'].isoformat()}."
-    site.page(f"woods/{t['slug']}/{e['slug']}.html", f"{e['title']} — {t['title']}", desc, main, "woods",
-              scripts=["track.js"])
-
-
-def build_shelf(site, topics, books):
-    by_topic = []
-    for tid, topic in topics.items():
-        items = []
-        for b in (b for b in books.values() if b["topic"] == tid):
-            cited = ", ".join(f'<a href="../{t["slug"]}/{e["slug"]}.html">{esc(t["name"])} {e["label"]}</a>'
-                              for t, e in b["cited"])
-            cited = f' <span class="book-cited">cited in {cited}</span>' if cited else ""
-            title = f'<a href="{esc(b["link"])}">{esc(b["title"])}</a>' if b.get("link") else esc(b["title"])
-            items.append(f'<li class="book" id="book-{b["id"]}" data-book="{b["id"]}">'
-                         f'<span class="spine-chip" data-tone="{topic["tone"]}"></span>'
-                         f'<span class="book-title">{title}</span> <span class="dim">— {esc(b["author"])}</span>{cited}</li>')
-        by_topic.append(f'    <h3 class="month-name">{esc(topic["label"])}</h3>\n    <ul class="books">{"".join(items)}</ul>')
-    spines = [{"id": b["id"], "topic": b["topic"], "title": b["title"], "author": b["author"]} for b in books.values()]
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/woods</a>/shelf</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">The shelf</h1>
-    <p class="proj-sum">What I'm reading alongside the tracks: one shelf per topic, built from the same logs as everything else in the woods. Pick a spine to see the book and the entries that cite it.</p>
-    <div class="shelf-scene" id="shelf-scene" data-books="{json_attr(spines)}" data-topics="{json_attr([t["id"] for t in topics.values()])}"></div>
-    <div class="obj-detail" id="book-detail" hidden>
-      <span class="obj-detail-text" id="book-detail-text"></span>
-      <button type="button" class="theme-toggle" id="book-clear">[close]</button>
-    </div>
-  </section>
-
-  <section class="section section--last" id="books">
-    <div class="sec-head">
-      <span class="prompt">$ ls ~/woods/shelf</span>
-      <span class="rule rule--dashed"></span>
-      <span class="prompt">{len(books)} books</span>
-    </div>
-{chr(10).join(by_topic)}
-  </section>
-
-  <nav class="proj-nav">
-    <a href="../index.html">&larr; back to the woods</a>
-  </nav>'''
-    site.page("woods/shelf/index.html", f"The shelf — {OWNER}",
-              f"{len(books)} books on Linux, shell, infrastructure, networking and method, and the log entries that cite them.",
-              main, "woods", scripts=["track.js"])
+    site.page(f"cabin/{t['slug']}/{e['slug']}.html", f"{e['title']} — {t['title']}", desc, main, "cabin")
 
 
 def build_readme(t):
@@ -880,10 +781,11 @@ def main():
     topics, books = load_shelf()
     projects = load_projects()
     tracks = load_tracks(books)
-    reserved = {"shelf", "index"}
+    eggs = load_cabin()
+    reserved = {"index"}
     clash = reserved & {t["slug"] for t in tracks}
     if clash:
-        raise BuildError(f"track folder name(s) reserved in the woods: {', '.join(sorted(clash))}")
+        raise BuildError(f"track folder name(s) reserved in the cabin: {', '.join(sorted(clash))}")
 
     site = Site()
     clean_dist()
@@ -895,16 +797,15 @@ def main():
     build_home(site, projects, tracks)
     for p in projects:
         build_project(site, projects, p)
-    build_woods(site, tracks, books)
+    build_cabin(site, tracks, books, eggs)
     for t in tracks:
         build_track(site, t, books)
         if t["by_id"]:
             (t["tdir"] / "README.md").write_text(build_readme(t), encoding="utf-8")
-    build_shelf(site, topics, books)
     for path, target in REDIRECTS.items():
         redirect(path, target)
 
-    print(f"site: about + {len(projects)} earlier projects · woods: {len(tracks)} tracks, "
+    print(f"site: about + {len(projects)} earlier projects · cabin: {len(tracks)} tracks, "
           f"{len(books)} books → dist/ (v={site.v})")
     for t in tracks:
         print(f"  {t['slug']}: {progress(t)}")

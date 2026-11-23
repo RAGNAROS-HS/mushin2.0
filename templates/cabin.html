@@ -1,0 +1,51 @@
+---
+title: The cabin — Hugo Sokołowski-Katzer
+description: A pixel-art log cabin: the desk with what I'm working on now (a weekly RHCSA log), a whiteboard of notes, a shelf of the books I'm reading, and a few odd things.
+---
+<!-- The cabin: bin/build.py fills in the room's data, the plain lists and the log, then wraps it in shell.html. -->
+  <div class="crumbs">$ cd ~/cabin</div>
+
+  <section class="section section--proj room-head">
+    <h1 class="name name--proj">The cabin</h1>
+    <p class="proj-sum">Where the ongoing work lives. The laptop has what I'm working on this week, the whiteboard has my notes, the shelf has what I'm reading. Poke around: most things do something.</p>
+  </section>
+
+  <div class="room" id="room" data-room="{{room}}"></div>
+  <p class="caption" id="caption" aria-live="polite">&nbsp;</p>
+
+  <section class="section" id="inside">
+    <div class="sec-head">
+      <span class="prompt">$ ls ~/cabin</span>
+      <span class="rule rule--dashed"></span>
+      <span class="prompt">or as a list</span>
+    </div>
+    <div class="trows">
+{{tracks}}
+    </div>
+    <details class="fold" id="shelf">
+      <summary class="row-line trow"><span class="label">shelf/</span><span class="trow-sum">The books I'm reading alongside</span><span class="rule rule--dotted"></span><span class="meta">bookshelf</span><span class="when">{{n_books}} books</span></summary>
+      <div class="books">
+{{shelf}}
+      </div>
+    </details>
+  </section>
+
+  <section class="section section--last" id="log">
+    <div class="sec-head">
+      <span class="prompt">$ ls -t ~/cabin/*</span>
+      <span class="rule rule--dashed"></span>
+      <span class="prompt">{{n_entries}}</span>
+    </div>
+    <div class="lrows">
+{{feed}}
+    </div>
+  </section>
+
+  <dialog class="popup" id="popup" aria-labelledby="popup-title">
+    <div class="popup-art" id="popup-art" aria-hidden="true"></div>
+    <div class="popup-body">
+      <h2 class="popup-title" id="popup-title"></h2>
+      <div class="popup-text" id="popup-text"></div>
+    </div>
+    <form method="dialog"><button class="theme-toggle popup-close" aria-label="close">[x]</button></form>
+  </dialog>

@@ -10,7 +10,6 @@
   "target": "exam planned Q1 2027",
   "summary": "RHCSA practice log: weekly writeups and a bash script per chapter",
   "intro": "I landed on the RHCSA as a solid goal for my Linux development: it's clear-cut, practical and pretty comprehensive for a first cert. I'd already worked through a good chunk of Sander van Vugt's RHCSA prep book, but quickly found that understanding something is a long way from doing it from memory with just a man page at your disposal. Hence this log (badum-ts), where I periodically keep track of how things are progressing. I've thrown away what I did so far and started anew, with an emphasis on repetition: I only move on to the next chapter once I've hammered out a script or two quite a few times with no mistakes. I invite you to take a gander!",
-  "legend": "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam, and its log goes into the cabin below.",
   "passed_label": "Passed in a timed mock exam",
   "passed_rule": "timed mock exams only",
   "label": "EX200 · RHEL 10",

@@ -97,9 +97,9 @@ button {
 
 .nav { display: flex; gap: 14px; flex-wrap: wrap; }
 .nav a { padding: 1px 4px; }
-/* The space you're in: about or the woods. */
+/* The space you're in: about or the cabin. */
 [data-section="about"] .nav-about,
-[data-section="woods"] .nav-woods { color: var(--bg); background: var(--ink); }
+[data-section="cabin"] .nav-cabin { color: var(--bg); background: var(--ink); }
 .nav-cv { color: var(--dim); white-space: nowrap; }
 .nav-cv:hover { color: var(--ink); }
 
@@ -623,248 +623,117 @@ html[data-theme="dark"] [data-species="pine"] { --px-W: #4a7044; --px-V: #34502f
 [data-species="birch"] { --px-K: #ece6d6; --px-Q: #3d342c; --px-W: #a5b86a; --px-V: #85994f; }
 html[data-theme="dark"] [data-species="birch"] { --px-K: #d9d2c0; --px-Q: #2e2620; --px-W: #8fa35a; --px-V: #6f8442; }
 
-/* The unbuilt part of a structure, faintly sketched in (woods map). */
-.ghost { opacity: .14; }
+/* --------------------------------------------------------------- cabin */
 
+/* Book spines: one colour per shelf topic, in shelf.json order. */
+:root { --px-C: #b5452c; --px-D: #c99a2e; --px-E: #3f6e8c; --px-F: #5f7f3e; --px-H: #7a4f8a; }
+html[data-theme="dark"] { --px-C: #d0603f; --px-D: #e0b347; --px-E: #5a8db0; --px-F: #7da055; --px-H: #9a6bab; }
+/* The window: sky by day; at night it goes dark and the stars (J) come out. */
+:root { --px-I: #9fc6d8; --px-J: #9fc6d8; }
+html[data-theme="dark"] { --px-I: #16233a; --px-J: #f4f3ef; }
+.pC { fill: var(--px-C); }
+.pD { fill: var(--px-D); }
+.pE { fill: var(--px-E); }
+.pF { fill: var(--px-F); }
+.pH { fill: var(--px-H); }
+.pI { fill: var(--px-I); }
+.pJ { fill: var(--px-J); }
+.pZ { fill: var(--px-Z); }
 
-/* A track's structure, built one piece per passed objective, and its builder. */
-.build-scene {
-  --s: 3px;
+/* The room: one isometric scene; every lit-up thing is a link. */
+.room {
+  --s: 4px;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  margin-top: 30px;
-  padding: 0 4px;
-}
-.build-scene g:hover > rect { filter: brightness(1.12); }
-.smoke-1 { visibility: hidden; }
-@media (prefers-reduced-motion: no-preference) {
-  .build-scene:hover .smoke-0 { animation: puff-a 1.2s step-end infinite; }
-  .build-scene:hover .smoke-1 { animation: puff-b 1.2s step-end infinite; }
-}
-@keyframes puff-a { 0% { visibility: visible; } 50%, 100% { visibility: hidden; } }
-@keyframes puff-b { 0% { visibility: hidden; } 50%, 100% { visibility: visible; } }
-
-.legend { margin: 0 0 22px; max-width: 78ch; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
-.legend a { color: var(--dim); text-decoration: underline; text-decoration-color: var(--line); }
-
-.groves { display: grid; gap: 18px; }
-.grove .row-line { font-size: 13px; }
-/* The leader only spaces the counts to the right; no line drawn. */
-.grove .rule--dotted { opacity: 0; }
-/* A grove: one stand of saplings. */
-.grove-trees {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 2px;
-  margin-top: 10px;
-  padding: 0 4px;
-}
-
-.obj {
-  --s: 2px;
-  display: inline-flex;
-  align-items: flex-end;
   justify-content: center;
-  min-width: 36px;
-  height: 46px;
-  padding: 0 2px 2px;
-  border: 1px solid transparent;
+  margin: 10px 0 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
-.obj:hover { background: var(--fill); }
-.obj[aria-pressed="true"] { border-color: var(--ink); background: var(--fill); }
-.obj.has-px .obj-fallback { display: none; }
-.obj-fallback { font-size: 11px; color: var(--dim); }
+.room .hot { cursor: pointer; outline: none; }
+.room .hot:hover, .room .hot:focus-visible { filter: brightness(1.15) saturate(1.1); }
+.room .hot:focus-visible rect { stroke: var(--ink); stroke-width: .25; }
+.caption { min-height: 1.6em; margin: 14px 0 34px; text-align: center; font-size: 12.5px; color: var(--dim); }
+@media (prefers-reduced-motion: no-preference) {
+  .room [data-owner="rack"] .pW { animation: blink 1.3s steps(1) infinite; }
+  .room [data-owner="rack"] .pY { animation: blink 2.1s steps(1) infinite .4s; }
+}
+@keyframes blink { 50% { opacity: .25; } }
+
+/* The popup: a pixel-framed card with the object's close-up on top. */
+.popup {
+  width: min(420px, calc(100vw - 32px));
+  padding: 22px 22px 18px;
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow:
+    0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink),
+    8px 8px 0 0 var(--line);
+}
+.popup::backdrop { background: rgba(20, 16, 12, .45); }
+.popup-art { --s: 6px; display: flex; justify-content: center; min-height: 12px; margin-bottom: 16px; }
+.popup-title { margin: 0 0 8px; font-size: 16px; line-height: 1.4; }
+.popup-text p { margin: 6px 0 0; font-size: 13px; line-height: 1.7; }
+.popup form { position: absolute; top: 10px; right: 10px; margin: 0; }
+
+/* Lists: tracks, entries and books as one line each, like the career tree. */
+.trows, .lrows, .books { display: grid; }
+.row-line.trow, .row-line.lrow, .books .row-line { padding: 5px 0; font-size: 13px; text-decoration: none; color: var(--ink); }
+.trow .label, .lrow .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trow-sum { margin-left: 14px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.lrow-when { flex: none; width: 6ch; color: var(--dim); }
+a.row-line:hover .label { text-decoration: underline; }
+.month + .month { margin-top: 14px; }
+.month-name { margin: 0 0 2px; font-size: 12px; font-weight: 500; color: var(--dim); }
+#inside .fold > summary { list-style: none; cursor: pointer; }
+#inside .fold > summary::-webkit-details-marker { display: none; }
+#inside .fold > summary .label::before { content: "[+]\00a0"; color: var(--dim); }
+#inside .fold[open] > summary .label::before { content: "[-]\00a0"; }
+.books { padding: 4px 0 8px 3ch; }
+
+/* Objectives: one row per group, a mark per objective: [ ] [~] [x]. */
+.legend { margin: 0 0 16px; max-width: 78ch; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
+.legend a { color: var(--dim); text-decoration: underline; text-decoration-color: var(--line); }
+.ogroups { display: grid; gap: 2px; }
+.ogroup { font-size: 13px; }
+.ocells { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+.obj {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+.obj[data-state="practising"] { background: linear-gradient(to top, var(--ink) 50%, transparent 50%); }
+.obj[data-state="done"] { background: var(--ink); }
+.obj[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.obj--key { display: inline-block; margin: 0 6px 0 10px; vertical-align: -1px; cursor: default; }
+.legend .obj--key:first-child { margin-left: 0; }
+.objs { padding-left: 0; list-style: none; }
+.objs .obj--key { margin-left: 0; margin-right: 10px; }
 
 .obj-detail {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 10px 16px;
-  margin-top: 22px;
+  margin: 0 0 14px;
   padding: 10px 12px;
   font-size: 12.5px;
   border: 1px dashed var(--line);
 }
 .obj-detail-text { flex: 1; min-width: 0; }
-.grove .obj-detail { margin-top: 10px; }
-
-.wus { display: grid; gap: 12px; }
-.wu {
-  display: grid;
-  gap: 6px;
-  padding: 14px 16px;
-  background: var(--fill);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  transition: border-color .12s, background .12s;
-}
-.wu:hover, .wu:focus-visible { border-color: var(--dim); background: var(--bg); }
-.wu-head { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--dim); }
-.wu-chapter::before { content: "\00b7\00a0"; }
-.wu-title { font-size: 15px; font-weight: 600; line-height: 1.4; }
-.wu:hover .wu-title { text-decoration: underline; }
-.wu-sum { font-size: 12.5px; line-height: 1.6; color: var(--dim); }
-.wu-foot { display: flex; align-items: baseline; gap: 12px; margin-top: 2px; }
-.wu-meta { flex: 1; color: var(--dim); font-size: 12px; }
-.wu-go { color: var(--ink); font-size: 12.5px; font-weight: 500; white-space: nowrap; }
 .wu-empty { margin: 4px 0 18px; font-size: 13px; color: var(--dim); }
 
-.objs { padding-left: 0; list-style: none; }
-.obj-inline { --s: 2px; display: inline-block; vertical-align: -2px; margin-right: 8px; }
-
 @media (max-width: 560px) {
-  .wu { padding: 12px 14px; }
-}
-
-
-/* --------------------------------------------------------------- woods */
-
-/* Shelf topic colours (spines), one slot per topic, in shelf.json order. */
-:root { --px-C: #b5452c; --px-D: #c99a2e; --px-E: #3f6e8c; --px-F: #5f7f3e; --px-H: #7a4f8a; }
-html[data-theme="dark"] { --px-C: #d0603f; --px-D: #e0b347; --px-E: #5a8db0; --px-F: #7da055; --px-H: #9a6bab; }
-.pC { fill: var(--px-C); }
-.pD { fill: var(--px-D); }
-.pE { fill: var(--px-E); }
-.pF { fill: var(--px-F); }
-.pH { fill: var(--px-H); }
-
-/* Track icon and ring strip: the two pixel marks that travel with a track. */
-.ticon { --s: 2px; display: inline-block; vertical-align: -3px; margin-right: 7px; }
-.ring { --s: 2px; display: inline-block; vertical-align: middle; line-height: 0; }
-
-/* The hub map: places on the river bank, each a link. Wider than a phone,
-   so it scrolls sideways inside its frame. */
-.woods-map {
-  --s: 3px;
-  position: relative;
-  margin: 8px 0 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-.woods-places {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-evenly;
-  gap: 40px;
-  width: max-content;
-  min-width: 100%;
-  padding: 12px 16px 0;
-}
-/* Signpost labels on one line along the top, the art standing on the bank. */
-.place {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  justify-items: center;
-  gap: 14px;
-  color: var(--ink);
-  text-decoration: none;
-}
-.place-label { order: -1; font-size: 12.5px; }
-.place-art { align-self: end; }
-.place:hover .place-label, .place:focus-visible .place-label { text-decoration: underline; }
-.place-art { display: flex; align-items: flex-end; gap: 6px; }
-.woods-head { padding-bottom: 20px; }
-.place:hover .place-art svg { filter: brightness(1.08); }
-.place .bv { --s: 2px; }
-.woods-river { overflow: hidden; }
-.woods-river svg { display: block; }
-.shimmer-1 { visibility: hidden; }
-.firefly { position: absolute; display: none; width: 3px; height: 3px; background: var(--px-Y); }
-html[data-theme="dark"] .firefly { display: block; }
-@media (prefers-reduced-motion: no-preference) {
-  .shimmer-0 { animation: puff-a 1.6s step-end infinite; }
-  .shimmer-1 { animation: puff-b 1.6s step-end infinite; }
-  .firefly { animation: firefly 3.2s step-end infinite; }
-}
-@keyframes firefly { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
-
-/* Track index under the map. */
-.trows { display: grid; }
-.trow {
-  display: grid;
-  grid-template-columns: minmax(140px, auto) auto 1fr auto;
-  align-items: center;
-  gap: 6px 18px;
-  padding: 14px 0;
-  border-top: 1px dashed var(--line);
-  font-size: 13px;
-}
-.trow:first-child { border-top: 0; padding-top: 0; }
-.trow-name { font-weight: 500; white-space: nowrap; }
-.trow-count { color: var(--dim); font-size: 12px; }
-.trow-last { font-size: 12.5px; white-space: nowrap; }
-.trow-sum { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; }
-
-/* Feed: chips filter by track; entries grouped by month. */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  border: 1px solid var(--line);
-  color: var(--dim);
-  font-size: 12.5px;
-  text-decoration: none;
-}
-.chip .ticon { margin-right: 6px; vertical-align: 0; }
-.chip:hover { color: var(--ink); border-color: var(--dim); }
-.chip[aria-current] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
-.month { display: grid; gap: 12px; }
-.month + .month { margin-top: 18px; }
-.month-name { margin: 0; font-size: 12px; font-weight: 500; color: var(--dim); }
-.wu-head .ticon { margin-right: 0; }
-.wu-track { color: var(--ink); }
-
-/* Shelf: the bookcase, spines as links, and the list underneath. */
-.shelf-scene {
-  --s: 3px;
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  margin-top: 30px;
-  overflow-x: auto;
-}
-.shelf-scene .bv { --s: 3px; }
-.spine { cursor: pointer; }
-.spine:hover, .spine:focus-visible, .spine.is-on { transform: translateY(-2px); }
-.spine:focus-visible rect { filter: brightness(1.2); }
-.spine-chip {
-  display: inline-block;
-  width: 6px;
-  height: 12px;
-  margin-right: 9px;
-  vertical-align: -1px;
-  background: var(--px-C);
-  box-shadow: inset -1px 0 0 var(--px-Q), 0 0 0 1px var(--px-Z);
-}
-.spine-chip[data-tone="D"] { background: var(--px-D); }
-.spine-chip[data-tone="E"] { background: var(--px-E); }
-.spine-chip[data-tone="F"] { background: var(--px-F); }
-.spine-chip[data-tone="H"] { background: var(--px-H); }
-#books .month-name { margin-top: 20px; }
-#books .month-name:first-of-type { margin-top: 0; }
-.books { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.6; }
-.book { padding: 2px 6px; margin: 0 -6px; }
-.book.is-on { background: var(--fill); }
-.book-cited { color: var(--dim); font-size: 12px; }
-.book-cited a { color: var(--dim); }
-
-@media (max-width: 560px) {
-  .trow { grid-template-columns: 1fr auto; }
-  .trow .ring { grid-column: 1 / -1; overflow: hidden; max-width: 100%; }
-  .woods-map, .shelf-scene { --s: 2px; }
+  .room { --s: 2px; justify-content: flex-start; }
+  .trow-sum { display: none; }
 }
 
 @media (max-width: 1100px) {
   .scene { --s: 3px; position: static; margin-top: 22px; }
-}
-
-@media (max-width: 560px) {
-  .build-scene { --s: 2px; gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -7,7 +7,7 @@ COPY content/ content/
 COPY tracks/ tracks/
 COPY img/ img/
 COPY pdfs/ pdfs/
-COPY styles.css app.js pixel.js track.js ./
+COPY styles.css *.js ./
 RUN python3 bin/build.py
 
 # Stage 2: the site is plain static files served by nginx.

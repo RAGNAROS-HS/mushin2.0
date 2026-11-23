@@ -1,5 +1,5 @@
-/* Pixel layer: the beaver, his hero scene, the track groves and builds,
-   the ~/projects clearing, the favicon and status glyphs.
+/* Pixel layer: the beaver and his hero scene, the cabin room (an isometric
+   voxel scene), the favicon, and objective glyphs.
    Sprites are text maps — one letter per palette slot, "." is empty — drawn
    as SVG rects. Colours live in styles.css as --px-* tokens, switched by
    data-theme (light/dark) on <html> and data-species on a track's elements.
@@ -562,209 +562,262 @@
     return cv.rows();
   }
 
-  /* --------------------------------------------------------------- woods */
+  /* --------------------------------------------------------------- cabin */
 
-  /* Track icons: one small tree per species, used wherever a track is named.
-     "book" is the shelf's icon. Topic colours C D E F H come from styles.css. */
-  var ICONS = {
-    oak:   ["..WWWW..", ".WWWWWW.", "WWWWWVWW", "WWWWVVVW", ".WWVVVV.", "...KQ...", "...KQ...", "..KKQQ.."],
-    pine:  ["...WV...", "..WWVV..", "...WV...", "..WWVV..", ".WWWVVV.", "..WWVV..", ".WWWVVV.", "WWWWVVVV", "...KQ...", "..KKQQ.."],
-    birch: ["...WW...", "..WWWV..", "..WWWV..", "..WWVV..", "..WVVV..", "...VV...", "...KK...", "...QK...", "...KK...", "..KKKK.."],
-    book:  ["........", ".CC.DD..", ".CC.DDE.", ".GC.DGE.", ".CC.DDE.", ".CC.DDE.", ".CC.DDE.", "QQQQQQQQ"]
+  /* The cabin room is an isometric voxel scene. Each voxel has a material,
+     [top, left (+y face), right (+x face)] palette letters, so everything
+     built from boxes gets the same light: tops brightest, the two sides
+     shaded. Each voxel also has an owner, the thing it belongs to; owners
+     that do something (open a page or a popup) become links. */
+
+  function Voxels(w, d, h) {
+    this.w = w; this.d = d; this.h = h;
+    this.mat = []; this.own = [];
+  }
+  Voxels.prototype.at = function (x, y, z) {
+    return x >= 0 && y >= 0 && z >= 0 && x < this.w && y < this.d && z < this.h ? (z * this.d + y) * this.w + x : -1;
+  };
+  Voxels.prototype.get = function (x, y, z) { var i = this.at(x, y, z); return i < 0 ? undefined : this.mat[i]; };
+  Voxels.prototype.set = function (x, y, z, m, o) {
+    var i = this.at(x, y, z);
+    if (i < 0) return;
+    this.mat[i] = typeof m === "string" ? [m, m, m] : m;
+    this.own[i] = o;
+  };
+  Voxels.prototype.box = function (x, y, z, w, d, h, m, o) {
+    for (var k = z; k < z + h; k++)
+      for (var j = y; j < y + d; j++)
+        for (var i = x; i < x + w; i++) this.set(i, j, k, typeof m === "function" ? m(i, j, k) : m, o);
   };
 
-  /* The ring strip: one block per objective. Standing (todo) is leaf, gnawed
-     (practising) is pale wood, felled (done) is the log's dark wood. */
-  var RING = { t: "W", p: "L", d: "K" };
-  function ringStrip(codes) {
-    var rows = ["", "", ""];
-    for (var i = 0; i < codes.length; i++) {
-      var c = RING[codes.charAt(i)] || "W";
-      for (var y = 0; y < 3; y++) rows[y] += c + c + (i < codes.length - 1 ? "." : "");
-    }
-    return rows;
-  }
-
-  /* The notes track has no build: its tree grows a stage per note, from a
-     seedling to a full tree after six. */
-  var SEEDLING = ["..W.", ".WWV", "..K.", "..K.", ".KKQ"];
-  function notesTree(kind, n) {
-    var cv = new Canvas(28, 34);
-    if (n < 1) {
-      cv.blit(SEEDLING, 11, 29);
-    } else {
-      var h = 12 + 4 * Math.min(n - 1, 5);
-      species(kind)(cv, 11, 34, h, 61, false, { tw: h > 20 ? 4 : 3, r: Math.max(4, Math.round(h * 0.26)) });
-    }
-    return cv.rows();
-  }
-
-  /* The lodge: a beaver's dome of sticks and mud. The shelf lives inside,
-     so it gets a round, lit window. */
-  function lodge() {
-    var W = 34, H = 18, cv = new Canvas(W, H), rand = rng(73), cx = W / 2 - 0.5;
-    for (var y = 0; y < H; y++) {
-      for (var x = 0; x < W; x++) {
-        var dx = (x - cx) / (W / 2), dy = (H - 1 - y) / H;
-        if (dx * dx + dy * dy > 1) continue;
-        var r = rand();
-        cv.set(x, y, y > H - 4 ? (r < 0.5 ? "M" : "Q") : (r < 0.18 ? "K" : r < 0.3 ? "M" : "Q"));
-      }
-    }
-    /* sticks poking out of the dome */
-    [[6, 6, -1], [27, 6, 1], [12, 2, -1], [21, 2, 1], [3, 11, -1], [30, 11, 1]].forEach(function (s) {
-      for (var i = 0; i < 4; i++) cv.set(s[0] + s[2] * i, s[1] - Math.floor(i / 2), "K");
-    });
-    cv.blit([".QQQ.", "QAAGQ", "QAAAQ", ".QQQ."], 15, 6);
-    for (var x2 = 14; x2 < 20; x2++) { cv.set(x2, H - 1, "O"); cv.set(x2, H - 2, "O"); }
-    cv.set(14, H - 2, "M"); cv.set(19, H - 2, "M");
-    return cv.rows();
-  }
-
-  /* The notice board: notes pinned up, at most six shown. */
-  function board(n) {
-    var cv = new Canvas(24, 22), x, y;
-    for (y = 8; y < 22; y++) { cv.set(3, y, "K"); cv.set(4, y, "Q"); cv.set(19, y, "K"); cv.set(20, y, "Q"); }
-    for (y = 0; y < 13; y++) {
-      for (x = 1; x < 23; x++) cv.set(x, y, (y === 0 || y === 12 || x === 1 || x === 22) ? "Q" : "L");
-    }
-    var shown = Math.max(1, Math.min(n, 6));
-    for (var i = 0; i < shown; i++) {
-      var nx = 3 + (i % 3) * 6 + (i >= 3 ? 1 : 0), ny = 2 + Math.floor(i / 3) * 5;
-      for (y = 0; y < 4; y++) for (x = 0; x < 4; x++) cv.set(nx + x, ny + y, n ? "G" : "S");
-      cv.set(nx + 1, ny + 2, n ? "S" : "M"); cv.set(nx + 2, ny + 2, n ? "S" : "M");
-      cv.set(nx + 1, ny, "R");
-    }
-    return cv.rows();
-  }
-
-  /* A stand: three trees of the track's species, tallest at the back. */
-  function stand(kind, seed) {
-    var cv = new Canvas(34, 44);
-    species(kind)(cv, 3, 44, 30, seed + 1, false, { tw: 3, r: 6 });
-    species(kind)(cv, 13, 44, 42, seed + 2, false, { tw: 4 });
-    species(kind)(cv, 25, 44, 26, seed + 3, false, { tw: 3, r: 5 });
-    return cv.rows();
-  }
-
-  /* The river under the woods: ground, a mud bank, water, and shimmer that
-     alternates between two frames (styles.css animates it). */
-  function river(cols) {
-    var rows = [], y, x, r;
-    for (y = 0; y < 8; y++) {
-      r = "";
-      for (x = 0; x < cols; x++) r += y === 0 ? "W" : y === 1 ? (x % 5 ? "M" : "Q") : "U";
-      rows.push(r);
-    }
-    var body = fills(rows), shimmer = "";
-    [0, 1].forEach(function (f) {
-      var g = "";
-      for (y = 3; y < 7; y++) {
-        for (x = 0; x < cols; x++) {
-          if ((x * 3 + y * 7 + f * 11) % 23 === 0) {
-            g += '<rect x="' + x + '" y="' + y + '" width="2" height="1" class="pA"/>';
-          }
+  /* 2:1 isometric: each voxel is 2×2 px. Drawn back to front by x+y+z, so
+     nearer voxels paint over farther ones. Returns pixel and owner grids. */
+  Voxels.prototype.render = function () {
+    var W = 2 * (this.w + this.d), H = this.w + this.d + this.h, px = [], ow = [], x, y, z, r;
+    for (r = 0; r < H; r++) { px.push([]); ow.push([]); for (x = 0; x < W; x++) { px[r].push("."); ow[r].push(""); } }
+    function put(sx, sy, c, o) { if (sx >= 0 && sy >= 0 && sx < W && sy < H) { px[sy][sx] = c; ow[sy][sx] = o; } }
+    for (var depth = 0; depth < this.w + this.d + this.h; depth++) {
+      for (z = 0; z < this.h; z++) {
+        for (x = 0; x < this.w; x++) {
+          y = depth - z - x;
+          if (y < 0 || y >= this.d) continue;
+          var m = this.get(x, y, z);
+          if (!m) continue;
+          var o = this.own[this.at(x, y, z)];
+          var openY = !this.get(x, y + 1, z), openX = !this.get(x + 1, y, z);
+          var sx = 2 * (x - y) + 2 * this.d - 2, sy = x + y - z + this.h - 1;
+          put(sx, sy, m[0], o); put(sx + 1, sy, m[0], o);
+          put(sx, sy + 1, openY ? m[1] : openX ? m[2] : m[0], o);
+          put(sx + 1, sy + 1, openX ? m[2] : openY ? m[1] : m[0], o);
         }
       }
-      shimmer += '<g class="shimmer shimmer-' + f + '">' + g + "</g>";
-    });
-    return wrap(cols, 8, "", body + shimmer);
+    }
+    return { w: W, h: H, px: px, ow: ow };
+  };
+
+  /* A 1px dark outline around every object, drawn on the floor or wall
+     next to it, the way hand-drawn pixel art outlines things. */
+  function outline(img, plain) {
+    var marks = [], x, y;
+    for (y = 0; y < img.h; y++) {
+      for (x = 0; x < img.w; x++) {
+        var o = img.ow[y][x];
+        if (!o || plain[o]) continue;
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+          var nx = x + d[0], ny = y + d[1];
+          if (nx < 0 || ny < 0 || nx >= img.w || ny >= img.h) return;
+          if (img.px[ny][nx] === "." || plain[img.ow[ny][nx]]) marks.push([nx, ny, o]);
+        });
+      }
+    }
+    marks.forEach(function (m) { img.px[m[1]][m[0]] = "Z"; img.ow[m[1]][m[0]] = m[2]; });
   }
 
-  /* The hub map: one place per thing, each a link, on the river bank. */
-  function woodsMap(el, places) {
-    var row = document.createElement("div");
-    row.className = "woods-places";
-    places.forEach(function (p) {
-      var a = document.createElement("a");
-      a.className = "place place--" + p.kind;
-      a.href = p.href;
-      if (p.species) a.setAttribute("data-species", p.species);
-      var art = "", label = p.label + "/";
-      if (p.kind === "lodge") {
-        art = svg(lodge());
-        a.setAttribute("aria-label", "the lodge: the shelf, " + p.n + " books");
-      } else if (p.kind === "stand") {
-        art = svg(stand(p.species, hash(p.label))) + structure(p.structure, p.done, p.total, [], true);
-        a.setAttribute("aria-label", p.label + ": " + p.done + " of " + p.total + " objectives felled");
-        label += " " + p.done + "/" + p.total;
-      } else {
-        art = svg(board(p.n)) + svg(notesTree(p.species, p.n));
-        a.setAttribute("aria-label", p.label + ": " + p.n + " notes on the board");
+  var WOOD = ["L", "K", "Q"], DARKWOOD = ["K", "Q", "M"], METAL = ["S", "S", "M"], WHITE = ["G", "G", "S"], BLACK = ["O", "O", "O"];
+
+  /* The room itself. data: what build.py passes in (tracks, notes, books). */
+  function cabinScene(data) {
+    var V = new Voxels(40, 40, 30), rand = rng(7), x, y, z, i;
+
+    /* floor planks, running away from the window wall */
+    V.box(0, 0, 0, 40, 40, 1, function (x) {
+      return x % 4 === 0 || rand() < 0.03 ? ["K", "K", "Q"] : WOOD;
+    }, "room");
+    /* log walls: courses of three, a dark groove between logs */
+    function log(x, y, z) { var c = z % 3; return c === 0 ? ["M", "M", "M"] : c === 1 ? ["L", "K", "Q"] : ["L", "L", "K"]; }
+    V.box(0, 0, 1, 1, 40, 29, log, "room");
+    V.box(0, 0, 1, 40, 1, 29, log, "room");
+
+    /* rug */
+    V.box(16, 16, 0, 15, 13, 1, function (x, y) {
+      var edge = x === 16 || x === 30 || y === 16 || y === 28;
+      return edge ? ["R", "K", "Q"] : (x + y) % 6 < 2 ? ["P", "K", "Q"] : ["L", "K", "Q"];
+    }, "rug");
+
+    /* window onto the mountains, in the back-right wall */
+    for (x = 20; x <= 31; x++) {
+      for (z = 13; z <= 25; z++) {
+        var frame = x === 20 || x === 31 || z === 13 || z === 25 || x === 25 || z === 19;
+        var c = "I";
+        var peak = Math.max(0, 7 - Math.abs(x - 23) * 1.6, 5 - Math.abs(x - 29) * 1.8);
+        if (z <= 13 + peak) c = z >= 13 + peak - 1 && peak > 4 ? "G" : "S";
+        else if (z > 21 && hash("star" + x + z) % 5 === 0) c = "J";
+        V.set(x, 0, z, frame ? "G" : c, "window");
       }
-      a.innerHTML = '<span class="place-art">' + art + '</span><span class="place-label">' + label + "</span>";
-      if (p.kind === "stand" && p.active) {
-        a.querySelector(".place-art").appendChild(host(p.finished ? "hat" : "build"));
+    }
+    V.box(20, 1, 12, 12, 1, 1, WHITE, "window");   /* sill */
+
+    /* desk against the back-right wall, laptop and mug on it */
+    V.box(5, 1, 7, 13, 7, 1, WOOD, "desk");
+    [[5, 1], [17, 1], [5, 7], [17, 7]].forEach(function (p) { V.box(p[0], p[1], 1, 1, 1, 6, DARKWOOD, "desk"); });
+    var t = (data.tracks || [])[0], bar = 0;
+    if (t && t.total) bar = Math.max(t.done > 0 ? 1 : 0, Math.round(7 * t.done / t.total));
+    V.box(8, 2, 8, 7, 4, 1, METAL, "laptop");
+    for (x = 8; x <= 14; x++) {
+      for (z = 9; z <= 13; z++) {
+        var sc = "O";
+        if (x > 8 && x < 14 && z === 12) sc = (x + z) % 2 ? "A" : "O";          /* a line of text */
+        if (x > 8 && x < 14 && z === 11) sc = x < 12 ? "A" : "O";
+        if (z === 10) sc = x - 8 < bar ? "W" : "M";                             /* the progress bar */
+        V.set(x, 2, z, ["O", sc, "O"], "laptop");
       }
-      row.appendChild(a);
+    }
+    V.box(15, 4, 8, 1, 1, 2, WHITE, "mug");
+
+    /* stool, tucked under the desk */
+    V.box(10, 9, 4, 3, 3, 1, WOOD, "stool");
+    [[10, 9], [12, 9], [10, 11], [12, 11]].forEach(function (p) { V.box(p[0], p[1], 1, 1, 1, 3, DARKWOOD, "stool"); });
+
+    /* homelab rack: three nodes, LEDs on the front */
+    V.box(33, 1, 1, 5, 5, 13, BLACK, "rack");
+    for (i = 0; i < 3; i++) {
+      var zz = 2 + i * 4;
+      V.box(33, 5, zz, 5, 1, 3, ["S", "S", "M"], "rack");
+      V.set(34, 5, zz + 1, ["S", "W", "S"], "rack");
+      V.set(35, 5, zz + 1, ["S", "Y", "S"], "rack");
+    }
+
+    /* bookshelf against the back-left wall: one shelf per topic */
+    var topics = [], byTopic = {};
+    (data.books || []).forEach(function (b) {
+      if (!byTopic[b.topic]) { byTopic[b.topic] = []; topics.push(b.topic); }
+      byTopic[b.topic].push(b);
     });
-    el.appendChild(row);
-
-    /* The river runs the full width of the map, redrawn on resize. */
-    var water = document.createElement("div");
-    water.className = "woods-river";
-    el.appendChild(water);
-    function flow() {
-      var s = parseFloat(getComputedStyle(el).getPropertyValue("--s")) || 3;
-      var cols = Math.ceil(Math.max(row.scrollWidth, el.clientWidth) / s);
-      water.innerHTML = river(cols);
-    }
-    flow();
-    window.addEventListener("resize", flow);
-
-    /* Fireflies, shown only at night (dark theme) by styles.css. */
-    var rand = rng(97);
-    for (var i = 0; i < 9; i++) {
-      var f = document.createElement("i");
-      f.className = "firefly";
-      f.style.left = Math.round(rand() * 96) + "%";
-      f.style.top = Math.round(10 + rand() * 60) + "%";
-      f.style.animationDelay = (rand() * 3).toFixed(1) + "s";
-      el.appendChild(f);
-    }
-  }
-
-  /* The bookcase: built from logs, one shelf per topic. Spine height and
-     width are seeded from the book id, so the shelf looks hand-stacked but
-     never changes between visits. Each spine is a link to #book=<id>. */
-  var TONES = "CDEFH";
-  function bookcase(books, topics) {
-    var IN = 52, SH = 20, F = 2, W = IN + F * 2, H = topics.length * (SH + 2) + F;
-    var frame = new Canvas(W, H), x, y, k;
-    for (y = 0; y < H; y++) {
-      for (x = 0; x < W; x++) {
-        if (x < F || x >= W - F) frame.set(x, y, x === 0 || x === W - 1 ? "Q" : "K");
-      }
-    }
-    for (x = 0; x < W; x++) frame.set(x, 0, "Q");
-    var union = new Canvas(W, H), spines = "";
-    topics.forEach(function (tid, ti) {
-      var floor = F + ti * (SH + 2) + SH;      /* shelf board under this row */
-      for (x = 0; x < W; x++) { frame.set(x, floor, "Q"); frame.set(x, floor + 1, "K"); }
-      for (y = floor - SH; y < floor; y++) {
-        for (x = F; x < W - F; x++) frame.set(x, y, "O");
-      }
-      var bx = F + 2;
-      books.filter(function (b) { return b.topic === tid; }).forEach(function (b) {
-        var seed = hash(b.id), rand = rng(seed);
-        var w = 4 + Math.floor(rand() * 3), h = 12 + Math.floor(rand() * 6);
-        var tone = TONES.charAt(ti % TONES.length), cv = new Canvas(W, H);
-        for (y = floor - h; y < floor; y++) {
-          for (x = bx; x < bx + w; x++) cv.set(x, y, x === bx + w - 1 ? "Q" : tone);
-        }
-        cv.set(bx, floor - h, "Q");
-        for (x = bx; x < bx + w - 1; x++) { cv.set(x, floor - h + 2, "G"); if (h > 14) cv.set(x, floor - 4, "G"); }
-        for (k = 0; k < 3; k++) cv.set(bx + Math.floor((w - 1) / 2), floor - h + 5 + k, "O");
-        union.blit(cv.rows(), 0, 0);
-        spines += '<a class="spine" href="#book=' + b.id + '" data-book="' + b.id + '">' +
-          "<title>" + attr(b.title + " — " + b.author) + "</title>" + fills(cv.rows()) + "</a>";
-        bx += w + (rand() < 0.3 ? 1 : 0);
+    /* Books stand flush with the shelf front so the board above doesn't
+       hide them; every other spine gets a pale band so neighbours read
+       as separate books. */
+    var rows = Math.max(1, topics.length), top = 1 + rows * 5;
+    V.box(1, 4, 1, 1, 11, top, BLACK, "shelf");                                   /* back */
+    V.box(1, 3, 1, 5, 1, top + 1, DARKWOOD, "shelf");                             /* sides */
+    V.box(1, 15, 1, 5, 1, top + 1, DARKWOOD, "shelf");
+    for (i = 0; i <= rows; i++) V.box(1, 4, 1 + i * 5, 5, 11, 1, DARKWOOD, "shelf");
+    topics.forEach(function (tid, k) {
+      var yy = 5, zb = 2 + (rows - 1 - k) * 5;
+      byTopic[tid].forEach(function (b, j) {
+        var h = 3 + hash(b.id) % 2;
+        if (yy > 14) return;
+        V.box(2, yy, zb, 4, 1, h, ["G", b.tone, b.tone], "book:" + b.id);
+        if (j % 2) V.set(5, yy, zb + 1, ["G", "G", "G"], "book:" + b.id);
+        yy += 1;
       });
     });
-    var all = new Canvas(W, H);
-    all.blit(frame.rows(), 0, 0);
-    all.blit(union.rows(), 0, 0);
-    return wrap(W, H, "a bookcase of " + books.length + " books", edges(all.rows(), W, H) + fills(frame.rows()) + spines);
+
+    /* whiteboard on the back-left wall, one sticky note per note */
+    for (y = 17; y <= 28; y++) {
+      for (z = 12; z <= 21; z++) {
+        var rim = y === 17 || y === 28 || z === 12 || z === 21;
+        V.set(0, y, z, rim ? "S" : "G", "board");
+      }
+    }
+    V.box(1, 17, 12, 1, 12, 1, METAL, "board");
+    var n = data.notes ? Math.min(8, data.notes.count) : 0, colours = "YDPF";
+    for (i = 0; i < n; i++) {
+      var sy = 19 + (i % 4) * 2, sz = 18 - Math.floor(i / 4) * 4;
+      V.box(0, sy, sz, 1, 2, 2, colours.charAt(i % 4), "board");
+    }
+    if (!n) for (y = 19; y <= 25; y++) V.set(0, y, 18 - (y % 2), "S", "board");     /* a doodle */
+
+    /* the gi, hanging from a peg: white, with a blue belt */
+    V.set(1, 34, 23, DARKWOOD, "gi");
+    var GI = [
+      ".GGGSGGG.",
+      "GGGGSGGGG",
+      "GGGSGSGGG",
+      "GGG.S.GGG",
+      "GGG.G.GGG",
+      "G.GGGGG.G",
+      "G.GGGGG.G",
+      "G.UUUUU.G",
+      "..GGUGG..",
+      "..GGUGG..",
+      "..GU.UG..",
+      "..GG.GG.."
+    ];
+    GI.forEach(function (row, r) {
+      for (var c = 0; c < row.length; c++) {
+        var ch = row.charAt(c);
+        if (ch !== ".") V.set(1, 30 + c, 22 - r, ch, "gi");
+      }
+    });
+
+    return V;
+  }
+
+  /* The room as SVG. spots: owner -> {href, label}. Owners with a spot are
+     links; everything else is scenery. Keeps the last render for close-ups. */
+  var lastRoom = null;
+  function room(data, spots) {
+    var img = cabinScene(data).render();
+    outline(img, { room: true });
+    lastRoom = img;
+    var groups = {}, order = [], x, y;
+    for (y = 0; y < img.h; y++) {
+      for (x = 0; x < img.w; x++) {
+        var o = img.ow[y][x];
+        if (img.px[y][x] === ".") continue;
+        if (!groups[o]) { groups[o] = []; order.push(o); }
+        groups[o].push([x, y]);
+      }
+    }
+    var body = "";
+    order.forEach(function (o) {
+      var rows = [];
+      for (y = 0; y < img.h; y++) rows.push(new Array(img.w + 1).join("."));
+      groups[o].forEach(function (p) {
+        rows[p[1]] = rows[p[1]].substring(0, p[0]) + img.px[p[1]][p[0]] + rows[p[1]].substring(p[0] + 1);
+      });
+      var inner = fills(rows), spot = spots[o];
+      if (spot) {
+        body += '<a class="hot" href="' + attr(spot.href) + '" data-owner="' + attr(o) + '" data-label="' + attr(spot.label) + '">' +
+          "<title>" + attr(spot.label) + "</title>" + inner + "</a>";
+      } else {
+        body += '<g data-owner="' + attr(o) + '">' + inner + "</g>";
+      }
+    });
+    var all = img.px.map(function (r) { return r.join(""); });
+    return wrap(img.w, img.h, "a log cabin room: a desk with a laptop, a bookshelf, a whiteboard, a window onto mountains, a homelab rack and a gi on the wall",
+      edges(all, img.w, img.h) + body);
+  }
+
+  /* One object from the last room render, cropped, for the popup header. */
+  function closeUp(owner) {
+    if (!lastRoom) return "";
+    var img = lastRoom, x0 = img.w, y0 = img.h, x1 = -1, y1 = -1, x, y;
+    for (y = 0; y < img.h; y++) {
+      for (x = 0; x < img.w; x++) {
+        if (img.ow[y][x] === owner && img.px[y][x] !== ".") {
+          if (x < x0) x0 = x; if (y < y0) y0 = y; if (x > x1) x1 = x; if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 < 0) return "";
+    var rows = [];
+    for (y = y0; y <= y1; y++) {
+      var r = "";
+      for (x = x0; x <= x1; x++) r += img.ow[y][x] === owner ? img.px[y][x] : ".";
+      rows.push(r);
+    }
+    return svg(rows);
   }
 
   /* -------------------------------------------------------------- beaver */
@@ -854,52 +907,23 @@
     scene.appendChild(host());
     scene.insertAdjacentHTML("beforeend", svg(heroLogs()));
   }
-  /* A track's build, from the data-* attributes bin/build.py writes. */
-  function readBuild(el) {
-    var logs = [];
-    try { logs = JSON.parse(el.getAttribute("data-logs") || "[]"); } catch (e) {}
-    return {
-      species: el.getAttribute("data-species"), structure: el.getAttribute("data-structure"),
-      done: parseInt(el.getAttribute("data-done"), 10) || 0,
-      total: parseInt(el.getAttribute("data-total"), 10) || 0,
-      finished: el.getAttribute("data-hat") === "1", logs: logs
-    };
-  }
-
-  /* Track page: the structure grows by one piece per objective passed.
-     Structure first: he faces left, towards his work, blueprint held out.
-     A track without a structure (notes) shows its growing tree instead. */
-  var build = document.getElementById("build-scene");
-  if (build) {
-    var b = readBuild(build);
-    if (b.structure === "none") {
-      build.insertAdjacentHTML("beforeend", svg(notesTree(b.species, parseInt(build.getAttribute("data-notes"), 10) || 0)));
-      build.appendChild(host());
-    } else {
-      build.insertAdjacentHTML("beforeend", structure(b.structure, b.done, b.total, b.logs));
-      if (!b.finished && b.done > 0 && b.done < b.total) build.insertAdjacentHTML("beforeend", svg(nextLog()));
-      build.appendChild(host(b.finished ? "hat" : "build"));
+  /* The cabin: draw the room from the data bin/build.py writes on #room.
+     The desk and laptop open the active track, the whiteboard the notes;
+     books and the odd things on the walls open a popup (cabin.js). */
+  var roomEl = document.getElementById("room");
+  if (roomEl) {
+    var rd = {};
+    try { rd = JSON.parse(roomEl.getAttribute("data-room") || "{}"); } catch (e) {}
+    var spots = {}, tr = (rd.tracks || [])[0];
+    if (tr) {
+      var desk = { href: tr.href, label: "laptop — " + tr.name + ", " + tr.done + "/" + tr.total + (tr.last ? ", last entry " + tr.last : "") };
+      spots.laptop = desk;
+      spots.desk = desk;
     }
-  }
-
-  /* The woods hub map. */
-  var map = document.getElementById("woods-map");
-  if (map) {
-    var places = [];
-    try { places = JSON.parse(map.getAttribute("data-places") || "[]"); } catch (e) {}
-    woodsMap(map, places);
-  }
-
-  /* The shelf: the bookcase, and the beaver reading beside it. */
-  var shelfEl = document.getElementById("shelf-scene");
-  if (shelfEl) {
-    var books = [], topics = [];
-    try {
-      books = JSON.parse(shelfEl.getAttribute("data-books") || "[]");
-      topics = JSON.parse(shelfEl.getAttribute("data-topics") || "[]");
-    } catch (e) {}
-    shelfEl.insertAdjacentHTML("beforeend", bookcase(books, topics));
-    shelfEl.appendChild(host());
+    if (rd.notes) spots.board = { href: rd.notes.href, label: "whiteboard — notes, " + rd.notes.count + " pinned" };
+    (rd.books || []).forEach(function (b) { spots["book:" + b.id] = { href: "#book=" + b.id, label: b.title + " — " + b.author }; });
+    (rd.eggs || []).forEach(function (g) { spots[g.id] = { href: "#egg=" + g.id, label: g.label }; });
+    roomEl.innerHTML = room(rd, spots);
   }
 
   draw();
@@ -930,12 +954,9 @@
   }
 
   window.HSKPixel = {
-    chew: chew, theme: theme, wake: wake, sprite: sprite,
-    icon: function (name) { return ICONS[name] ? svg(ICONS[name]) : ""; },
-    ring: function (codes, label) { return codes ? svg(ringStrip(codes), label) : ""; },
+    chew: chew, theme: theme, wake: wake, sprite: sprite, closeUp: closeUp,
     grove: function (st, id, kind, label) { return svg(grove(st, id, kind), label); },
     /* for previews and tests: raw text maps */
-    _rows: { grove: grove, structures: STRUCTURES, species: SPECIES, dress: dress, FRAMES: FRAMES,
-              lodge: lodge, board: board, stand: stand, notesTree: notesTree, ringStrip: ringStrip }
+    _rows: { grove: grove, structures: STRUCTURES, species: SPECIES, dress: dress, FRAMES: FRAMES, cabinScene: cabinScene }
   };
 })();
