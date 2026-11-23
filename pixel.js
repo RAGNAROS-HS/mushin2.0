@@ -1,5 +1,5 @@
-/* Pixel layer: the beaver, his hero scene, the ~/log groves and cabin,
-   the favicon and status glyphs.
+/* Pixel layer: the beaver, his hero scene, the track groves and builds,
+   the ~/projects clearing, the favicon and status glyphs.
    Sprites are text maps — one letter per palette slot, "." is empty — drawn
    as SVG rects. Colours live in styles.css as --px-* tokens, switched by
    data-theme (light/dark) and data-beaver (quiet/loud) on <html>.
@@ -213,19 +213,77 @@
     blob(cv, cx - Math.round(r * 0.7), cy + Math.round(r * 0.5), Math.round(r * 0.7), rand);
     blob(cv, cx + Math.round(r * 0.7), cy + Math.round(r * 0.4), Math.round(r * 0.75), rand);
     cv.lean();
-    /* root flares are single pixels on purpose; put them back after lean() */
+    flares(cv, x, gy, tw);
+    if (gnawed) gnaw(cv, x, gy, tw);
+  }
+
+  /* Root flares are single pixels on purpose; put them back after lean(). */
+  function flares(cv, x, gy, tw) {
     cv.set(x - 1, gy - 1, "K");
     cv.set(x + tw, gy - 1, "Q");
-    if (gnawed && tw < 4) {
+  }
+
+  function gnaw(cv, x, gy, tw) {
+    if (tw < 3) {
       /* a sapling's bite: one notch with pale wood showing */
       cv.set(x, gy - 4, "."); cv.set(x, gy - 3, "G"); cv.set(x + 1, gy - 4, "G");
-    } else if (gnawed) {
+    } else {
       /* hourglass bite out of the trunk */
-      cv.set(x, gy - 5, "."); cv.set(x + 3, gy - 5, ".");
-      cv.set(x, gy - 4, "."); cv.set(x + 3, gy - 4, ".");
+      var r = x + tw - 1;
+      cv.set(x, gy - 5, "."); cv.set(r, gy - 5, ".");
+      cv.set(x, gy - 4, "."); cv.set(r, gy - 4, ".");
       cv.set(x, gy - 3, ".");
     }
   }
+
+  /* Pine: a straight trunk under stacked, widening tiers of boughs. */
+  function pine(cv, x, gy, h, seed, gnawed, opt) {
+    opt = opt || {};
+    var rand = rng(seed), tw = Math.max(2, (opt.tw || 4) - 1), cx = x + Math.floor(tw / 2);
+    var bare = Math.max(5, Math.round(h * 0.22)), crownH = h - bare + 1, top = gy - h;
+    var half = opt.r ? opt.r + 2 : Math.max(6, Math.round(h * 0.34));
+    var tiers = crownH > 16 ? 4 : 3, th = crownH / tiers;
+    trunk(cv, x, gy, h - 2, tw);
+    for (var r = 0; r < crownH; r++) {
+      var tier = Math.min(tiers - 1, Math.floor(r / th)), local = (r - tier * th) / th;
+      var w = half * (tier + 1) / tiers * (0.3 + 0.7 * local);
+      for (var dx = -Math.ceil(w); dx <= Math.ceil(w); dx++) {
+        if (Math.abs(dx) > w) continue;
+        cv.set(cx + dx, top + r, (dx > w * 0.3 || local > 0.8 || rand() < 0.06) ? "V" : "W");
+      }
+    }
+    cv.lean();
+    flares(cv, x, gy, tw);
+    if (gnawed) gnaw(cv, x, gy, tw);
+  }
+
+  /* Birch: a slim, pale, marked trunk under a tall, narrow crown. */
+  function birch(cv, x, gy, h, seed, gnawed, opt) {
+    opt = opt || {};
+    var rand = rng(seed), tw = Math.max(2, (opt.tw || 4) - 1), cx = x + Math.floor(tw / 2);
+    var r = opt.r || Math.max(5, Math.round(h * 0.26)), rx = Math.max(3, Math.round(r * 0.75)), ry = Math.round(r * 1.15);
+    var cy = gy - h + ry;
+    for (var y = cy; y < gy; y++) {
+      var mark = rand() < 0.3, from = Math.floor(rand() * tw);
+      for (var i = 0; i < tw; i++) cv.set(x + i, y, mark && i >= from && i < from + 2 ? "Q" : "K");
+    }
+    for (var yy = -ry; yy <= ry; yy++) {
+      for (var xx = -rx; xx <= rx; xx++) {
+        var d = Math.sqrt((xx * xx) / (rx * rx) + (yy * yy) / (ry * ry));
+        if (d > 1 || (d > 0.85 && rand() < 0.45)) continue;
+        cv.set(cx + xx, cy + yy, (xx + yy > rx * 0.4 || rand() < 0.08) ? "V" : "W");
+      }
+    }
+    cv.lean();
+    cv.set(x - 1, gy - 1, "K"); cv.set(x + tw, gy - 1, "K");
+    if (gnawed) gnaw(cv, x, gy, tw);
+  }
+
+  /* One generator per tree species; a track picks its species in track.json
+     (bin/build.py checks the name against its own list). Colours per
+     species live in styles.css under [data-species]. */
+  var SPECIES = { oak: oak, pine: pine, birch: birch };
+  function species(name) { return SPECIES[name] || oak; }
 
   function stump(cv, x, gy, w) {
     for (var i = 0; i < w; i++) cv.set(x + i, gy - 4, "G");
@@ -250,9 +308,9 @@
     });
   }
 
-  function heroTree() {
+  function heroTree(kind) {
     var cv = new Canvas(28, 34);
-    oak(cv, 11, 34, 32, 23, true);
+    species(kind)(cv, 11, 34, 32, 23, true);
     return cv.rows();
   }
 
@@ -263,7 +321,7 @@
     return cv.rows();
   }
 
-  /* The red hat: earned only when the exam is passed (~/log). */
+  /* The red hat: earned only when a track is finished. */
   var HAT = [
     "...RRRRRR.....................",
     "..RRRRRRRR....................",
@@ -303,7 +361,7 @@
     return cv.rows();
   }
 
-  /* ---------------------------------------------------------------- ~/log */
+  /* -------------------------------------------------------------- tracks */
 
   function hash(s) {
     var h = 2166136261;
@@ -318,14 +376,14 @@
   /* One objective, one sapling: height and crown come from its id, so a
      grove reads as a stand of different trees and looks the same on every
      visit. A felled one leaves its stump; the log went to the cabin. */
-  function grove(st, id) {
+  function grove(st, id, kind) {
     var seed = hash(String(id)), rand = rng(seed), cv = new Canvas(16, 20);
     var h = 14 + Math.floor(rand() * 6);
     if (st === "done") {
       stump(cv, 6, 20, 4);
       cv.set(3, 19, "G"); cv.set(12, 19, "G"); cv.set(13, 18, "K");
     } else {
-      oak(cv, 7, 20, h, seed, st === "practising", { tw: 2, r: h > 16 ? 5 : 4 });
+      species(kind)(cv, 7, 20, h, seed, st === "practising", { tw: 2, r: h > 16 ? 5 : 4 });
     }
     return cv.rows();
   }
@@ -455,30 +513,57 @@
     /* smoke, only once the house is finished: two frames for hover */
     var smoke = [[[31, 7], [32, 6], [32, 5], [33, 3]], [[32, 7], [31, 5], [32, 4], [31, 2]]];
 
-    CABIN = { w: W, h: H, pieces: list.map(function (cv) { return cv.rows(); }), smoke: smoke };
+    CABIN = { name: "log cabin", w: W, h: H, pieces: list.map(function (cv) { return cv.rows(); }), smoke: smoke };
     return CABIN;
   }
 
-  /* logs: [{id, text, date}] in the order they were passed. */
-  function cabin(n, total, logs) {
-    var cab = cabinPieces(), all = cab.pieces, P = all.length;
+  /* The fallback build for a new track until it gets its own structure:
+     log ends stacked into a pyramid, bottom row first. */
+  var WOODPILE;
+  function woodpilePieces() {
+    if (WOODPILE) return WOODPILE;
+    var BASE = 6, W = BASE * 6 + 2, H = BASE * 6, list = [];
+    for (var row = 0; row < BASE; row++) {
+      for (var i = 0; i < BASE - row; i++) {
+        var cv = new Canvas(W, H);
+        cv.blit(LOG_END, 1 + row * 3 + i * 6, H - 6 - row * 6);
+        list.push(cv.rows());
+      }
+    }
+    WOODPILE = { name: "woodpile", w: W, h: H, pieces: list, smoke: [] };
+    return WOODPILE;
+  }
+
+  /* What each track builds, named in track.json (bin/build.py checks it). */
+  var STRUCTURES = { cabin: cabinPieces, woodpile: woodpilePieces };
+
+  /* A structure n/total of the way built. Every passed objective adds at
+     least one piece and the last one finishes it. logs: [{id, text, date}]
+     in the order they were passed, shown as tooltips on their pieces.
+     ghost: draw the unbuilt pieces faintly, as a plan of what's coming. */
+  function structure(kind, n, total, logs, ghost) {
+    var st = (STRUCTURES[kind] || woodpilePieces)(), all = st.pieces, P = all.length;
     var k = total > 0 ? Math.min(P, Math.floor(Math.min(n, total) * P / total)) : 0;
-    var union = new Canvas(cab.w, cab.h), body = "", i;
+    var union = new Canvas(st.w, st.h), body = "", plan = "", i;
     for (i = 0; i < k; i++) {
       union.blit(all[i], 0, 0);
       var o = logs && logs[Math.floor(i * total / P)];
       var t = o ? "<title>" + attr(o.id + " · " + o.text + (o.date ? " · passed " + o.date : "")) + "</title>" : "";
       body += "<g>" + t + fills(all[i]) + "</g>";
     }
+    if (ghost) {
+      for (i = k; i < P; i++) plan += fills(all[i]);
+      if (plan) plan = '<g class="ghost">' + plan + "</g>";
+    }
     if (k === P) {
-      cab.smoke.forEach(function (f, j) {
+      st.smoke.forEach(function (f, j) {
         body += '<g class="smoke smoke-' + j + '">' + f.map(function (q) {
           return '<rect x="' + q[0] + '" y="' + q[1] + '" width="1" height="1" class="pL"/>';
         }).join("") + "</g>";
       });
     }
-    var label = k === P ? "log cabin, finished" : "log cabin under construction, " + n + " of " + total + " logs";
-    return wrap(cab.w, cab.h, label, edges(union.rows(), cab.w, cab.h) + body);
+    var label = k === P ? st.name + ", finished" : st.name + " under construction, " + n + " of " + total + " logs";
+    return wrap(st.w, st.h, label, plan + edges(union.rows(), st.w, st.h) + body);
   }
 
   /* The next log, waiting beside the builder. */
@@ -585,22 +670,40 @@
   var scene = document.getElementById("hero-scene");
 
   if (scene) {
-    scene.insertAdjacentHTML("beforeend", svg(heroTree()));
+    scene.insertAdjacentHTML("beforeend", svg(heroTree(scene.getAttribute("data-species"))));
     scene.appendChild(host());
     scene.insertAdjacentHTML("beforeend", svg(heroLogs()));
   }
-  /* ~/log: the cabin grows by one piece per objective passed. Cabin first:
-     he faces left, towards his work, blueprint held out to it. */
+  /* A track's build, from the data-* attributes bin/build.py writes. */
+  function readBuild(el) {
+    var logs = [];
+    try { logs = JSON.parse(el.getAttribute("data-logs") || "[]"); } catch (e) {}
+    return {
+      species: el.getAttribute("data-species"), structure: el.getAttribute("data-structure"),
+      done: parseInt(el.getAttribute("data-done"), 10) || 0,
+      total: parseInt(el.getAttribute("data-total"), 10) || 0,
+      finished: el.getAttribute("data-hat") === "1", logs: logs
+    };
+  }
+
+  /* Track page: the structure grows by one piece per objective passed.
+     Structure first: he faces left, towards his work, blueprint held out. */
   var build = document.getElementById("build-scene");
   if (build) {
-    var done = parseInt(build.getAttribute("data-done"), 10) || 0;
-    var total = parseInt(build.getAttribute("data-total"), 10) || 0;
-    var passed = build.getAttribute("data-hat") === "1", logs = [];
-    try { logs = JSON.parse(build.getAttribute("data-logs") || "[]"); } catch (e) {}
-    build.insertAdjacentHTML("beforeend", cabin(done, total, logs));
-    if (!passed && done > 0 && done < total) build.insertAdjacentHTML("beforeend", svg(nextLog()));
-    build.appendChild(host(passed ? "hat" : "build"));
+    var b = readBuild(build);
+    build.setAttribute("data-species", b.species || "oak");
+    build.insertAdjacentHTML("beforeend", structure(b.structure, b.done, b.total, b.logs));
+    if (!b.finished && b.done > 0 && b.done < b.total) build.insertAdjacentHTML("beforeend", svg(nextLog()));
+    build.appendChild(host(b.finished ? "hat" : "build"));
   }
+
+  /* ~/projects clearing: every track's build side by side, each beside a
+     tree of its species, the unbuilt part faintly sketched in. */
+  Array.prototype.forEach.call(document.querySelectorAll(".plot-scene"), function (el) {
+    var b = readBuild(el), cv = new Canvas(24, 44);
+    species(b.species)(cv, 9, 44, 42, hash(b.structure + b.species), false, { tw: 4 });
+    el.insertAdjacentHTML("beforeend", svg(cv.rows()) + structure(b.structure, b.done, b.total, b.logs, true));
+  });
 
   draw();
 
@@ -646,8 +749,8 @@
   window.HSKPixel = {
     chew: chew, theme: theme, face: face, mode: mode, wake: wake,
     sprite: sprite, STATUS_GLYPH: STATUS_GLYPH,
-    grove: function (st, id, label) { return svg(grove(st, id), label); },
+    grove: function (st, id, kind, label) { return svg(grove(st, id, kind), label); },
     /* for previews and tests: raw text maps */
-    _rows: { grove: grove, cabin: cabinPieces, dress: dress, FRAMES: FRAMES }
+    _rows: { grove: grove, structures: STRUCTURES, species: SPECIES, dress: dress, FRAMES: FRAMES }
   };
 })();

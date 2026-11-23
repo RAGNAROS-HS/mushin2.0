@@ -1,6 +1,6 @@
 /* Personal site — language and theme toggles.
-   No build step: this file ships as-is, and is shared by the index and every
-   page under projects/. Pages one level down set data-root="../" on <html>. */
+   Ships as-is and is shared by every page bin/build.py writes. Pages below
+   the root set data-root (e.g. "../") on <html>. */
 (function () {
   "use strict";
 
@@ -9,18 +9,11 @@
       n1: "whoami", n2: "timeline", n3: "projects", cv: "resume", cvfile: "pdfs/CV4_0.pdf",
       role: "IT support → Linux administration",
       loc: "Europe/Amsterdam · EU citizen",
-      g1: "infrastructure, automation, systems", g2: "study and side projects in machine learning", g3: "older work, kept for the record",
-      upd: "last updated", updw: "nov 2026",
-      n4: "log",
-      p10: "RHCSA practice log: weekly writeups and a bash script per chapter",
-      lg_intro: "I landed on the RHCSA as a solid goal for my Linux development: it's clear-cut, practical and pretty comprehensive for a first cert. I'd already worked through a good chunk of Sander van Vugt's RHCSA prep book, but quickly found that understanding something is a long way from doing it from memory with just a man page at your disposal. Hence this log (badum-ts), where I periodically keep track of how things are progressing. I've thrown away what I did so far and started anew, with an emphasis on repetition: I only move on to the next chapter once I've hammered out a script or two quite a few times with no mistakes. I invite you to take a gander!",
-      lg_legend: "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam, and its log goes into the cabin above.",
-      lg_source: "objective list from Red Hat", lg_clear: "[clear filter]",
-      lg_none: "No writeups yet: the first one lands at the end of week one.",
-      lg_nomatch: "No writeup covers this objective yet.",
-      lg_read: "read",
-      lg_scripts: "Scripts", lg_practised: "Objectives practised", lg_passed: "Passed in a timed mock exam",
-      lg_back: "back to the log",
+      upd: "last updated", updw: "nov 2026", tr_clear: "[clear filter]",
+      tr_none: "No writeups yet.",
+      tr_nomatch: "No writeup covers this objective yet.",
+      tr_read: "read",
+      tr_scripts: "Scripts", tr_practised: "Objectives practised",
       bio: "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
       b1: "work/", b2: "homelab/", b3: "skills/", b4: "education/",
       b5: "certs/", b6: "languages/", b7: "awards/", b8: "other/",
@@ -66,34 +59,17 @@
       o2: "Housekeeper", ow2: "jul 2023 – aug 2023",
       o3: "Lifeguard", om3: "Hotel Warmia Park · Pluski, PL", ow3: "jun 2022 – aug 2022",
       entries: "entries",
-      /* project one-liners */
-      p1: "Agentic AI assistant with tool use and RAG",
-      p2: "Chess impossibility recognition with a ResNet-20",
-      p3: "ML algorithms written from scratch",
-      p4: "RL agents for an agar.io clone",
-      p5: "Scene text recognition with a CRNN",
-      p6: "n8n workflow automation, kept off GitHub",
-      p7: "This very website",
-      p8: "Pokémon type classifier and generator",
-      p9: "Detecting collapsed buildings with UNET++",
       back: "back to projects"
     },
     pl: {
       n1: "o-mnie", n2: "kariera", n3: "projekty", cv: "cv", cvfile: "pdfs/CV4_0.pdf",
       role: "wsparcie IT → administracja Linuksem",
       loc: "Europe/Amsterdam · obywatel UE",
-      g1: "infrastruktura, automatyzacja, systemy", g2: "projekty z uczenia maszynowego: studia i hobby", g3: "starsze projekty, zachowane dla porządku",
-      upd: "ostatnia aktualizacja", updw: "listopad 2026",
-      n4: "dziennik",
-      p10: "Dziennik nauki do RHCSA: cotygodniowe wpisy i skrypt w bashu do każdego rozdziału",
-      lg_intro: "Wybrałem RHCSA jako konkretny cel w nauce Linuksa: jest jasno określony, praktyczny i jak na pierwszy certyfikat dość wszechstronny. Przerobiłem już spory kawałek książki przygotowawczej Sandera van Vugta, ale szybko się przekonałem, że rozumieć to jeszcze daleko do zrobienia czegoś z pamięci, mając pod ręką tylko stronę man. Stąd ten log (badum-ts), w którym co jakiś czas zapisuję, jak mi idzie. Wyrzuciłem to, co zrobiłem do tej pory, i zacząłem od nowa, z naciskiem na powtarzanie: do następnego rozdziału przechodzę dopiero wtedy, gdy napiszę skrypt czy dwa wiele razy z rzędu bez błędów. Zapraszam do lektury!",
-      lg_legend: "Każde drzewo to jeden oficjalny cel egzaminu. Stojące: jeszcze nie zacząłem. Nadgryzione: przećwiczone we wpisie. Ścięte: zaliczone na egzaminie próbnym na czas, a jego kłoda idzie na chatkę powyżej.",
-      lg_source: "lista celów od Red Hat", lg_clear: "[wyczyść filtr]",
-      lg_none: "Jeszcze nie ma wpisów: pierwszy pojawi się pod koniec pierwszego tygodnia.",
-      lg_nomatch: "Żaden wpis nie obejmuje jeszcze tego celu.",
-      lg_read: "czytaj",
-      lg_scripts: "Skrypty", lg_practised: "Przećwiczone cele", lg_passed: "Zaliczone na egzaminie próbnym na czas",
-      lg_back: "wróć do dziennika",
+      upd: "ostatnia aktualizacja", updw: "listopad 2026", tr_clear: "[wyczyść filtr]",
+      tr_none: "Jeszcze nie ma wpisów.",
+      tr_nomatch: "Żaden wpis nie obejmuje jeszcze tego celu.",
+      tr_read: "czytaj",
+      tr_scripts: "Skrypty", tr_practised: "Przećwiczone cele",
       bio: "Nie boję się zadawać pytań i drążę, dopóki naprawdę nie zrozumiem, dlaczego coś działa tak, a nie inaczej. Lubię łączyć pomysły z miejsc, które naturalnie się nie spotykają, ale pozostaję metodyczny: chcę znać mechanizm, a nie tylko powierzchnię. Brazylijskie jiu-jitsu ukształtowało mój sposób pracy: walczę dalej, gdy robi się gorąco, i nie boję się pobrudzić rąk. Lubię pracować blisko maszyny i dbać o to, by prawdziwe systemy produkcyjne działały wydajnie i bezpiecznie — tam, gdzie brak wiadomości to dobra wiadomość.",
       b1: "praca/", b2: "homelab/", b3: "umiejętności/", b4: "edukacja/",
       b5: "certyfikaty/", b6: "języki/", b7: "nagrody/", b8: "inne/",
@@ -139,15 +115,6 @@
       o2: "Pracownik obsługi hotelowej", ow2: "lipiec 2023 – sierpień 2023",
       o3: "Ratownik", om3: "Hotel Warmia Park · Pluski", ow3: "czerwiec 2022 – sierpień 2022",
       entries: "pozycji",
-      p1: "Agentowy asystent AI z użyciem narzędzi i RAG",
-      p2: "Rozpoznawanie niemożliwych pozycji szachowych siecią ResNet-20",
-      p3: "Algorytmy ML pisane od zera",
-      p4: "Agenci RL dla klona agar.io",
-      p5: "Rozpoznawanie tekstu w scenach przy pomocy CRNN",
-      p6: "Automatyzacje n8n, trzymane poza GitHubem",
-      p7: "Ta właśnie strona",
-      p8: "Klasyfikator i generator typów Pokémon",
-      p9: "Wykrywanie zawalonych budynków siecią UNET++",
       back: "wróć do projektów"
     }
   };
@@ -157,7 +124,7 @@
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   };
 
-  /* "" on the index, "../" on a project page. */
+  /* "" on the index, "../" or "../../" below it. */
   var ROOT = document.documentElement.getAttribute("data-root") || "";
 
   var langButtons = document.querySelectorAll(".lang");
@@ -182,6 +149,13 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
       var v = t[el.getAttribute("data-i18n")];
       if (v !== undefined) el.textContent = v;
+    });
+
+    /* Generated text (project summaries, track intros) carries its Polish
+       inline as data-pl; the English is kept in data-en on first swap. */
+    Array.prototype.forEach.call(document.querySelectorAll("[data-pl]"), function (el) {
+      if (el.getAttribute("data-en") === null) el.setAttribute("data-en", el.textContent);
+      el.textContent = el.getAttribute("data-" + lang) || el.getAttribute("data-en");
     });
 
     if (cvLink && t.cvfile) cvLink.href = ROOT + t.cvfile;

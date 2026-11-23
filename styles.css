@@ -230,7 +230,11 @@ button {
   outline: 1px solid var(--line);
 }
 
-.card-slug { font-size: 14px; }
+.card-slug { display: flex; align-items: baseline; gap: 6px; font-size: 14px; }
+/* The tree-state glyph says it all; the word is in the tooltip. */
+.card-slug .status { font-size: 0; }
+.card-slug .status .px { margin-right: 2px; }
+.card-foot { margin-left: auto; color: var(--dim); font-size: 12px; }
 
 .card-desc {
   margin-top: 6px;
@@ -683,9 +687,37 @@ svg.px {
 .bv-z sup { font-size: 9px; }
 .bv.is-asleep .bv-z { display: block; }
 
-/* ---------------------------------------------------------------- ~/log */
+/* --------------------------------------------------------------- tracks */
 
-/* The cabin, built one piece per passed objective, and its builder. */
+/* Tree species: a track's trees and the wood of its build. Each overrides
+   the leaf (W/V) and wood (K/Q) slots for everything inside it, in all
+   four palettes. Oak is the default palette above. */
+[data-species="pine"] { --px-W: #8a8983; --px-V: #6f6e69; }
+html[data-theme="dark"] [data-species="pine"] { --px-W: #4a4945; --px-V: #3a3936; }
+html[data-beaver="loud"] [data-species="pine"] { --px-W: #4f7a4a; --px-V: #3a5e38; --px-K: #7a4a30; --px-Q: #5c3522; }
+html[data-beaver="loud"][data-theme="dark"] [data-species="pine"] { --px-W: #4a7044; --px-V: #34502f; --px-K: #94603d; --px-Q: #6e4429; }
+[data-species="birch"] { --px-K: #d8d6cf; --px-Q: #55554f; --px-W: #c9c7c0; --px-V: #b3b1aa; }
+html[data-theme="dark"] [data-species="birch"] { --px-K: #cfcdc6; --px-Q: #4a4945; --px-W: #6b6a65; --px-V: #5d5c57; }
+html[data-beaver="loud"] [data-species="birch"] { --px-K: #ece6d6; --px-Q: #3d342c; --px-W: #a5b86a; --px-V: #85994f; }
+html[data-beaver="loud"][data-theme="dark"] [data-species="birch"] { --px-K: #d9d2c0; --px-Q: #2e2620; --px-W: #8fa35a; --px-V: #6f8442; }
+
+/* The unbuilt part of a structure, faintly sketched in (~/projects clearing). */
+.ghost { opacity: .14; }
+
+/* ~/projects clearing: every track's build side by side. */
+.clearing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px 34px;
+  margin-bottom: 30px;
+}
+.plot { display: grid; justify-items: start; gap: 10px; color: var(--ink); text-decoration: none; }
+.plot-scene { --s: 2px; display: flex; align-items: flex-end; gap: 6px; }
+.plot-name { font-size: 12.5px; }
+.plot:hover .plot-name, .plot:focus-visible .plot-name { text-decoration: underline; }
+
+/* A track's structure, built one piece per passed objective, and its builder. */
 .build-scene {
   --s: 3px;
   display: flex;

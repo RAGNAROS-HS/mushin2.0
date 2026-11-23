@@ -1,72 +1,14 @@
-<!DOCTYPE html>
-<html lang="en" data-root="../">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zamin — Hugo Sokołowski-Katzer</title>
-<meta name="description" content="Zamin — housing price prediction on the Boston Housing dataset three ways: hand-coded gradient descent, a Keras network, and an evolutionary algorithm.">
-<meta name="color-scheme" content="light dark">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Zamin — Hugo Sokołowski-Katzer">
-<meta property="og:description" content="Zamin — housing price prediction on the Boston Housing dataset three ways: hand-coded gradient descent, a Keras network, and an evolutionary algorithm.">
-<meta property="og:url" content="https://hugokatzer.tech/projects/zamin.html">
-<meta name="twitter:card" content="summary">
-<link rel="canonical" href="https://hugokatzer.tech/projects/zamin.html">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=14">
-<script>
-// Set the theme before first paint so there is no flash of the wrong palette.
-(function () {
-  var t;
-  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
-  if (t !== "light" && t !== "dark") {
-    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  document.documentElement.dataset.theme = t;
-  var b;
-  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
-  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
-})();
-</script>
-</head>
-<body>
-<div class="page">
-
-<header class="bar">
-  <span class="host">hsk@infra</span>
-  <nav class="nav">
-    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
-    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
-    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
-    <a href="../log/index.html">[<span data-i18n="n4">log</span>]</a>
-  </nav>
-  <span class="grow"></span>
-  <div class="langs">
-    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
-    <span class="slash">/</span>
-    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
-  </div>
-  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
-  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
-</header>
-
-<main class="main">
-
-  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/zamin</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">Zamin</h1>
-    <p class="proj-sum">Back to basics: ML algorithms written from scratch</p>
-    <div class="proj-meta">
-      <span class="status" data-status="active">active</span>
-      <span>2026-02-11</span>
-    </div>
-  </section>
-
-  <article class="section prose">
+---
+title: Zamin
+group: ml
+order: 3
+status: active
+date: 2026-02-11
+summary: ML algorithms written from scratch
+summary_pl: Algorytmy ML pisane od zera
+description: Zamin — housing price prediction on the Boston Housing dataset three ways: hand-coded gradient descent, a Keras network, and an evolutionary algorithm.
+format: html
+---
 
     <p>This project explores <strong>housing price prediction</strong> on the Boston Housing dataset using multiple approaches — from hand-coded gradient descent to deep learning — to understand the fundamentals of regression at every level of abstraction.</p>
 
@@ -262,21 +204,3 @@ b -= α * db</code></pre>
     <h2>Future Work</h2>
 
     <p>Lots of things could be improved: first and foremost add ridge regression to the linear algorithm, and for the NN add pruning. These are nice, but most of all I will be looking to implement these on a more sophisticated and real-world dataset. This project was great for the rapid feedback loop and small scale. Ramping up to something more fully fledged is the next step. Definitely more to come.</p>
-
-  </article>
-
-  <nav class="proj-nav">
-    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
-    <span class="grow"></span>
-    <a href="simurgh.html">&larr; simurgh</a>
-    <a href="halghe.html">jadid-halghe &rarr;</a>
-  </nav>
-
-</main>
-
-
-</div>
-<script src="../pixel.js?v=14"></script>
-<script src="../app.js?v=14"></script>
-</body>
-</html>

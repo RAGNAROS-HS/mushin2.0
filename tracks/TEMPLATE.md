@@ -2,8 +2,8 @@
 date: 2026-12-06
 title: Week 1 — what this week was about
 chapter: "Ch. 1 — chapter title from the book"
-practised: [tools-01, tools-02]     # ids from log/README.md
-passed: []                          # only objectives passed in a TIMED MOCK exam
+practised: [tools-01, tools-02]     # ids from tracks/<track>/README.md
+passed: []                          # see the track's README for what counts as passed
 scripts:
   - name: example.sh
     url: https://github.com/RAGNAROS-HS/<scripts-repo>/blob/main/example.sh

@@ -1,13 +1,37 @@
 {
-  "exam": {
-    "code": "EX200",
-    "name": "Red Hat Certified System Administrator",
-    "rhel": "RHEL 10",
-    "target": "Q1 2027",
-    "booked": null,
-    "passed_exam": false,
-    "source": "https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam",
-    "fetched": "2026-11-23"
+  "title": "RHCSA log",
+  "name": "rhcsa",
+  "kind": "cert",
+  "group": "ops",
+  "order": 1,
+  "status": "active",
+  "species": "oak",
+  "structure": "cabin",
+  "finished": false,
+  "summary": {
+    "en": "RHCSA practice log: weekly writeups and a bash script per chapter",
+    "pl": "Dziennik nauki do RHCSA: cotygodniowe wpisy i skrypt w bashu do każdego rozdziału"
+  },
+  "intro": {
+    "en": "I landed on the RHCSA as a solid goal for my Linux development: it's clear-cut, practical and pretty comprehensive for a first cert. I'd already worked through a good chunk of Sander van Vugt's RHCSA prep book, but quickly found that understanding something is a long way from doing it from memory with just a man page at your disposal. Hence this log (badum-ts), where I periodically keep track of how things are progressing. I've thrown away what I did so far and started anew, with an emphasis on repetition: I only move on to the next chapter once I've hammered out a script or two quite a few times with no mistakes. I invite you to take a gander!",
+    "pl": "Wybrałem RHCSA jako konkretny cel w nauce Linuksa: jest jasno określony, praktyczny i jak na pierwszy certyfikat dość wszechstronny. Przerobiłem już spory kawałek książki przygotowawczej Sandera van Vugta, ale szybko się przekonałem, że rozumieć to jeszcze daleko do zrobienia czegoś z pamięci, mając pod ręką tylko stronę man. Stąd ten log (badum-ts), w którym co jakiś czas zapisuję, jak mi idzie. Wyrzuciłem to, co zrobiłem do tej pory, i zacząłem od nowa, z naciskiem na powtarzanie: do następnego rozdziału przechodzę dopiero wtedy, gdy napiszę skrypt czy dwa wiele razy z rzędu bez błędów. Zapraszam do lektury!"
+  },
+  "legend": {
+    "en": "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam, and its log goes into the cabin above.",
+    "pl": "Każde drzewo to jeden oficjalny cel egzaminu. Stojące: jeszcze nie zacząłem. Nadgryzione: przećwiczone we wpisie. Ścięte: zaliczone na egzaminie próbnym na czas, a jego kłoda idzie na chatkę powyżej."
+  },
+  "passed_label": {
+    "en": "Passed in a timed mock exam",
+    "pl": "Zaliczone na egzaminie próbnym na czas"
+  },
+  "passed_rule": "timed mock exams only",
+  "label": "EX200 · RHEL 10",
+  "target": "Q1 2027",
+  "source": {
+    "url": "https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam",
+    "fetched": "2026-11-23",
+    "en": "objective list from Red Hat",
+    "pl": "lista celów od Red Hat"
   },
   "groups": [
     {

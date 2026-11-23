@@ -1,17 +1,16 @@
-# Stage 1: render ~/log from log/entries/*.md (standard library only).
-FROM python:3.13-alpine AS log
+# Stage 1: render the site into dist/ (bin/build.py, standard library only).
+FROM python:3.13-alpine AS build
 WORKDIR /src
 COPY bin/ bin/
-COPY log/ log/
-RUN python3 bin/build_log.py
+COPY templates/ templates/
+COPY content/ content/
+COPY tracks/ tracks/
+COPY img/ img/
+COPY pdfs/ pdfs/
+COPY styles.css app.js pixel.js track.js ./
+RUN python3 bin/build.py
 
 # Stage 2: the site is plain static files served by nginx.
 FROM nginx:alpine
-
-COPY index.html styles.css app.js pixel.js /usr/share/nginx/html/
-COPY projects/ /usr/share/nginx/html/projects/
-COPY img/ /usr/share/nginx/html/img/
-COPY pdfs/ /usr/share/nginx/html/pdfs/
-COPY --from=log /src/log/ /usr/share/nginx/html/log/
-
+COPY --from=build /src/dist/ /usr/share/nginx/html/
 EXPOSE 80

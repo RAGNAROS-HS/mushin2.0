@@ -1,10 +1,11 @@
 services:
   site:
     volumes:
-      - .:/usr/share/nginx/html
+      - ./dist:/usr/share/nginx/html
       - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
 
-#this yaml auto merges upon compose up, poking a hole in the container and mounting the hosts filesystem. This is so that rapid devlopment can occur.
+#this yaml auto merges upon compose up, mounting the host's dist/ (the output of bin/build.py) into the container. This is so that rapid development can occur:
+#edit, run `python3 bin/build.py`, reload.
 #it also swaps in nginx.dev.conf, which tells the browser never to cache, so a plain reload always shows the latest files.
 #if you want to avoid this and go straight to staging you need to manually flag it in the command:
 #docker compose -f compose.yaml up -d --build

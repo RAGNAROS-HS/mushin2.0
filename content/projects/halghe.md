@@ -1,72 +1,15 @@
-<!DOCTYPE html>
-<html lang="en" data-root="../">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jadid Halghe — Hugo Sokołowski-Katzer</title>
-<meta name="description" content="Jadid Halghe — deep reinforcement learning agents for an agar.io clone. Vectorised NumPy game engine, attention policy over entity sets, PPO with a self-play curriculum.">
-<meta name="color-scheme" content="light dark">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Jadid Halghe — Hugo Sokołowski-Katzer">
-<meta property="og:description" content="Jadid Halghe — deep reinforcement learning agents for an agar.io clone. Vectorised NumPy game engine, attention policy over entity sets, PPO with a self-play curriculum.">
-<meta property="og:url" content="https://hugokatzer.tech/projects/halghe.html">
-<meta name="twitter:card" content="summary">
-<link rel="canonical" href="https://hugokatzer.tech/projects/halghe.html">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=14">
-<script>
-// Set the theme before first paint so there is no flash of the wrong palette.
-(function () {
-  var t;
-  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
-  if (t !== "light" && t !== "dark") {
-    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  document.documentElement.dataset.theme = t;
-  var b;
-  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
-  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
-})();
-</script>
-</head>
-<body>
-<div class="page">
-
-<header class="bar">
-  <span class="host">hsk@infra</span>
-  <nav class="nav">
-    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
-    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
-    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
-    <a href="../log/index.html">[<span data-i18n="n4">log</span>]</a>
-  </nav>
-  <span class="grow"></span>
-  <div class="langs">
-    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
-    <span class="slash">/</span>
-    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
-  </div>
-  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
-  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
-</header>
-
-<main class="main">
-
-  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/jadid-halghe</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">Jadid Halghe</h1>
-    <p class="proj-sum">Teaching RL agents to dominate an agar.io clone</p>
-    <div class="proj-meta">
-      <span class="status" data-status="active">active</span>
-      <span>2026-04-05</span>
-    </div>
-  </section>
-
-  <article class="section prose">
+---
+title: Jadid Halghe
+name: jadid-halghe
+group: ml
+order: 4
+status: active
+date: 2026-04-05
+summary: RL agents for an agar.io clone
+summary_pl: Agenci RL dla klona agar.io
+description: Jadid Halghe — deep reinforcement learning agents for an agar.io clone. Vectorised NumPy game engine, attention policy over entity sets, PPO with a self-play curriculum.
+format: html
+---
 
     <p>Teaching AI agents to dominate an agar.io clone through deep reinforcement learning. Built from scratch in Python and PyTorch — game engine, RL environment, policy architecture, training loop, and evaluation harness.</p>
 
@@ -340,21 +283,3 @@ R_A' = R_A + K · (score_A − E_A)</code></pre>
     <h2>Stack</h2>
 
     <p>Python 3.12 · PyTorch 2.x · NumPy · Gymnasium · PettingZoo · Pygame-CE · TensorBoard · Ruff</p>
-
-  </article>
-
-  <nav class="proj-nav">
-    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
-    <span class="grow"></span>
-    <a href="zamin.html">&larr; zamin</a>
-    <a href="tosach.html">tosach &rarr;</a>
-  </nav>
-
-</main>
-
-
-</div>
-<script src="../pixel.js?v=14"></script>
-<script src="../app.js?v=14"></script>
-</body>
-</html>

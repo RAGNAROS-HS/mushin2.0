@@ -1,65 +1,13 @@
-<!DOCTYPE html>
-<html lang="en" data-root="">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hugo Sokołowski-Katzer</title>
-<meta name="description" content="Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.">
-<meta name="color-scheme" content="light dark">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hugo Sokołowski-Katzer">
-<meta property="og:description" content="Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.">
-<meta property="og:url" content="https://hugokatzer.tech/">
-<meta name="twitter:card" content="summary">
-<link rel="canonical" href="https://hugokatzer.tech/">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Hugo Sokołowski-Katzer","url":"https://hugokatzer.tech/","jobTitle":"IT support","address":{"@type":"PostalAddress","addressLocality":"Amsterdam","addressCountry":"NL"},"sameAs":["https://github.com/RAGNAROS-HS","https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"]}</script>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=14">
-<script>
-// Set the theme before first paint so there is no flash of the wrong palette.
-(function () {
-  var t;
-  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
-  if (t !== "light" && t !== "dark") {
-    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  document.documentElement.dataset.theme = t;
-  var b;
-  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
-  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
-})();
-</script>
-</head>
-<body class="home">
-<div class="page">
-
-<header class="bar">
-  <span class="host">hsk@infra</span>
-  <nav class="nav">
-    <a href="#whoami">[<span data-i18n="n1">whoami</span>]</a>
-    <a href="#timeline">[<span data-i18n="n2">timeline</span>]</a>
-    <a href="#projects">[<span data-i18n="n3">projects</span>]</a>
-    <a href="log/index.html">[<span data-i18n="n4">log</span>]</a>
-  </nav>
-  <span class="grow"></span>
-  <div class="langs">
-    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
-    <span class="slash">/</span>
-    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
-  </div>
-  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
-  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
-</header>
-
-<main class="main">
-
+---
+title: Hugo Sokołowski-Katzer
+description: Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.
+head: <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Hugo Sokołowski-Katzer","url":"https://hugokatzer.tech/","jobTitle":"IT support","address":{"@type":"PostalAddress","addressLocality":"Amsterdam","addressCountry":"NL"},"sameAs":["https://github.com/RAGNAROS-HS","https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"]}</script>
+---
+<!-- Homepage body: bin/build.py fills in the project grid, count and hero tree species, then wraps it in shell.html. -->
   <section id="whoami" class="section section--hero">
     <div class="prompt">$ whoami</div>
     <h1 class="name">Hugo<br>Sokołowski-Katzer</h1>
-    <div class="scene" id="hero-scene"></div>
+    <div class="scene" id="hero-scene" data-species="{{hero_species}}"></div>
     <div class="ruled-row">
       <span data-i18n="role">IT support → Linux administration</span>
       <span class="rule rule--dashed"></span>
@@ -188,7 +136,7 @@
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label"><a class="label-link" href="log/index.html">RHCSA (EX200)</a></span><span class="rule rule--dotted"></span><span class="meta" data-i18n="cm0">in preparation</span><span class="when" data-i18n="cw0">exam planned Q1 2027</span></div>
+        <div class="row-line"><span class="label"><a class="label-link" href="projects/rhcsa/index.html">RHCSA (EX200)</a></span><span class="rule rule--dotted"></span><span class="meta" data-i18n="cm0">in preparation</span><span class="when" data-i18n="cw0">exam planned Q1 2027</span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
@@ -251,82 +199,11 @@
     <div class="sec-head">
       <span class="prompt">$ ls ~/projects</span>
       <span class="rule rule--dashed"></span>
-      <span class="prompt" id="projects-count">10 entries</span>
+      <span class="prompt" id="projects-count">{{count}} entries</span>
     </div>
     <div id="projects-grid">
-      <div class="group-head"><span class="group-name">ops/</span><span class="rule rule--dotted"></span><span class="prompt" data-i18n="g1">infrastructure, automation, systems</span></div>
-      <div class="cells cells--cards">
-
-      <a class="card" href="log/index.html">
-        <div class="card-slug">log/</div>
-        <div class="card-desc" data-i18n="p10">RHCSA practice log: weekly writeups and a bash script per chapter</div>
-      </a>
-
-      </div>
-      <div class="group-head"><span class="group-name">ml/</span><span class="rule rule--dotted"></span><span class="prompt" data-i18n="g2">study and side projects in machine learning</span></div>
-      <div class="cells cells--cards">
-
-      <a class="card" href="projects/bachelor-thesis.html">
-        <div class="card-slug">bachelor-thesis/</div>
-        <div class="card-desc" data-i18n="p9">Detecting collapsed buildings with UNET++</div>
-      </a>
-
-      <a class="card" href="projects/simurgh.html">
-        <div class="card-slug">simurgh/</div>
-        <div class="card-desc" data-i18n="p2">Chess impossibility recognition with a ResNet-20</div>
-      </a>
-
-      <a class="card" href="projects/zamin.html">
-        <div class="card-slug">zamin/</div>
-        <div class="card-desc" data-i18n="p3">ML algorithms written from scratch</div>
-      </a>
-
-      <a class="card" href="projects/halghe.html">
-        <div class="card-slug">jadid-halghe/</div>
-        <div class="card-desc" data-i18n="p4">RL agents for an agar.io clone</div>
-      </a>
-
-      <a class="card" href="projects/tosach.html">
-        <div class="card-slug">tosach/</div>
-        <div class="card-desc" data-i18n="p5">Scene text recognition with a CRNN</div>
-      </a>
-
-      <a class="card" href="projects/stumberg.html">
-        <div class="card-slug">stumberg/</div>
-        <div class="card-desc" data-i18n="p1">Agentic AI assistant with tool use and RAG</div>
-      </a>
-
-      <a class="card" href="projects/himantes.html">
-        <div class="card-slug">himantes/</div>
-        <div class="card-desc" data-i18n="p8">Pokémon type classifier and generator</div>
-      </a>
-
-      </div>
-      <div class="group-head"><span class="group-name">archive/</span><span class="rule rule--dotted"></span><span class="prompt" data-i18n="g3">older work, kept for the record</span></div>
-      <div class="cells cells--cards">
-
-      <a class="card" href="projects/mushin.html">
-        <div class="card-slug">mushin/</div>
-        <div class="card-desc" data-i18n="p7">This very website</div>
-      </a>
-
-      <a class="card" href="projects/goswin.html">
-        <div class="card-slug">goswin/</div>
-        <div class="card-desc" data-i18n="p6">n8n workflow automation, kept off GitHub</div>
-      </a>
-
-
-      </div>
+{{projects}}
     </div>
   </section>
 
   <footer class="foot"><span data-i18n="upd">last updated</span> <span data-i18n="updw">nov 2026</span></footer>
-
-</main>
-
-
-</div>
-<script src="pixel.js?v=14"></script>
-<script src="app.js?v=14"></script>
-</body>
-</html>

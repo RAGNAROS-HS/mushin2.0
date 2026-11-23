@@ -1,2 +1,2 @@
-# ~/log build output (bin/build_log.py; rebuilt in the Docker image)
-/log/*.html
+# bin/build.py output; rebuilt in the Docker image
+/dist/
