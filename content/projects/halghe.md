@@ -1,12 +1,9 @@
 ---
 title: Jadid Halghe
 name: jadid-halghe
-group: archive
-order: 1
 status: active
 date: 2026-04-05
 summary: RL agents for an agar.io clone
-summary_pl: Agenci RL dla klona agar.io
 description: Jadid Halghe — deep reinforcement learning agents for an agar.io clone. Vectorised NumPy game engine, attention policy over entity sets, PPO with a self-play curriculum.
 format: html
 ---

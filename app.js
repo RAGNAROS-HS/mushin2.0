@@ -1,184 +1,19 @@
-/* Personal site — language and theme toggles.
-   Ships as-is and is shared by every page bin/build.py writes. Pages below
-   the root set data-root (e.g. "../") on <html>. */
+/* Personal site: theme toggle, career-tree connectors, folded sections.
+   Ships as-is and is shared by every page bin/build.py writes. */
 (function () {
   "use strict";
-
-  var STRINGS = {
-    en: {
-      n1: "whoami", n2: "timeline", n3: "projects", cv: "resume", cvfile: "pdfs/CV4_0.pdf",
-      role: "IT support → Linux administration",
-      loc: "Europe/Amsterdam · EU citizen",
-      upd: "last updated", updw: "nov 2026", tr_clear: "[clear filter]",
-      tr_none: "No writeups yet.",
-      tr_nomatch: "No writeup covers this objective yet.",
-      tr_read: "read",
-      tr_scripts: "Scripts", tr_practised: "Objectives practised",
-      bio: "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
-      b1: "work/", b2: "homelab/", b3: "skills/", b4: "education/",
-      b5: "certs/", b6: "languages/", b7: "awards/", b8: "other/",
-      r1: "Data, Automation & AI Intern", w1: "apr 2026 – may 2026",
-      t1: "Built production monitoring for live telecom traffic on self-hosted n8n, using statistical process control to flag anomalies",
-      t2: "Automated detection of fraud patterns that led to bans of spammers",
-      t3: "Automatically flagged customers with poor call experiences and routed support to them",
-      t4: "Replaced manual reporting with scheduled aggregation across internal databases",
-      sm: "IT Operations · recommendation letter available", sw: "jun 2024 – aug 2025",
-      r2: "Information Security Intern", w2: "jun 2025 – aug 2025",
-      s1: "Mapped SOC 2 controls in Vanta and collected supporting evidence across systems",
-      s2: "Investigated security incidents, incl. damage control after a malicious insider",
-      s6: "Improved internal awareness and support processes around data privacy and security",
-      r3: "IT Intern, general IT", w3: "dec 2024 – jun 2025",
-      s3: "Owned identity lifecycle in Okta and AccessOwl: daily onboarding, offboarding and access provisioning; automated parts of HR onboarding",
-      s7: "Administered Google Workspace, Atlassian and Slack with attention to security; ran quarterly reviews of Slack app integrations",
-      s4: "Initiated and led disaster recovery tests; a simulated device-loss scenario exposed a gap that would have cut access to a quarter of managed accounts",
-      s8: "Built Slack and Zapier workflow automations that reduced manual work and improved response times",
-      s9: "Trained and mentored new interns through their onboarding",
-      r4: "IT Support Intern", w4: "jun 2024 – dec 2024",
-      s5: "First-line IT support for 1,100 employees across multiple countries: hardware, software, access and network issues, incl. escalated Tier 1 tickets",
-      s10: "Reported and escalated high-impact incidents and platform bugs to engineering teams",
-      s11: "Set up hardware for new hires, handled asset on/offboarding in Meraki MDM and ran inactive-device audits",
-      s12: "Wrote and maintained IT support documentation and the company intranet",
-      h0: "3-node Proxmox cluster",
-      h1: "Built and clustered Proxmox VE across three bare-metal nodes myself",
-      h2: "My practice platform for RHCSA",
-      k1: "linux", k2: "virtualisation", k3: "identity", k4: "code",
-      km1: "Ubuntu as my daily system",
-      km4: "bash (main language, current RHCSA focus), Python",
-      e1: "MSc Artificial Intelligence", em1: "AI for Health · VU / UvA", ew1: "2025 – jun 2027 (expected)",
-      en1: "Relevant: Medical Informatics Basics, Knowledge Representation",
-      en2: "Master project (from November 2026): collapse detection with simulated shadows",
-      e2: "BSc Computer Science",
-      en3: "Systems coursework: Computer Organization (10/10, incl. an IJVM bytecode interpreter in C), Operating Systems, Computer Networks, Databases",
-      en4: "Bachelor thesis: hybrid detection of building collapse after the 2023 earthquake in Antakya",
-      cm0: "in preparation", cw0: "exam planned Q1 2027",
-      c1: "VLOS UAV operator", c2: "WOPR 2nd Degree Lifeguard",
-      l1: "Polish", l2: "English", l3: "German",
-      lw1: "native", lw2: "Cambridge CAE, grade A · C2",
-      a1: "Go4Poland laureate", am1: "Fundacja GPW · programme for Poles studying abroad",
-      o1: "Shop Assistant", ow1: "jan 2024 – jun 2024",
-      o2: "Housekeeper", ow2: "jul 2023 – aug 2023",
-      o3: "Lifeguard", om3: "Hotel Warmia Park · Pluski, PL", ow3: "jun 2022 – aug 2022",
-      entries: "entries",
-      back: "back to projects"
-    },
-    pl: {
-      n1: "o-mnie", n2: "kariera", n3: "projekty", cv: "cv", cvfile: "pdfs/CV4_0.pdf",
-      role: "wsparcie IT → administracja Linuksem",
-      loc: "Europe/Amsterdam · obywatel UE",
-      upd: "ostatnia aktualizacja", updw: "listopad 2026", tr_clear: "[wyczyść filtr]",
-      tr_none: "Jeszcze nie ma wpisów.",
-      tr_nomatch: "Żaden wpis nie obejmuje jeszcze tego celu.",
-      tr_read: "czytaj",
-      tr_scripts: "Skrypty", tr_practised: "Przećwiczone cele",
-      bio: "Nie boję się zadawać pytań i drążę, dopóki naprawdę nie zrozumiem, dlaczego coś działa tak, a nie inaczej. Lubię łączyć pomysły z miejsc, które naturalnie się nie spotykają, ale pozostaję metodyczny: chcę znać mechanizm, a nie tylko powierzchnię. Brazylijskie jiu-jitsu ukształtowało mój sposób pracy: walczę dalej, gdy robi się gorąco, i nie boję się pobrudzić rąk. Lubię pracować blisko maszyny i dbać o to, by prawdziwe systemy produkcyjne działały wydajnie i bezpiecznie — tam, gdzie brak wiadomości to dobra wiadomość.",
-      b1: "praca/", b2: "homelab/", b3: "umiejętności/", b4: "edukacja/",
-      b5: "certyfikaty/", b6: "języki/", b7: "nagrody/", b8: "inne/",
-      r1: "Stażysta ds. danych, automatyzacji i AI", w1: "kwiecień 2026 – maj 2026",
-      t1: "Zbudowałem produkcyjny monitoring ruchu telekomunikacyjnego na samodzielnie hostowanym n8n, wykrywający anomalie za pomocą statystycznego sterowania procesem",
-      t2: "Zautomatyzowałem wykrywanie wzorców oszustw, co doprowadziło do zablokowania spamerów",
-      t3: "Automatycznie oznaczałem klientów ze słabą jakością połączeń i kierowałem do nich wsparcie",
-      t4: "Zastąpiłem ręczne raportowanie cykliczną agregacją danych z wewnętrznych baz",
-      sm: "IT Operations · dostępny list polecający", sw: "czerwiec 2024 – sierpień 2025",
-      r2: "Stażysta ds. bezpieczeństwa informacji", w2: "czerwiec 2025 – sierpień 2025",
-      s1: "Mapowałem kontrole SOC 2 w Vanta i zbierałem dowody ich realizacji z różnych systemów",
-      s2: "Analizowałem incydenty bezpieczeństwa, m.in. ograniczałem szkody po działaniach złośliwego insidera",
-      s6: "Usprawniłem wewnętrzną świadomość i procesy wsparcia w zakresie prywatności danych i bezpieczeństwa",
-      r3: "Stażysta IT, ogólne IT", w3: "grudzień 2024 – czerwiec 2025",
-      s3: "Odpowiadałem za cykl życia tożsamości w Okta i AccessOwl: codzienny onboarding, offboarding i nadawanie uprawnień; zautomatyzowałem część onboardingu HR",
-      s7: "Administrowałem Google Workspace, Atlassianem i Slackiem z naciskiem na bezpieczeństwo; prowadziłem kwartalne przeglądy integracji aplikacji w Slacku",
-      s4: "Zainicjowałem i prowadziłem testy odtwarzania po awarii; symulowany scenariusz utraty urządzeń ujawnił lukę, która odcięłaby dostęp do jednej czwartej zarządzanych kont",
-      s8: "Zbudowałem automatyzacje w Slacku i Zapierze, które ograniczyły pracę ręczną i skróciły czas reakcji",
-      s9: "Szkoliłem nowych stażystów i opiekowałem się nimi podczas wdrożenia",
-      r4: "Stażysta wsparcia IT", w4: "czerwiec 2024 – grudzień 2024",
-      s5: "Wsparcie IT pierwszej linii dla 1100 pracowników w wielu krajach: sprzęt, oprogramowanie, dostępy i sieć, w tym eskalowane zgłoszenia Tier 1",
-      s10: "Zgłaszałem i eskalowałem poważne incydenty oraz błędy platformy do zespołów inżynierskich",
-      s11: "Przygotowywałem sprzęt dla nowych pracowników, obsługiwałem on/offboarding urządzeń w Meraki MDM i prowadziłem audyty nieaktywnych urządzeń",
-      s12: "Pisałem i utrzymywałem dokumentację wsparcia IT oraz firmowy intranet",
-      h0: "Trzywęzłowy klaster Proxmox",
-      h1: "Samodzielnie zbudowałem i połączyłem w klaster Proxmox VE na trzech fizycznych węzłach",
-      h2: "Moja platforma do ćwiczeń przed RHCSA",
-      k1: "linux", k2: "wirtualizacja", k3: "tożsamość", k4: "kod",
-      km1: "Ubuntu jako system na co dzień",
-      km4: "bash (główny język, obecnie pod RHCSA), Python",
-      e1: "Magister sztucznej inteligencji", em1: "AI for Health · VU / UvA", ew1: "2025 – czerwiec 2027 (planowo)",
-      en1: "Istotne przedmioty: Medical Informatics Basics, Knowledge Representation",
-      en2: "Projekt magisterski (od listopada 2026): wykrywanie zawaleń z użyciem symulowanych cieni",
-      e2: "Licencjat z informatyki",
-      en3: "Przedmioty systemowe: organizacja komputerów (10/10, w tym interpreter bajtkodu IJVM w C), systemy operacyjne, sieci komputerowe, bazy danych",
-      en4: "Praca licencjacka: hybrydowe wykrywanie zawaleń budynków po trzęsieniu ziemi w Antakyi w 2023 r.",
-      cm0: "w przygotowaniu", cw0: "egzamin planowany w Q1 2027",
-      c1: "Operator BSP (VLOS)", c2: "Ratownik WOPR II stopnia",
-      l1: "polski", l2: "angielski", l3: "niemiecki",
-      lw1: "ojczysty", lw2: "Cambridge CAE, ocena A · C2",
-      a1: "Laureat programu Go4Poland", am1: "Fundacja GPW · program dla Polaków studiujących za granicą",
-      o1: "Pracownik sklepu", ow1: "styczeń 2024 – czerwiec 2024",
-      o2: "Pracownik obsługi hotelowej", ow2: "lipiec 2023 – sierpień 2023",
-      o3: "Ratownik", om3: "Hotel Warmia Park · Pluski", ow3: "czerwiec 2022 – sierpień 2022",
-      entries: "pozycji",
-      back: "wróć do projektów"
-    }
-  };
 
   var store = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   };
 
-  /* "" on the index, "../" or "../../" below it. */
-  var ROOT = document.documentElement.getAttribute("data-root") || "";
-
-  var langButtons = document.querySelectorAll(".lang");
   var themeButton = document.getElementById("theme-toggle");
-  var countEl = document.getElementById("projects-count");
-  var cvLink = document.getElementById("cv-link");
-
-  var lang = STRINGS[store.get("hsk.lang")] ? store.get("hsk.lang") : "en";
   var theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+
   /* Pixel layer hooks (pixel.js). Optional: the site works without it. */
   function px(fn, arg) {
     if (window.HSKPixel && window.HSKPixel[fn]) return window.HSKPixel[fn](arg);
-  }
-
-  /* ------------------------------------------------------------- language */
-
-  function applyLang() {
-    var t = STRINGS[lang];
-
-    document.documentElement.lang = lang;
-
-    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
-      var v = t[el.getAttribute("data-i18n")];
-      if (v !== undefined) el.textContent = v;
-    });
-
-    /* Generated text (project summaries, track intros) carries its Polish
-       inline as data-pl; the English is kept in data-en on first swap. */
-    Array.prototype.forEach.call(document.querySelectorAll("[data-pl]"), function (el) {
-      if (el.getAttribute("data-en") === null) el.setAttribute("data-en", el.textContent);
-      el.textContent = el.getAttribute("data-" + lang) || el.getAttribute("data-en");
-    });
-
-    if (cvLink && t.cvfile) cvLink.href = ROOT + t.cvfile;
-
-    if (countEl) {
-      countEl.textContent =
-        document.querySelectorAll("#projects-grid .card").length + " " + t.entries;
-    }
-
-    px("face", lang);
-
-    Array.prototype.forEach.call(langButtons, function (b) {
-      var on = b.getAttribute("data-lang") === lang;
-      b.classList.toggle("is-on", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
-
-  function setLang(next) {
-    if (!STRINGS[next]) return;
-    lang = next;
-    store.set("hsk.lang", next);
-    applyLang();
   }
 
   /* ---------------------------------------------------------------- theme */
@@ -229,14 +64,10 @@
 
   /* --------------------------------------------------------------- wiring */
 
-  Array.prototype.forEach.call(langButtons, function (b) {
-    b.addEventListener("click", function () { setLang(b.getAttribute("data-lang")); });
-  });
-
   if (themeButton) themeButton.addEventListener("click", toggleTheme);
 
-  /* Folded sections (the archive) open when the URL points at them, e.g.
-     the "back to projects" link on an archived project's page. */
+  /* Folded sections (earlier work) open when the URL points at them, e.g.
+     the "back" link on an archived project's page. */
   function unfold() {
     var el = window.location.hash && document.getElementById(window.location.hash.slice(1));
     if (el && el.tagName === "DETAILS" && !el.open) {
@@ -248,6 +79,5 @@
   unfold();
 
   pixelTree();
-  applyLang();
   applyTheme();
 })();

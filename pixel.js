@@ -2,16 +2,12 @@
    the ~/projects clearing, the favicon and status glyphs.
    Sprites are text maps — one letter per palette slot, "." is empty — drawn
    as SVG rects. Colours live in styles.css as --px-* tokens, switched by
-   data-theme (light/dark) and data-beaver (quiet/loud) on <html>.
+   data-theme (light/dark) on <html> and data-species on a track's elements.
    Loaded before app.js, which calls window.HSKPixel on user actions. */
 (function () {
   "use strict";
 
   var doc = document.documentElement;
-  var store = {
-    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  };
 
   /* ------------------------------------------------------------- sprites */
 
@@ -54,16 +50,9 @@
   var GLYPHS = {
     tree:   ["...WW...", "..WWWW..", ".WWWWWW.", "..WWWW..", ".WWWWWW.", "WWWWWWWW", "...KK...", "...KK..."],
     gnawed: ["...WW...", "..WWWW..", ".WWWWWW.", "WWWWWWWW", "...KK...", "....K...", "...KK...", "...KK..."],
-    log:    ["........", "........", "........", "KKKKKGG.", "KKKKGKKG", "KKKKGKKG", "KKKKKGG.", "........"],
-    stump:  ["........", "........", "........", "........", "..GGGG..", "..KKKK..", "..KKKK..", ".KKKKKK."],
-    lean:   [".....WW.", "....WWWW", "...WWWW.", "..WWWW..", "..KK....", "...K....", "...KK...", "...KK..."]
+    log:    ["........", "........", "........", "KKKKKGG.", "KKKKGKKG", "KKKKGKKG", "KKKKKGG.", "........"]
   };
 
-  /* Project and objective states share one vocabulary: a tree's life. */
-  var STATUS_GLYPH = {
-    todo: "tree", active: "gnawed", practising: "gnawed", complete: "log", done: "log",
-    abandoned: "stump", discontinued: "stump", limbo: "lean"
-  };
 
   var LOG_END = [".QQQQ.", "QGGGGQ", "QGKKGQ", "QGKKGQ", "QGGGGQ", ".QQQQ."];
 
@@ -573,6 +562,211 @@
     return cv.rows();
   }
 
+  /* --------------------------------------------------------------- woods */
+
+  /* Track icons: one small tree per species, used wherever a track is named.
+     "book" is the shelf's icon. Topic colours C D E F H come from styles.css. */
+  var ICONS = {
+    oak:   ["..WWWW..", ".WWWWWW.", "WWWWWVWW", "WWWWVVVW", ".WWVVVV.", "...KQ...", "...KQ...", "..KKQQ.."],
+    pine:  ["...WV...", "..WWVV..", "...WV...", "..WWVV..", ".WWWVVV.", "..WWVV..", ".WWWVVV.", "WWWWVVVV", "...KQ...", "..KKQQ.."],
+    birch: ["...WW...", "..WWWV..", "..WWWV..", "..WWVV..", "..WVVV..", "...VV...", "...KK...", "...QK...", "...KK...", "..KKKK.."],
+    book:  ["........", ".CC.DD..", ".CC.DDE.", ".GC.DGE.", ".CC.DDE.", ".CC.DDE.", ".CC.DDE.", "QQQQQQQQ"]
+  };
+
+  /* The ring strip: one block per objective. Standing (todo) is leaf, gnawed
+     (practising) is pale wood, felled (done) is the log's dark wood. */
+  var RING = { t: "W", p: "L", d: "K" };
+  function ringStrip(codes) {
+    var rows = ["", "", ""];
+    for (var i = 0; i < codes.length; i++) {
+      var c = RING[codes.charAt(i)] || "W";
+      for (var y = 0; y < 3; y++) rows[y] += c + c + (i < codes.length - 1 ? "." : "");
+    }
+    return rows;
+  }
+
+  /* The notes track has no build: its tree grows a stage per note, from a
+     seedling to a full tree after six. */
+  var SEEDLING = ["..W.", ".WWV", "..K.", "..K.", ".KKQ"];
+  function notesTree(kind, n) {
+    var cv = new Canvas(28, 34);
+    if (n < 1) {
+      cv.blit(SEEDLING, 11, 29);
+    } else {
+      var h = 12 + 4 * Math.min(n - 1, 5);
+      species(kind)(cv, 11, 34, h, 61, false, { tw: h > 20 ? 4 : 3, r: Math.max(4, Math.round(h * 0.26)) });
+    }
+    return cv.rows();
+  }
+
+  /* The lodge: a beaver's dome of sticks and mud. The shelf lives inside,
+     so it gets a round, lit window. */
+  function lodge() {
+    var W = 34, H = 18, cv = new Canvas(W, H), rand = rng(73), cx = W / 2 - 0.5;
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) {
+        var dx = (x - cx) / (W / 2), dy = (H - 1 - y) / H;
+        if (dx * dx + dy * dy > 1) continue;
+        var r = rand();
+        cv.set(x, y, y > H - 4 ? (r < 0.5 ? "M" : "Q") : (r < 0.18 ? "K" : r < 0.3 ? "M" : "Q"));
+      }
+    }
+    /* sticks poking out of the dome */
+    [[6, 6, -1], [27, 6, 1], [12, 2, -1], [21, 2, 1], [3, 11, -1], [30, 11, 1]].forEach(function (s) {
+      for (var i = 0; i < 4; i++) cv.set(s[0] + s[2] * i, s[1] - Math.floor(i / 2), "K");
+    });
+    cv.blit([".QQQ.", "QAAGQ", "QAAAQ", ".QQQ."], 15, 6);
+    for (var x2 = 14; x2 < 20; x2++) { cv.set(x2, H - 1, "O"); cv.set(x2, H - 2, "O"); }
+    cv.set(14, H - 2, "M"); cv.set(19, H - 2, "M");
+    return cv.rows();
+  }
+
+  /* The notice board: notes pinned up, at most six shown. */
+  function board(n) {
+    var cv = new Canvas(24, 22), x, y;
+    for (y = 8; y < 22; y++) { cv.set(3, y, "K"); cv.set(4, y, "Q"); cv.set(19, y, "K"); cv.set(20, y, "Q"); }
+    for (y = 0; y < 13; y++) {
+      for (x = 1; x < 23; x++) cv.set(x, y, (y === 0 || y === 12 || x === 1 || x === 22) ? "Q" : "L");
+    }
+    var shown = Math.max(1, Math.min(n, 6));
+    for (var i = 0; i < shown; i++) {
+      var nx = 3 + (i % 3) * 6 + (i >= 3 ? 1 : 0), ny = 2 + Math.floor(i / 3) * 5;
+      for (y = 0; y < 4; y++) for (x = 0; x < 4; x++) cv.set(nx + x, ny + y, n ? "G" : "S");
+      cv.set(nx + 1, ny + 2, n ? "S" : "M"); cv.set(nx + 2, ny + 2, n ? "S" : "M");
+      cv.set(nx + 1, ny, "R");
+    }
+    return cv.rows();
+  }
+
+  /* A stand: three trees of the track's species, tallest at the back. */
+  function stand(kind, seed) {
+    var cv = new Canvas(34, 44);
+    species(kind)(cv, 3, 44, 30, seed + 1, false, { tw: 3, r: 6 });
+    species(kind)(cv, 13, 44, 42, seed + 2, false, { tw: 4 });
+    species(kind)(cv, 25, 44, 26, seed + 3, false, { tw: 3, r: 5 });
+    return cv.rows();
+  }
+
+  /* The river under the woods: ground, a mud bank, water, and shimmer that
+     alternates between two frames (styles.css animates it). */
+  function river(cols) {
+    var rows = [], y, x, r;
+    for (y = 0; y < 8; y++) {
+      r = "";
+      for (x = 0; x < cols; x++) r += y === 0 ? "W" : y === 1 ? (x % 5 ? "M" : "Q") : "U";
+      rows.push(r);
+    }
+    var body = fills(rows), shimmer = "";
+    [0, 1].forEach(function (f) {
+      var g = "";
+      for (y = 3; y < 7; y++) {
+        for (x = 0; x < cols; x++) {
+          if ((x * 3 + y * 7 + f * 11) % 23 === 0) {
+            g += '<rect x="' + x + '" y="' + y + '" width="2" height="1" class="pA"/>';
+          }
+        }
+      }
+      shimmer += '<g class="shimmer shimmer-' + f + '">' + g + "</g>";
+    });
+    return wrap(cols, 8, "", body + shimmer);
+  }
+
+  /* The hub map: one place per thing, each a link, on the river bank. */
+  function woodsMap(el, places) {
+    var row = document.createElement("div");
+    row.className = "woods-places";
+    places.forEach(function (p) {
+      var a = document.createElement("a");
+      a.className = "place place--" + p.kind;
+      a.href = p.href;
+      if (p.species) a.setAttribute("data-species", p.species);
+      var art = "", label = p.label + "/";
+      if (p.kind === "lodge") {
+        art = svg(lodge());
+        a.setAttribute("aria-label", "the lodge: the shelf, " + p.n + " books");
+      } else if (p.kind === "stand") {
+        art = svg(stand(p.species, hash(p.label))) + structure(p.structure, p.done, p.total, [], true);
+        a.setAttribute("aria-label", p.label + ": " + p.done + " of " + p.total + " objectives felled");
+        label += " " + p.done + "/" + p.total;
+      } else {
+        art = svg(board(p.n)) + svg(notesTree(p.species, p.n));
+        a.setAttribute("aria-label", p.label + ": " + p.n + " notes on the board");
+      }
+      a.innerHTML = '<span class="place-art">' + art + '</span><span class="place-label">' + label + "</span>";
+      if (p.kind === "stand" && p.active) {
+        a.querySelector(".place-art").appendChild(host(p.finished ? "hat" : "build"));
+      }
+      row.appendChild(a);
+    });
+    el.appendChild(row);
+
+    /* The river runs the full width of the map, redrawn on resize. */
+    var water = document.createElement("div");
+    water.className = "woods-river";
+    el.appendChild(water);
+    function flow() {
+      var s = parseFloat(getComputedStyle(el).getPropertyValue("--s")) || 3;
+      var cols = Math.ceil(Math.max(row.scrollWidth, el.clientWidth) / s);
+      water.innerHTML = river(cols);
+    }
+    flow();
+    window.addEventListener("resize", flow);
+
+    /* Fireflies, shown only at night (dark theme) by styles.css. */
+    var rand = rng(97);
+    for (var i = 0; i < 9; i++) {
+      var f = document.createElement("i");
+      f.className = "firefly";
+      f.style.left = Math.round(rand() * 96) + "%";
+      f.style.top = Math.round(10 + rand() * 60) + "%";
+      f.style.animationDelay = (rand() * 3).toFixed(1) + "s";
+      el.appendChild(f);
+    }
+  }
+
+  /* The bookcase: built from logs, one shelf per topic. Spine height and
+     width are seeded from the book id, so the shelf looks hand-stacked but
+     never changes between visits. Each spine is a link to #book=<id>. */
+  var TONES = "CDEFH";
+  function bookcase(books, topics) {
+    var IN = 52, SH = 20, F = 2, W = IN + F * 2, H = topics.length * (SH + 2) + F;
+    var frame = new Canvas(W, H), x, y, k;
+    for (y = 0; y < H; y++) {
+      for (x = 0; x < W; x++) {
+        if (x < F || x >= W - F) frame.set(x, y, x === 0 || x === W - 1 ? "Q" : "K");
+      }
+    }
+    for (x = 0; x < W; x++) frame.set(x, 0, "Q");
+    var union = new Canvas(W, H), spines = "";
+    topics.forEach(function (tid, ti) {
+      var floor = F + ti * (SH + 2) + SH;      /* shelf board under this row */
+      for (x = 0; x < W; x++) { frame.set(x, floor, "Q"); frame.set(x, floor + 1, "K"); }
+      for (y = floor - SH; y < floor; y++) {
+        for (x = F; x < W - F; x++) frame.set(x, y, "O");
+      }
+      var bx = F + 2;
+      books.filter(function (b) { return b.topic === tid; }).forEach(function (b) {
+        var seed = hash(b.id), rand = rng(seed);
+        var w = 4 + Math.floor(rand() * 3), h = 12 + Math.floor(rand() * 6);
+        var tone = TONES.charAt(ti % TONES.length), cv = new Canvas(W, H);
+        for (y = floor - h; y < floor; y++) {
+          for (x = bx; x < bx + w; x++) cv.set(x, y, x === bx + w - 1 ? "Q" : tone);
+        }
+        cv.set(bx, floor - h, "Q");
+        for (x = bx; x < bx + w - 1; x++) { cv.set(x, floor - h + 2, "G"); if (h > 14) cv.set(x, floor - 4, "G"); }
+        for (k = 0; k < 3; k++) cv.set(bx + Math.floor((w - 1) / 2), floor - h + 5 + k, "O");
+        union.blit(cv.rows(), 0, 0);
+        spines += '<a class="spine" href="#book=' + b.id + '" data-book="' + b.id + '">' +
+          "<title>" + attr(b.title + " — " + b.author) + "</title>" + fills(cv.rows()) + "</a>";
+        bx += w + (rand() < 0.3 ? 1 : 0);
+      });
+    });
+    var all = new Canvas(W, H);
+    all.blit(frame.rows(), 0, 0);
+    all.blit(union.rows(), 0, 0);
+    return wrap(W, H, "a bookcase of " + books.length + " books", edges(all.rows(), W, H) + fills(frame.rows()) + spines);
+  }
+
   /* -------------------------------------------------------------- beaver */
 
   var hosts = [];
@@ -584,6 +778,7 @@
     el.className = "bv";
     if (kit) el.setAttribute("data-kit", kit);
     el.innerHTML = '<span class="bv-sprite"></span><span class="bv-z" aria-hidden="true">z<sup>z</sup></span>';
+    el.addEventListener("click", chew);   /* poke him and he chews */
     hosts.push(el);
     return el;
   }
@@ -607,7 +802,7 @@
     if (!icon || !window.getComputedStyle) return;
     var cs = getComputedStyle(doc);
     var name = document.hidden || state.asleep ? "blink" : "idle";
-    var key = name + doc.dataset.theme + doc.dataset.beaver;
+    var key = name + doc.dataset.theme;
     if (key === iconKey) return;
     iconKey = key;
     var f = FRAMES[name];
@@ -648,22 +843,7 @@
     })();
   }
 
-  function face(lang) { setClass("is-flipped", lang === "pl"); }
-
   function theme(t) { if (t === "dark") sleep(); else wake(); favicon(); }
-
-  /* ------------------------------------------------------- quiet / loud */
-
-  var modeBtn = document.getElementById("beaver-toggle");
-
-  function mode(m) {
-    if (m !== "loud" && m !== "quiet") return doc.dataset.beaver;
-    doc.dataset.beaver = m;
-    store.set("hsk.beaver", m);
-    if (modeBtn) modeBtn.textContent = m === "loud" ? "[quiet]" : "[loud]";
-    favicon();
-    return m;
-  }
 
   /* ---------------------------------------------------------------- wire */
 
@@ -687,40 +867,43 @@
   }
 
   /* Track page: the structure grows by one piece per objective passed.
-     Structure first: he faces left, towards his work, blueprint held out. */
+     Structure first: he faces left, towards his work, blueprint held out.
+     A track without a structure (notes) shows its growing tree instead. */
   var build = document.getElementById("build-scene");
   if (build) {
     var b = readBuild(build);
-    build.setAttribute("data-species", b.species || "oak");
-    build.insertAdjacentHTML("beforeend", structure(b.structure, b.done, b.total, b.logs));
-    if (!b.finished && b.done > 0 && b.done < b.total) build.insertAdjacentHTML("beforeend", svg(nextLog()));
-    build.appendChild(host(b.finished ? "hat" : "build"));
+    if (b.structure === "none") {
+      build.insertAdjacentHTML("beforeend", svg(notesTree(b.species, parseInt(build.getAttribute("data-notes"), 10) || 0)));
+      build.appendChild(host());
+    } else {
+      build.insertAdjacentHTML("beforeend", structure(b.structure, b.done, b.total, b.logs));
+      if (!b.finished && b.done > 0 && b.done < b.total) build.insertAdjacentHTML("beforeend", svg(nextLog()));
+      build.appendChild(host(b.finished ? "hat" : "build"));
+    }
   }
 
-  /* ~/projects clearing: every track's build side by side, each beside a
-     tree of its species, the unbuilt part faintly sketched in. */
-  Array.prototype.forEach.call(document.querySelectorAll(".plot-scene"), function (el) {
-    var b = readBuild(el), cv = new Canvas(24, 44);
-    species(b.species)(cv, 9, 44, 42, hash(b.structure + b.species), false, { tw: 4 });
-    el.insertAdjacentHTML("beforeend", svg(cv.rows()) + structure(b.structure, b.done, b.total, b.logs, true));
-  });
+  /* The woods hub map. */
+  var map = document.getElementById("woods-map");
+  if (map) {
+    var places = [];
+    try { places = JSON.parse(map.getAttribute("data-places") || "[]"); } catch (e) {}
+    woodsMap(map, places);
+  }
+
+  /* The shelf: the bookcase, and the beaver reading beside it. */
+  var shelfEl = document.getElementById("shelf-scene");
+  if (shelfEl) {
+    var books = [], topics = [];
+    try {
+      books = JSON.parse(shelfEl.getAttribute("data-books") || "[]");
+      topics = JSON.parse(shelfEl.getAttribute("data-topics") || "[]");
+    } catch (e) {}
+    shelfEl.insertAdjacentHTML("beforeend", bookcase(books, topics));
+    shelfEl.appendChild(host());
+  }
 
   draw();
 
-  Array.prototype.forEach.call(document.querySelectorAll(".status[data-status]"), function (el) {
-    var g = GLYPHS[STATUS_GLYPH[el.getAttribute("data-status")]];
-    if (!g) return;
-    el.classList.add("has-px");
-    el.insertAdjacentHTML("afterbegin", svg(g));
-  });
-
-  mode(doc.dataset.beaver === "loud" ? "loud" : "quiet");
-  if (modeBtn) {
-    modeBtn.addEventListener("click", function () {
-      mode(doc.dataset.beaver === "loud" ? "quiet" : "loud");
-      chew();
-    });
-  }
 
   document.addEventListener("visibilitychange", favicon);
 
@@ -747,10 +930,12 @@
   }
 
   window.HSKPixel = {
-    chew: chew, theme: theme, face: face, mode: mode, wake: wake,
-    sprite: sprite, STATUS_GLYPH: STATUS_GLYPH,
+    chew: chew, theme: theme, wake: wake, sprite: sprite,
+    icon: function (name) { return ICONS[name] ? svg(ICONS[name]) : ""; },
+    ring: function (codes, label) { return codes ? svg(ringStrip(codes), label) : ""; },
     grove: function (st, id, kind, label) { return svg(grove(st, id, kind), label); },
     /* for previews and tests: raw text maps */
-    _rows: { grove: grove, structures: STRUCTURES, species: SPECIES, dress: dress, FRAMES: FRAMES }
+    _rows: { grove: grove, structures: STRUCTURES, species: SPECIES, dress: dress, FRAMES: FRAMES,
+              lodge: lodge, board: board, stand: stand, notesTree: notesTree, ringStrip: ringStrip }
   };
 })();

@@ -1,11 +1,8 @@
 ---
 title: Simurgh
-group: archive
-order: 2
 status: complete
 date: 2026-03-13
 summary: Chess impossibility recognition with a ResNet-20
-summary_pl: Rozpoznawanie niemożliwych pozycji szachowych siecią ResNet-20
 description: Simurgh — classifying whether a chess position is reachable, not merely legal, with a ResNet-20 over 13×8×8 bitboards. ROC AUC 0.9959.
 format: html
 ---

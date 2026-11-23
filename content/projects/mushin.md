@@ -1,11 +1,8 @@
 ---
 title: Mushin
-group: archive
-order: 3
 status: active
 date: 2026-02-23
 summary: This very website
-summary_pl: Ta właśnie strona
 description: Mushin — hugokatzer.tech as plain static files in an nginx container, built by GitHub Actions, pushed to GHCR and run with Docker Compose on a VPS.
 format: html
 ---
@@ -36,7 +33,7 @@ docker compose -f compose.yaml up -d --build   # the real image, no mount</code>
 
     <h2>The beaver</h2>
 
-    <p>The pixel beaver, his trees and what he builds are drawn in the browser from text sprite maps and small procedural generators (<code>pixel.js</code>), with no image files. Each track (a cert like RHCSA, or a project that keeps a log) gets its own tree species; every objective is a tree, felled once passed, and its log goes into that track's structure. The beaver comes from the logo of an earlier project, <a href="stumberg.html">Stumberg</a>. Toggle <code>[loud]</code> / <code>[quiet]</code> in the header.</p>
+    <p>The pixel beaver, his trees and what he builds are drawn in the browser from text sprite maps and small procedural generators (<code>pixel.js</code>), with no image files. The site is split in two: a plain about page for the CV, and <a href="../woods/index.html">the woods</a>, where each track (a weekly cert log, or notes) is a stand of its own tree species, every objective a tree, felled once passed, its log going into that track's build. The books I read live in the lodge. The beaver comes from the logo of an earlier project, <a href="stumberg.html">Stumberg</a>.</p>
 
     <div class="note">
       <p>Previously, Mushin was a Hugo static site deployed by SFTP to a Cloudpanel VPS. Version 2.0 dropped the generator and moved to a container image, which is simpler to run and to roll back.</p>

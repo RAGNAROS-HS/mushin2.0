@@ -3,23 +3,24 @@ title: Hugo Sokołowski-Katzer
 description: Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.
 head: <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Hugo Sokołowski-Katzer","url":"https://hugokatzer.tech/","jobTitle":"IT support","address":{"@type":"PostalAddress","addressLocality":"Amsterdam","addressCountry":"NL"},"sameAs":["https://github.com/RAGNAROS-HS","https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"]}</script>
 ---
-<!-- Homepage body: bin/build.py fills in the project grid, count and hero tree species, then wraps it in shell.html. -->
+<!-- The about page: bin/build.py fills in the status line, earlier work and hero species, then wraps it in shell.html. -->
   <section id="whoami" class="section section--hero">
     <div class="prompt">$ whoami</div>
     <h1 class="name">Hugo<br>Sokołowski-Katzer</h1>
-    <div class="scene" id="hero-scene" data-species="{{hero_species}}"></div>
+    <a class="scene" id="hero-scene" href="woods/index.html" data-species="{{hero_species}}" title="follow him into the woods"></a>
     <div class="ruled-row">
-      <span data-i18n="role">IT support → Linux administration</span>
+      <span>IT support → Linux administration</span>
       <span class="rule rule--dashed"></span>
-      <span data-i18n="loc">Europe/Amsterdam · EU citizen</span>
+      <span>Europe/Amsterdam · EU citizen</span>
     </div>
-    <p class="bio" data-i18n="bio">I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.</p>
+{{status}}
+    <p class="bio">I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.</p>
 
     <div class="cells">
       <a class="cell" href="https://github.com/RAGNAROS-HS"><span>github</span><span class="dim">/RAGNAROS-HS &rarr;</span></a>
       <a class="cell" href="https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"><span>linkedin</span><span class="dim">/in/hugo-s-k &rarr;</span></a>
       <a class="cell" href="mailto:hugo.s.katzer@gmail.com"><span>mail</span><span class="dim">hugo.s.katzer@ &rarr;</span></a>
-      <a class="cell" id="cv-link" href="pdfs/CV4_0.pdf"><span data-i18n="cv">resume</span><span class="dim">.pdf &rarr;</span></a>
+      <a class="cell" id="cv-link" href="pdfs/CV4_0.pdf"><span>resume</span><span class="dim">.pdf &rarr;</span></a>
     </div>
   </section>
 
@@ -27,7 +28,7 @@ head: <script type="application/ld+json">{"@context":"https://schema.org","@type
     <div class="sec-head">
       <span class="prompt">$ tree ~/career</span>
       <span class="rule rule--dashed"></span>
-      <span class="prompt" data-i18n="n2">timeline</span>
+      <span class="prompt">timeline</span>
     </div>
 
     <div class="tree">
@@ -38,172 +39,165 @@ head: <script type="application/ld+json">{"@context":"https://schema.org","@type
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b1">work/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">work/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r1">Data, Automation &amp; AI Intern</span><span class="rule rule--dotted"></span><span class="meta">Talk360 · Amsterdam</span><span class="when" data-i18n="w1">apr 2026 – may 2026</span></div>
+        <div class="row-line"><span class="label">Data, Automation &amp; AI Intern</span><span class="rule rule--dotted"></span><span class="meta">Talk360 · Amsterdam</span><span class="when">apr 2026 – may 2026</span></div>
       </div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t1">Built production monitoring for live telecom traffic on self-hosted n8n, using statistical process control to flag anomalies</span></div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t2">Automated detection of fraud patterns that led to bans of spammers</span></div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t3">Automatically flagged customers with poor call experiences and routed support to them</span></div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="t4">Replaced manual reporting with scheduled aggregation across internal databases</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Built production monitoring for live telecom traffic on self-hosted n8n, using statistical process control to flag anomalies</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Automated detection of fraud patterns that led to bans of spammers</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Automatically flagged customers with poor call experiences and routed support to them</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Replaced manual reporting with scheduled aggregation across internal databases</span></div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label">swapfiets/</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="sm">IT Operations · recommendation letter available</span><span class="when" data-i18n="sw">jun 2024 – aug 2025</span></div>
+        <div class="row-line"><span class="label">swapfiets/</span><span class="rule rule--dotted"></span><span class="meta">IT Operations · recommendation letter available</span><span class="when">jun 2024 – aug 2025</span></div>
       </div>
       <div class="row">
         <span class="pre">│       ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r2">Information Security Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w2">jun 2025 – aug 2025</span></div>
+        <div class="row-line"><span class="label">Information Security Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">jun 2025 – aug 2025</span></div>
       </div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s2">Investigated security incidents, incl. damage control after a malicious insider</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s1">Mapped SOC 2 controls in Vanta and collected supporting evidence across systems</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s6">Improved internal awareness and support processes around data privacy and security</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Investigated security incidents, incl. damage control after a malicious insider</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Mapped SOC 2 controls in Vanta and collected supporting evidence across systems</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Improved internal awareness and support processes around data privacy and security</span></div>
       <div class="row">
         <span class="pre">│       ├── </span>
-        <div class="row-line"><span class="label" data-i18n="r3">IT Intern, general IT</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w3">dec 2024 – jun 2025</span></div>
+        <div class="row-line"><span class="label">IT Intern, general IT</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">dec 2024 – jun 2025</span></div>
       </div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s3">Owned identity lifecycle in Okta and AccessOwl: daily onboarding, offboarding and access provisioning; automated parts of HR onboarding</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s7">Administered Google Workspace, Atlassian and Slack with attention to security; ran quarterly reviews of Slack app integrations</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s4">Initiated and led disaster recovery tests; a simulated device-loss scenario exposed a gap that would have cut access to a quarter of managed accounts</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s8">Built Slack and Zapier workflow automations that reduced manual work and improved response times</span></div>
-      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note" data-i18n="s9">Trained and mentored new interns through their onboarding</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Owned identity lifecycle in Okta and AccessOwl: daily onboarding, offboarding and access provisioning; automated parts of HR onboarding</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Administered Google Workspace, Atlassian and Slack with attention to security; ran quarterly reviews of Slack app integrations</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Initiated and led disaster recovery tests; a simulated device-loss scenario exposed a gap that would have cut access to a quarter of managed accounts</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Built Slack and Zapier workflow automations that reduced manual work and improved response times</span></div>
+      <div class="row row--note"><span class="pre">│       │   </span><span class="row-note">Trained and mentored new interns through their onboarding</span></div>
       <div class="row">
         <span class="pre">│       └── </span>
-        <div class="row-line"><span class="label" data-i18n="r4">IT Support Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="w4">jun 2024 – dec 2024</span></div>
+        <div class="row-line"><span class="label">IT Support Intern</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">jun 2024 – dec 2024</span></div>
       </div>
-      <div class="row row--note"><span class="pre">│           </span><span class="row-note" data-i18n="s5">First-line IT support for 1,100 employees across multiple countries: hardware, software, access and network issues, incl. escalated Tier 1 tickets</span></div>
-      <div class="row row--note"><span class="pre">│           </span><span class="row-note" data-i18n="s10">Reported and escalated high-impact incidents and platform bugs to engineering teams</span></div>
-      <div class="row row--note"><span class="pre">│           </span><span class="row-note" data-i18n="s11">Set up hardware for new hires, handled asset on/offboarding in Meraki MDM and ran inactive-device audits</span></div>
-      <div class="row row--note"><span class="pre">│           </span><span class="row-note" data-i18n="s12">Wrote and maintained IT support documentation and the company intranet</span></div>
+      <div class="row row--note"><span class="pre">│           </span><span class="row-note">First-line IT support for 1,100 employees across multiple countries: hardware, software, access and network issues, incl. escalated Tier 1 tickets</span></div>
+      <div class="row row--note"><span class="pre">│           </span><span class="row-note">Reported and escalated high-impact incidents and platform bugs to engineering teams</span></div>
+      <div class="row row--note"><span class="pre">│           </span><span class="row-note">Set up hardware for new hires, handled asset on/offboarding in Meraki MDM and ran inactive-device audits</span></div>
+      <div class="row row--note"><span class="pre">│           </span><span class="row-note">Wrote and maintained IT support documentation and the company intranet</span></div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b2">homelab/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">homelab/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="h0">3-node Proxmox cluster</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE · Linux</span><span class="when"></span></div>
+        <div class="row-line"><span class="label">3-node Proxmox cluster</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE · Linux</span><span class="when"></span></div>
       </div>
-      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h1">Built and clustered Proxmox VE across three bare-metal nodes myself</span></div>
-      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h2">My practice platform for RHCSA</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note">Built and clustered Proxmox VE across three bare-metal nodes myself</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note">My practice platform for RHCSA</span></div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b3">skills/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">skills/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="k1">linux</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="km1">Ubuntu as my daily system</span><span class="when"></span></div>
+        <div class="row-line"><span class="label">linux</span><span class="rule rule--dotted"></span><span class="meta">Ubuntu as my daily system</span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="k2">virtualisation</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE</span><span class="when"></span></div>
+        <div class="row-line"><span class="label">virtualisation</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE</span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="k3">identity</span><span class="rule rule--dotted"></span><span class="meta">Okta, AccessOwl, Google Workspace, Meraki MDM</span><span class="when"></span></div>
+        <div class="row-line"><span class="label">identity</span><span class="rule rule--dotted"></span><span class="meta">Okta, AccessOwl, Google Workspace, Meraki MDM</span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="k4">code</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="km4">bash (main language, current RHCSA focus), Python</span><span class="when"></span></div>
-      </div>
-      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
-
-      <div class="row row--head">
-        <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b4">education/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="e1">MSc Artificial Intelligence</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em1">AI for Health · VU / UvA</span><span class="when" data-i18n="ew1">2025 – jun 2027 (expected)</span></div>
-      </div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="en1">Relevant: Medical Informatics Basics, Knowledge Representation</span></div>
-      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note" data-i18n="en2">Master project (from November 2026): collapse detection with simulated shadows</span></div>
-      <div class="row">
-        <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="e2">BSc Computer Science</span><span class="rule rule--dotted"></span><span class="meta">Vrije Universiteit Amsterdam</span><span class="when">2022 – 2025</span></div>
-      </div>
-      <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="en3">Systems coursework: Computer Organization (10/10, incl. an IJVM bytecode interpreter in C), Operating Systems, Computer Networks, Databases</span></div>
-      <div class="row row--note"><span class="pre">│       </span><span class="row-note"><a href="projects/bachelor-thesis.html" data-i18n="en4">Bachelor thesis: hybrid detection of building collapse after the 2023 earthquake in Antakya</a></span></div>
-      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
-
-      <div class="row row--head">
-        <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b5">certs/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label"><a class="label-link" href="projects/rhcsa/index.html">RHCSA (EX200)</a></span><span class="rule rule--dotted"></span><span class="meta" data-i18n="cm0">in preparation</span><span class="when" data-i18n="cw0">exam planned Q1 2027</span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="c1">VLOS UAV operator</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
-      </div>
-      <div class="row">
-        <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="c2">WOPR 2nd Degree Lifeguard</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">code</span><span class="rule rule--dotted"></span><span class="meta">bash (main language, current RHCSA focus), Python</span><span class="when"></span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b6">languages/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">education/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="l1">Polish</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw1">native</span></div>
+        <div class="row-line"><span class="label">MSc Artificial Intelligence</span><span class="rule rule--dotted"></span><span class="meta">AI for Health · VU / UvA</span><span class="when">2025 – jun 2027 (expected)</span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Relevant: Medical Informatics Basics, Knowledge Representation</span></div>
+      <div class="row row--note"><span class="pre">│   │   </span><span class="row-note">Master project (from November 2026): collapse detection with simulated shadows</span></div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label">BSc Computer Science</span><span class="rule rule--dotted"></span><span class="meta">Vrije Universiteit Amsterdam</span><span class="when">2022 – 2025</span></div>
+      </div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note">Systems coursework: Computer Organization (10/10, incl. an IJVM bytecode interpreter in C), Operating Systems, Computer Networks, Databases</span></div>
+      <div class="row row--note"><span class="pre">│       </span><span class="row-note"><a href="projects/bachelor-thesis.html">Bachelor thesis: hybrid detection of building collapse after the 2023 earthquake in Antakya</a></span></div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label">certs/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   ├── </span>
-        <div class="row-line"><span class="label" data-i18n="l2">English</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw2">Cambridge CAE, grade A · C2</span></div>
+        <div class="row-line"><span class="label"><a class="label-link" href="woods/rhcsa/index.html">RHCSA (EX200)</a></span><span class="rule rule--dotted"></span><span class="meta">in preparation</span><span class="when">exam planned Q1 2027</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label">VLOS UAV operator</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="l3">German</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">DSD II · C1</span></div>
+        <div class="row-line"><span class="label">WOPR 2nd Degree Lifeguard</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">├── </span>
-        <div class="row-line"><span class="label" data-i18n="b7">awards/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">languages/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label">Polish</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">native</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label">English</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">Cambridge CAE, grade A · C2</span></div>
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="a1">Go4Poland laureate</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="am1">Fundacja GPW · programme for Poles studying abroad</span><span class="when">2026</span></div>
+        <div class="row-line"><span class="label">German</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when">DSD II · C1</span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label">awards/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label">Go4Poland laureate</span><span class="rule rule--dotted"></span><span class="meta">Fundacja GPW · programme for Poles studying abroad</span><span class="when">2026</span></div>
       </div>
       <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
 
       <div class="row row--head">
         <span class="pre">└── </span>
-        <div class="row-line"><span class="label" data-i18n="b8">other/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+        <div class="row-line"><span class="label">other/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
       </div>
       <div class="row">
         <span class="pre">    ├── </span>
-        <div class="row-line"><span class="label" data-i18n="o1">Shop Assistant</span><span class="rule rule--dotted"></span><span class="meta">SPAR VU Amsterdam</span><span class="when" data-i18n="ow1">jan 2024 – jun 2024</span></div>
+        <div class="row-line"><span class="label">Shop Assistant</span><span class="rule rule--dotted"></span><span class="meta">SPAR VU Amsterdam</span><span class="when">jan 2024 – jun 2024</span></div>
       </div>
       <div class="row">
         <span class="pre">    ├── </span>
-        <div class="row-line"><span class="label" data-i18n="o2">Housekeeper</span><span class="rule rule--dotted"></span><span class="meta">Radisson Hotel &amp; Suites Amsterdam South</span><span class="when" data-i18n="ow2">jul 2023 – aug 2023</span></div>
+        <div class="row-line"><span class="label">Housekeeper</span><span class="rule rule--dotted"></span><span class="meta">Radisson Hotel &amp; Suites Amsterdam South</span><span class="when">jul 2023 – aug 2023</span></div>
       </div>
       <div class="row">
         <span class="pre">    └── </span>
-        <div class="row-line"><span class="label" data-i18n="o3">Lifeguard</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="om3">Hotel Warmia Park · Pluski, PL</span><span class="when" data-i18n="ow3">jun 2022 – aug 2022</span></div>
+        <div class="row-line"><span class="label">Lifeguard</span><span class="rule rule--dotted"></span><span class="meta">Hotel Warmia Park · Pluski, PL</span><span class="when">jun 2022 – aug 2022</span></div>
       </div>
     </div>
   </section>
 
-  <section id="projects" class="section section--last">
-    <div class="sec-head">
-      <span class="prompt">$ ls ~/projects</span>
-      <span class="rule rule--dashed"></span>
-      <span class="prompt" id="projects-count">{{count}} entries</span>
-    </div>
-    <div id="projects-grid">
-{{projects}}
-    </div>
+  <section class="section section--last">
+{{earlier}}
   </section>
 
-  <footer class="foot"><span data-i18n="upd">last updated</span> <span data-i18n="updw">nov 2026</span></footer>
+  <footer class="foot"><span>last updated</span> <span>nov 2026</span></footer>

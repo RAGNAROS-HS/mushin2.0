@@ -1,11 +1,8 @@
 ---
 title: Zamin
-group: archive
-order: 4
 status: active
 date: 2026-02-11
 summary: ML algorithms written from scratch
-summary_pl: Algorytmy ML pisane od zera
 description: Zamin — housing price prediction on the Boston Housing dataset three ways: hand-coded gradient descent, a Keras network, and an evolutionary algorithm.
 format: html
 ---

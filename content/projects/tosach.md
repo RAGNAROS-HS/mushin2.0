@@ -1,11 +1,8 @@
 ---
 title: Tosach
-group: archive
-order: 5
 status: limbo
 date: 2026-01-27
 summary: Scene text recognition with a CRNN
-summary_pl: Rozpoznawanie tekstu w scenach przy pomocy CRNN
 description: Tosach — a CRNN implementation for end-to-end scene text recognition in TensorFlow/Keras. Architecture built, dataset prepared, training not yet run.
 format: html
 ---

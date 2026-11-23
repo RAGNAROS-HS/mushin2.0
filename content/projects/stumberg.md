@@ -1,11 +1,8 @@
 ---
 title: Stumberg
-group: archive
-order: 8
 status: discontinued
 date: 2025-12-03
 summary: Agentic AI assistant with tool use and RAG
-summary_pl: Agentowy asystent AI z użyciem narzędzi i RAG
 description: Stumberg — a personal AI agent built on LangGraph with four modes, persistent PostgreSQL-backed conversations, file context and a dedicated search subagent.
 format: html
 ---

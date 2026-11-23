@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-root="{{root}}">
+<html lang="en" data-root="{{root}}" data-section="{{section}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,9 +26,6 @@
     t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
   document.documentElement.dataset.theme = t;
-  var b;
-  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
-  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
 })();
 </script>
 </head>
@@ -40,18 +37,12 @@
 <header class="bar">
   <span class="host">hsk@infra</span>
   <nav class="nav">
-    <a href="{{home}}#whoami">[<span data-i18n="n1">whoami</span>]</a>
-    <a href="{{home}}#timeline">[<span data-i18n="n2">timeline</span>]</a>
-    <a href="{{home}}#projects">[<span data-i18n="n3">projects</span>]</a>
+    <a class="nav-about" href="{{home}}">[about]</a>
+    <a class="nav-woods" href="{{root}}woods/index.html">[woods]</a>
   </nav>
   <span class="grow"></span>
-  <div class="langs">
-    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
-    <span class="slash">/</span>
-    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
-  </div>
+  <a class="nav-cv" href="{{root}}pdfs/CV4_0.pdf">resume.pdf</a>
   <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
-  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
 </header>
 
 <main class="main">

@@ -4,6 +4,7 @@ title: Example — lorem ipsum dolor sit amet
 chapter: "Ch. 1 — Lorem ipsum"
 practised: [tools-01, tools-02, tools-03, tools-08]
 passed: [tools-01]
+books: [rhcsa-10-cert-guide]
 scripts:
   - name: lorem.sh
     url: https://github.com/RAGNAROS-HS/rhcsa-scripts/blob/main/lorem.sh

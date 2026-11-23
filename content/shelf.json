@@ -1,0 +1,31 @@
+{
+  "topics": [
+    {"id": "shell", "label": "shell & text"},
+    {"id": "linux", "label": "linux"},
+    {"id": "infra", "label": "infrastructure"},
+    {"id": "net", "label": "networking"},
+    {"id": "method", "label": "security & method"}
+  ],
+  "books": [
+    {"id": "bash-pocket-reference", "title": "bash Pocket Reference", "author": "Arnold Robbins", "topic": "shell"},
+    {"id": "bash-cookbook", "title": "bash Cookbook", "author": "Carl Albing, JP Vossen", "topic": "shell"},
+    {"id": "classic-shell-scripting", "title": "Classic Shell Scripting", "author": "Arnold Robbins, Nelson H. F. Beebe", "topic": "shell"},
+    {"id": "sed-and-awk", "title": "sed & awk: UNIX Power Tools", "author": "Dale Dougherty, Arnold Robbins", "topic": "shell"},
+    {"id": "mastering-regular-expressions", "title": "Mastering Regular Expressions", "author": "Jeffrey E. F. Friedl", "topic": "shell"},
+
+    {"id": "rhcsa-10-cert-guide", "title": "Red Hat RHCSA 10 Cert Guide", "author": "Sander van Vugt", "topic": "linux", "track": "rhcsa"},
+    {"id": "how-linux-works", "title": "How Linux Works", "author": "Brian Ward", "topic": "linux"},
+
+    {"id": "kubernetes-in-action", "title": "Kubernetes in Action", "author": "Marko Lukša", "topic": "infra"},
+    {"id": "terraform-up-and-running", "title": "Terraform: Up & Running", "author": "Yevgeniy Brikman", "topic": "infra"},
+    {"id": "docker-deep-dive", "title": "Docker Deep Dive", "author": "Nigel Poulton", "topic": "infra"},
+    {"id": "practice-of-system-administration", "title": "The Practice of System and Network Administration", "author": "Thomas A. Limoncelli, Christina J. Hogan, Strata R. Chalup", "topic": "infra"},
+    {"id": "practice-of-cloud-system-administration", "title": "The Practice of Cloud System Administration", "author": "Thomas A. Limoncelli, Strata R. Chalup, Christina J. Hogan", "topic": "infra"},
+
+    {"id": "computer-networking", "title": "Computer Networking: A Top-Down Approach", "author": "James F. Kurose, Keith W. Ross", "topic": "net"},
+    {"id": "networking-for-system-administrators", "title": "Networking for System Administrators", "author": "Michael W. Lucas", "topic": "net"},
+
+    {"id": "secrets-and-lies", "title": "Secrets and Lies: Digital Security in a Networked World", "author": "Bruce Schneier", "topic": "method"},
+    {"id": "the-toyota-way", "title": "The Toyota Way", "author": "Jeffrey K. Liker", "topic": "method"}
+  ]
+}

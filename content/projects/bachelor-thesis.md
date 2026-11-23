@@ -1,11 +1,8 @@
 ---
 title: Bachelor Thesis
-group: archive
-order: 9
 status: complete
 date: 2025-06-01
 summary: Detecting collapsed buildings with UNET++
-summary_pl: Wykrywanie zawalonych budynków siecią UNET++
 description: Bachelor thesis — detecting collapsed buildings from satellite imagery using UNET++ and shadow-based heuristics, plus an honest post-mortem of what went wrong.
 format: html
 ---

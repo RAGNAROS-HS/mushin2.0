@@ -1,11 +1,8 @@
 ---
 title: Himantes
-group: archive
-order: 6
 status: abandoned
 date: 2026-01-22
 summary: Pokémon type classifier and generator
-summary_pl: Klasyfikator i generator typów Pokémon
 description: Himantes — an abandoned multi-label Pokémon type classifier in PyTorch. A working pipeline that never generalised, and the post-mortem on why.
 format: html
 ---

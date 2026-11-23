@@ -73,7 +73,7 @@ button {
   background: linear-gradient(90deg, var(--tree-c) 2px, transparent 0) 0 0 / 6px 2px repeat-x;
 }
 /* Baseline-aligned rows: lift the rule from the baseline to mid-text. */
-.sec-head .rule, .group-head .rule, .row-line .rule { position: relative; top: -4px; }
+.sec-head .rule, .row-line .rule { position: relative; top: -4px; }
 
 .prompt { color: var(--dim); font-size: 12.5px; }
 
@@ -97,21 +97,12 @@ button {
 
 .nav { display: flex; gap: 14px; flex-wrap: wrap; }
 .nav a { padding: 1px 4px; }
+/* The space you're in: about or the woods. */
+[data-section="about"] .nav-about,
+[data-section="woods"] .nav-woods { color: var(--bg); background: var(--ink); }
+.nav-cv { color: var(--dim); white-space: nowrap; }
+.nav-cv:hover { color: var(--ink); }
 
-.langs { display: flex; align-items: center; gap: 8px; }
-.slash { color: var(--dim); }
-
-.lang {
-  padding: 1px 5px;
-  border: 1px solid var(--line);
-  color: var(--dim);
-}
-.lang.is-on {
-  border-color: transparent;
-  color: var(--bg);
-  background: var(--ink);
-}
-.lang[data-lang="pl"].is-on { background: var(--accent); }
 
 .theme-toggle {
   padding: 1px 5px;
@@ -169,16 +160,6 @@ button {
 }
 
 
-.group-head {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin: 32px 0 12px;
-}
-
-.group-head:first-child { margin-top: 0; }
-
-.group-name { font-size: 14px; }
 
 .foot {
   margin: 8px 0 0;
@@ -195,7 +176,7 @@ button {
   color: var(--ink);
 }
 
-/* --------------------------------------------------------- cell / card grid */
+/* -------------------------------------------------------------- cell grid */
 
 .cells {
   display: grid;
@@ -216,47 +197,22 @@ button {
 
 .section--hero .cells { margin-top: 46px; }
 
-/* Cards draw their own hairlines so empty slots in the last row stay blank. */
-.cells--cards {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  background: none;
-  border: 0;
-}
+/* About: the one generated line that says what I'm doing now. */
+.status-line { margin: 18px 0 0; font-size: 13px; line-height: 1.7; }
+.status-line a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.status-line a:hover { text-decoration-color: var(--ink); }
 
-.card {
-  display: block;
-  padding: 14px;
-  background: var(--bg);
-  outline: 1px solid var(--line);
-}
-
-.card-slug { display: flex; align-items: baseline; gap: 6px; font-size: 14px; }
-/* The tree-state glyph says it all; the word is in the tooltip. */
-.card-slug .status { font-size: 0; }
-.card-slug .status .px { margin-right: 2px; }
-.card-foot { margin-left: auto; color: var(--dim); font-size: 12px; }
-
-.card-desc {
-  margin-top: 6px;
-  color: var(--dim);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-/* A folded group (the archive): closed by default, the whole head is the toggle. */
-.fold { margin-top: 32px; }
-.fold > summary { list-style: none; cursor: pointer; margin-top: 0; }
+/* About: earlier work, folded until asked for. The whole head is the toggle. */
+.fold > summary { list-style: none; cursor: pointer; }
 .fold > summary::-webkit-details-marker { display: none; }
-.fold > summary .group-name::before { content: "[+]\00a0"; color: var(--dim); }
-.fold[open] > summary .group-name::before { content: "[-]\00a0"; }
-.fold > summary:hover .group-name { text-decoration: underline; }
-.fold-count { margin-left: 12px; color: var(--dim); font-size: 12px; }
-.fold[open] > summary { margin-bottom: 12px; }
+.fold > summary .prompt:first-child::before { content: "[+]\00a0"; }
+.fold[open] > summary .prompt:first-child::before { content: "[-]\00a0"; }
+.fold > summary:hover .prompt:first-child { color: var(--ink); }
+.earlier { display: grid; gap: 4px; margin-top: 18px; font-size: 13px; }
+.earlier .row-line { line-height: 1.9; }
 
-/* --------------------------------------------------------------- status */
 
-.status { white-space: nowrap; }
-.status::before { content: "\25CF\00a0"; }
+
 
 /* ------------------------------------------------------------------ tree */
 
@@ -557,49 +513,9 @@ button {
 
 
 /* ---------------------------------------------------------- pixel layer */
-/* Sprite palettes: quiet (greyscale, default) and loud (natural beaver),
-   each in light and dark. Slots are the letters used in pixel.js. */
+/* Sprite palette (natural beaver), light and dark. Slots are the letters
+   used in pixel.js. Colour lives only in the pixels; the UI stays ink. */
 :root {
-  --px-O: #15160f;
-  --px-B: #6b6b66;
-  --px-M: #4a4a46;
-  --px-L: #b3b1aa;
-  --px-G: #ffffff;
-  --px-P: #a8948f;
-  --px-N: #15160f;
-  --px-T: #3a3a36;
-  --px-X: #6b6b66;
-  --px-W: #b3b1aa;
-  --px-V: #9e9c95;
-  --px-K: #6b6b66;
-  --px-Q: #55554f;
-  --px-Z: #3a3a36;
-  --px-Y: #d8d6cf;
-  --px-U: #55554f;
-  --px-S: #9e9c95;
-  --px-A: #e4e2dc;
-}
-html[data-theme="dark"] {
-  --px-O: #0f1110;
-  --px-B: #e4e2dc;
-  --px-M: #b9b7b0;
-  --px-L: #cfcdc6;
-  --px-G: #ffffff;
-  --px-P: #c9b3ad;
-  --px-N: #0f1110;
-  --px-T: #8d8b85;
-  --px-X: #b9b7b0;
-  --px-W: #5d5c57;
-  --px-V: #4a4945;
-  --px-K: #8d8b85;
-  --px-Q: #6b6a65;
-  --px-Z: #000000;
-  --px-Y: #f4f3ef;
-  --px-U: #4a4945;
-  --px-S: #6b6a65;
-  --px-A: #f4f3ef;
-}
-html[data-beaver="loud"] {
   --px-O: #2b1a10;
   --px-B: #7a4a2a;
   --px-M: #5c3720;
@@ -619,7 +535,7 @@ html[data-beaver="loud"] {
   --px-S: #8b8a84;
   --px-A: #bcd4dc;
 }
-html[data-beaver="loud"][data-theme="dark"] {
+html[data-theme="dark"] {
   --px-O: #1a0f08;
   --px-B: #9a6238;
   --px-M: #7a4a2a;
@@ -700,32 +616,16 @@ svg.px {
 /* --------------------------------------------------------------- tracks */
 
 /* Tree species: a track's trees and the wood of its build. Each overrides
-   the leaf (W/V) and wood (K/Q) slots for everything inside it, in all
-   four palettes. Oak is the default palette above. */
-[data-species="pine"] { --px-W: #8a8983; --px-V: #6f6e69; }
-html[data-theme="dark"] [data-species="pine"] { --px-W: #4a4945; --px-V: #3a3936; }
-html[data-beaver="loud"] [data-species="pine"] { --px-W: #4f7a4a; --px-V: #3a5e38; --px-K: #7a4a30; --px-Q: #5c3522; }
-html[data-beaver="loud"][data-theme="dark"] [data-species="pine"] { --px-W: #4a7044; --px-V: #34502f; --px-K: #94603d; --px-Q: #6e4429; }
-[data-species="birch"] { --px-K: #d8d6cf; --px-Q: #55554f; --px-W: #c9c7c0; --px-V: #b3b1aa; }
-html[data-theme="dark"] [data-species="birch"] { --px-K: #cfcdc6; --px-Q: #4a4945; --px-W: #6b6a65; --px-V: #5d5c57; }
-html[data-beaver="loud"] [data-species="birch"] { --px-K: #ece6d6; --px-Q: #3d342c; --px-W: #a5b86a; --px-V: #85994f; }
-html[data-beaver="loud"][data-theme="dark"] [data-species="birch"] { --px-K: #d9d2c0; --px-Q: #2e2620; --px-W: #8fa35a; --px-V: #6f8442; }
+   the leaf (W/V) and wood (K/Q) slots for everything inside it, light and
+   dark. Oak is the default palette above. */
+[data-species="pine"] { --px-W: #4f7a4a; --px-V: #3a5e38; --px-K: #7a4a30; --px-Q: #5c3522; }
+html[data-theme="dark"] [data-species="pine"] { --px-W: #4a7044; --px-V: #34502f; --px-K: #94603d; --px-Q: #6e4429; }
+[data-species="birch"] { --px-K: #ece6d6; --px-Q: #3d342c; --px-W: #a5b86a; --px-V: #85994f; }
+html[data-theme="dark"] [data-species="birch"] { --px-K: #d9d2c0; --px-Q: #2e2620; --px-W: #8fa35a; --px-V: #6f8442; }
 
-/* The unbuilt part of a structure, faintly sketched in (~/projects clearing). */
+/* The unbuilt part of a structure, faintly sketched in (woods map). */
 .ghost { opacity: .14; }
 
-/* ~/projects clearing: every track's build side by side. */
-.clearing {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 18px 34px;
-  margin-bottom: 30px;
-}
-.plot { display: grid; justify-items: start; gap: 10px; color: var(--ink); text-decoration: none; }
-.plot-scene { --s: 2px; display: flex; align-items: flex-end; gap: 6px; }
-.plot-name { font-size: 12.5px; }
-.plot:hover .plot-name, .plot:focus-visible .plot-name { text-decoration: underline; }
 
 /* A track's structure, built one piece per passed objective, and its builder. */
 .build-scene {
@@ -818,9 +718,146 @@ html[data-beaver="loud"][data-theme="dark"] [data-species="birch"] { --px-K: #d9
   .wu { padding: 12px 14px; }
 }
 
-/* Status glyphs: a tree's life instead of a dot. */
-.status.has-px::before { content: none; }
-.status .px { --s: 2px; display: inline-block; vertical-align: -2px; margin-right: 6px; }
+
+/* --------------------------------------------------------------- woods */
+
+/* Shelf topic colours (spines), one slot per topic, in shelf.json order. */
+:root { --px-C: #b5452c; --px-D: #c99a2e; --px-E: #3f6e8c; --px-F: #5f7f3e; --px-H: #7a4f8a; }
+html[data-theme="dark"] { --px-C: #d0603f; --px-D: #e0b347; --px-E: #5a8db0; --px-F: #7da055; --px-H: #9a6bab; }
+.pC { fill: var(--px-C); }
+.pD { fill: var(--px-D); }
+.pE { fill: var(--px-E); }
+.pF { fill: var(--px-F); }
+.pH { fill: var(--px-H); }
+
+/* Track icon and ring strip: the two pixel marks that travel with a track. */
+.ticon { --s: 2px; display: inline-block; vertical-align: -3px; margin-right: 7px; }
+.ring { --s: 2px; display: inline-block; vertical-align: middle; line-height: 0; }
+
+/* The hub map: places on the river bank, each a link. Wider than a phone,
+   so it scrolls sideways inside its frame. */
+.woods-map {
+  --s: 3px;
+  position: relative;
+  margin: 8px 0 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.woods-places {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-evenly;
+  gap: 40px;
+  width: max-content;
+  min-width: 100%;
+  padding: 12px 16px 0;
+}
+/* Signpost labels on one line along the top, the art standing on the bank. */
+.place {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  gap: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.place-label { order: -1; font-size: 12.5px; }
+.place-art { align-self: end; }
+.place:hover .place-label, .place:focus-visible .place-label { text-decoration: underline; }
+.place-art { display: flex; align-items: flex-end; gap: 6px; }
+.woods-head { padding-bottom: 20px; }
+.place:hover .place-art svg { filter: brightness(1.08); }
+.place .bv { --s: 2px; }
+.woods-river { overflow: hidden; }
+.woods-river svg { display: block; }
+.shimmer-1 { visibility: hidden; }
+.firefly { position: absolute; display: none; width: 3px; height: 3px; background: var(--px-Y); }
+html[data-theme="dark"] .firefly { display: block; }
+@media (prefers-reduced-motion: no-preference) {
+  .shimmer-0 { animation: puff-a 1.6s step-end infinite; }
+  .shimmer-1 { animation: puff-b 1.6s step-end infinite; }
+  .firefly { animation: firefly 3.2s step-end infinite; }
+}
+@keyframes firefly { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
+
+/* Track index under the map. */
+.trows { display: grid; }
+.trow {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) auto 1fr auto;
+  align-items: center;
+  gap: 6px 18px;
+  padding: 14px 0;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+}
+.trow:first-child { border-top: 0; padding-top: 0; }
+.trow-name { font-weight: 500; white-space: nowrap; }
+.trow-count { color: var(--dim); font-size: 12px; }
+.trow-last { font-size: 12.5px; white-space: nowrap; }
+.trow-sum { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; }
+
+/* Feed: chips filter by track; entries grouped by month. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 12.5px;
+  text-decoration: none;
+}
+.chip .ticon { margin-right: 6px; vertical-align: 0; }
+.chip:hover { color: var(--ink); border-color: var(--dim); }
+.chip[aria-current] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+.month { display: grid; gap: 12px; }
+.month + .month { margin-top: 18px; }
+.month-name { margin: 0; font-size: 12px; font-weight: 500; color: var(--dim); }
+.wu-head .ticon { margin-right: 0; }
+.wu-track { color: var(--ink); }
+
+/* Shelf: the bookcase, spines as links, and the list underneath. */
+.shelf-scene {
+  --s: 3px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: 30px;
+  overflow-x: auto;
+}
+.shelf-scene .bv { --s: 3px; }
+.spine { cursor: pointer; }
+.spine:hover, .spine:focus-visible, .spine.is-on { transform: translateY(-2px); }
+.spine:focus-visible rect { filter: brightness(1.2); }
+.spine-chip {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  margin-right: 9px;
+  vertical-align: -1px;
+  background: var(--px-C);
+  box-shadow: inset -1px 0 0 var(--px-Q), 0 0 0 1px var(--px-Z);
+}
+.spine-chip[data-tone="D"] { background: var(--px-D); }
+.spine-chip[data-tone="E"] { background: var(--px-E); }
+.spine-chip[data-tone="F"] { background: var(--px-F); }
+.spine-chip[data-tone="H"] { background: var(--px-H); }
+#books .month-name { margin-top: 20px; }
+#books .month-name:first-of-type { margin-top: 0; }
+.books { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.6; }
+.book { padding: 2px 6px; margin: 0 -6px; }
+.book.is-on { background: var(--fill); }
+.book-cited { color: var(--dim); font-size: 12px; }
+.book-cited a { color: var(--dim); }
+
+@media (max-width: 560px) {
+  .trow { grid-template-columns: 1fr auto; }
+  .trow .ring { grid-column: 1 / -1; overflow: hidden; max-width: 100%; }
+  .woods-map, .shelf-scene { --s: 2px; }
+}
 
 @media (max-width: 1100px) {
   .scene { --s: 3px; position: static; margin-top: 22px; }

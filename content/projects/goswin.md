@@ -1,11 +1,8 @@
 ---
 title: Goswin
-group: archive
-order: 7
 status: active
 date: 2026-01-10
 summary: n8n workflow automation, kept off GitHub
-summary_pl: Automatyzacje n8n, trzymane poza GitHubem
 description: Goswin — n8n workflow automation, deliberately kept off GitHub because the workflow backups carry sensitive data.
 format: html
 ---

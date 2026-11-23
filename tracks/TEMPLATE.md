@@ -4,6 +4,7 @@ title: Week 1 — what this week was about
 chapter: "Ch. 1 — chapter title from the book"
 practised: [tools-01, tools-02]     # ids from tracks/<track>/README.md
 passed: []                          # see the track's README for what counts as passed
+books: [rhcsa-10-cert-guide]        # optional: ids from content/shelf.json
 scripts:
   - name: example.sh
     url: https://github.com/RAGNAROS-HS/<scripts-repo>/blob/main/example.sh
