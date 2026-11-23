@@ -6,11 +6,18 @@
 <title>Hugo Sokołowski-Katzer</title>
 <meta name="description" content="Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.">
 <meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hugo Sokołowski-Katzer">
+<meta property="og:description" content="Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). 15 months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox home lab. MSc AI student in Amsterdam.">
+<meta property="og:url" content="https://hugokatzer.tech/">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://hugokatzer.tech/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Hugo Sokołowski-Katzer","url":"https://hugokatzer.tech/","jobTitle":"IT support","address":{"@type":"PostalAddress","addressLocality":"Amsterdam","addressCountry":"NL"},"sameAs":["https://github.com/RAGNAROS-HS","https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"]}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <script>
 // Set the theme before first paint so there is no flash of the wrong palette.
 (function () {
@@ -52,6 +59,7 @@
       <span class="rule rule--dashed"></span>
       <span data-i18n="loc">Europe/Amsterdam · EU citizen</span>
     </div>
+    <div class="now"><span class="now-dot" aria-hidden="true">●</span> <span class="dim">now:</span> <span data-i18n="now">open to full-time IT support roles · preparing for RHCSA (EX200), exam planned Q1 2027</span></div>
     <p class="bio" data-i18n="bio">I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.</p>
 
     <div class="cells">
@@ -123,7 +131,7 @@
       </div>
       <div class="row">
         <span class="pre">│   └── </span>
-        <div class="row-line"><span class="label" data-i18n="h0">3-node Proxmox cluster</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE · Linux</span><span class="when"><a href="https://github.com/RAGNAROS-HS/HomeLab">github/HomeLab &rarr;</a></span></div>
+        <div class="row-line"><span class="label" data-i18n="h0">3-node Proxmox cluster</span><span class="rule rule--dotted"></span><span class="meta">Proxmox VE · Linux</span><span class="when"></span></div>
       </div>
       <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h1">Built and clustered Proxmox VE across three bare-metal nodes myself</span></div>
       <div class="row row--note"><span class="pre">│       </span><span class="row-note" data-i18n="h2">My practice platform for RHCSA</span></div>
@@ -240,16 +248,32 @@
       <span class="rule rule--dashed"></span>
       <span class="prompt" id="projects-count">10 entries</span>
     </div>
-    <div class="cells cells--cards" id="projects-grid">
+    <div id="projects-grid">
+      <div class="group-head"><span class="group-name">ops/</span><span class="rule rule--dotted"></span><span class="prompt" data-i18n="g1">infrastructure, automation, systems</span></div>
+      <div class="cells cells--cards">
+
+      <a class="card" href="projects/mushin.html">
+        <div class="card-slug">mushin/</div>
+        <div class="card-desc" data-i18n="p7">This very website</div>
+      </a>
+
+      <a class="card" href="projects/goswin.html">
+        <div class="card-slug">goswin/</div>
+        <div class="card-desc" data-i18n="p6">n8n workflow automation, kept off GitHub</div>
+      </a>
 
       <div class="card">
         <div class="card-slug">ijvm/</div>
         <div class="card-desc" data-i18n="p0">Bytecode interpreter in C — stack machine and memory management</div>
       </div>
 
-      <a class="card" href="projects/stumberg.html">
-        <div class="card-slug">stumberg/</div>
-        <div class="card-desc" data-i18n="p1">Agentic AI assistant with tool use and RAG</div>
+      </div>
+      <div class="group-head"><span class="group-name">ml/</span><span class="rule rule--dotted"></span><span class="prompt" data-i18n="g2">study and side projects in machine learning</span></div>
+      <div class="cells cells--cards">
+
+      <a class="card" href="projects/bachelor-thesis.html">
+        <div class="card-slug">bachelor-thesis/</div>
+        <div class="card-desc" data-i18n="p9">Detecting collapsed buildings with UNET++</div>
       </a>
 
       <a class="card" href="projects/simurgh.html">
@@ -272,14 +296,9 @@
         <div class="card-desc" data-i18n="p5">Scene text recognition with a CRNN</div>
       </a>
 
-      <a class="card" href="projects/goswin.html">
-        <div class="card-slug">goswin/</div>
-        <div class="card-desc" data-i18n="p6">n8n workflow automation, kept off GitHub</div>
-      </a>
-
-      <a class="card" href="projects/mushin.html">
-        <div class="card-slug">mushin/</div>
-        <div class="card-desc" data-i18n="p7">This very website</div>
+      <a class="card" href="projects/stumberg.html">
+        <div class="card-slug">stumberg/</div>
+        <div class="card-desc" data-i18n="p1">Agentic AI assistant with tool use and RAG</div>
       </a>
 
       <a class="card" href="projects/himantes.html">
@@ -287,13 +306,11 @@
         <div class="card-desc" data-i18n="p8">Pokémon type classifier and generator</div>
       </a>
 
-      <a class="card" href="projects/bachelor-thesis.html">
-        <div class="card-slug">bachelor-thesis/</div>
-        <div class="card-desc" data-i18n="p9">Detecting collapsed buildings with UNET++</div>
-      </a>
-
+      </div>
     </div>
   </section>
+
+  <footer class="foot"><span data-i18n="upd">last updated</span> <span data-i18n="updw">nov 2026</span></footer>
 
 </main>
 
@@ -308,6 +325,6 @@
 </div>
 
 </div>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

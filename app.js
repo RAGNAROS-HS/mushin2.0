@@ -4,18 +4,18 @@
 (function () {
   "use strict";
 
-  /* Every project mirrors an entry in content/projects/ on the sister repo
-     (github.com/RAGNAROS-HS/Mushin). Order follows Hugo weight, then date. */
+  /* Every project with its own page under projects/. Order and group match
+     the grid on the index: ops/ first, then ml/. */
   var PROJECTS = [
-    { slug: "stumberg",        name: "Stumberg",       status: "discontinued" },
-    { slug: "simurgh",         name: "Simurgh",        status: "complete" },
-    { slug: "zamin",           name: "Zamin",          status: "active" },
-    { slug: "halghe",          name: "Jadid Halghe",   status: "active" },
-    { slug: "tosach",          name: "Tosach",         status: "limbo" },
-    { slug: "goswin",          name: "Goswin",         status: "active" },
-    { slug: "mushin",          name: "Mushin",         status: "active" },
-    { slug: "himantes",        name: "Himantes",       status: "abandoned" },
-    { slug: "bachelor-thesis", name: "Bachelor Thesis", status: "complete" }
+    { slug: "mushin",          name: "Mushin",          status: "active",       group: "ops" },
+    { slug: "goswin",          name: "Goswin",          status: "active",       group: "ops" },
+    { slug: "bachelor-thesis", name: "Bachelor Thesis", status: "complete",     group: "ml" },
+    { slug: "simurgh",         name: "Simurgh",         status: "complete",     group: "ml" },
+    { slug: "zamin",           name: "Zamin",           status: "active",       group: "ml" },
+    { slug: "halghe",          name: "Jadid Halghe",    status: "active",       group: "ml" },
+    { slug: "tosach",          name: "Tosach",          status: "limbo",        group: "ml" },
+    { slug: "stumberg",        name: "Stumberg",        status: "discontinued", group: "ml" },
+    { slug: "himantes",        name: "Himantes",        status: "abandoned",    group: "ml" }
   ];
 
   var STRINGS = {
@@ -24,6 +24,9 @@
       role: "IT support → Linux administration",
       loc: "Europe/Amsterdam · EU citizen",
       hint: "type `help`",
+      now: "open to full-time IT support roles · preparing for RHCSA (EX200), exam planned Q1 2027",
+      g1: "infrastructure, automation, systems", g2: "study and side projects in machine learning",
+      upd: "last updated", updw: "nov 2026",
       bio: "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
       b1: "work/", b2: "homelab/", b3: "skills/", b4: "education/",
       b5: "certs/", b6: "languages/", b7: "awards/", b8: "other/",
@@ -87,6 +90,9 @@
       role: "wsparcie IT → administracja Linuksem",
       loc: "Europe/Amsterdam · obywatel UE",
       hint: "wpisz `help`",
+      now: "otwarty na pełny etat w IT support · przygotowuję się do RHCSA (EX200), egzamin planowany w Q1 2027",
+      g1: "infrastruktura, automatyzacja, systemy", g2: "projekty z uczenia maszynowego: studia i hobby",
+      upd: "ostatnia aktualizacja", updw: "listopad 2026",
       bio: "Nie boję się zadawać pytań i drążę, dopóki naprawdę nie zrozumiem, dlaczego coś działa tak, a nie inaczej. Lubię łączyć pomysły z miejsc, które naturalnie się nie spotykają, ale pozostaję metodyczny: chcę znać mechanizm, a nie tylko powierzchnię. Brazylijskie jiu-jitsu ukształtowało mój sposób pracy: walczę dalej, gdy robi się gorąco, i nie boję się pobrudzić rąk. Lubię pracować blisko maszyny i dbać o to, by prawdziwe systemy produkcyjne działały wydajnie i bezpiecznie — tam, gdzie brak wiadomości to dobra wiadomość.",
       b1: "praca/", b2: "homelab/", b3: "umiejętności/", b4: "edukacja/",
       b5: "certyfikaty/", b6: "języki/", b7: "nagrody/", b8: "inne/",
@@ -258,6 +264,11 @@
     return null;
   }
 
+  function openCv(line) {
+    push(line, ["opening resume.pdf"]);
+    window.location.href = ROOT + STRINGS[lang].cvfile;
+  }
+
   function run(raw) {
     var line = raw.trim();
     if (!line) return;
@@ -269,7 +280,8 @@
     switch (cmd) {
       case "help":
         push(line, [
-          "help  ls [projects]  cd <section>  open <project>  whoami  theme  lang <en|pl>  clear",
+          "help  ls [projects]  cd <section>  open <project>  whoami  cv  theme  lang <en|pl>  clear",
+          "systemctl status rhcsa",
           "sections: " + SECTIONS.join(", "),
           "open <project> — see `ls projects` for slugs"
         ]);
@@ -277,9 +289,15 @@
 
       case "ls":
         if (arg === "projects" || arg === "~/projects" || arg === "projects/") {
-          push(line, PROJECTS.map(function (p) {
-            return p.slug + "/" + Array(Math.max(1, 18 - p.slug.length)).join(" ") + p.status;
-          }));
+          var rows = [];
+          ["ops", "ml"].forEach(function (g) {
+            rows.push(g + "/");
+            PROJECTS.forEach(function (p) {
+              if (p.group !== g) return;
+              rows.push("  " + p.slug + "/" + Array(Math.max(1, 18 - p.slug.length)).join(" ") + p.status);
+            });
+          });
+          push(line, rows);
         } else {
           push(line, [SECTIONS.map(function (s) { return s + "/"; }).join("  ")]);
         }
@@ -297,8 +315,26 @@
         }
         break;
 
+      case "cv":
+      case "resume":
+        openCv(line);
+        break;
+
+      case "systemctl":
+        if (arg === "status" && (parts[2] || "").toLowerCase().replace(/\.service$/, "") === "rhcsa") {
+          push(line, [
+            "● rhcsa.service - Red Hat Certified System Administrator (EX200)",
+            "     Loaded: loaded (~/homelab; 3 proxmox nodes)",
+            "     Active: active (preparing) — exam planned Q1 2027"
+          ]);
+        } else {
+          push(line, ["usage: systemctl status rhcsa"]);
+        }
+        break;
+
       case "open":
       case "cat": {
+        if (arg === "resume" || arg === "cv" || arg === "resume.pdf") { openCv(line); break; }
         var p = findProject(arg);
         if (p) {
           window.location.href = ROOT + "projects/" + p.slug + ".html";
