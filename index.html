@@ -27,6 +27,9 @@
     t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
   document.documentElement.dataset.theme = t;
+  var b;
+  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
+  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
 })();
 </script>
 </head>
@@ -47,6 +50,7 @@
     <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
   </div>
   <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
 </header>
 
 <main class="main">
@@ -54,6 +58,7 @@
   <section id="whoami" class="section section--hero">
     <div class="prompt">$ whoami</div>
     <h1 class="name">Hugo<br>Sokołowski-Katzer</h1>
+    <div class="scene" id="hero-scene"></div>
     <div class="ruled-row">
       <span data-i18n="role">IT support → Linux administration</span>
       <span class="rule rule--dashed"></span>
@@ -317,6 +322,7 @@
 <div class="console" id="console">
   <div class="console-out" id="console-out" hidden></div>
   <div class="console-in">
+    <span class="beaver-mini" id="beaver-mini" hidden></span>
     <span class="dim">$</span>
     <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
            aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
@@ -325,6 +331,7 @@
 </div>
 
 </div>
+<script src="pixel.js?v=5"></script>
 <script src="app.js?v=5"></script>
 </body>
 </html>

@@ -173,6 +173,12 @@
   var lang = STRINGS[store.get("hsk.lang")] ? store.get("hsk.lang") : "en";
   var theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
   var out = [];
+  var logsGnawed = 0;
+
+  /* Pixel layer hooks (pixel.js). Optional: the site works without it. */
+  function px(fn, arg) {
+    if (window.HSKPixel && window.HSKPixel[fn]) return window.HSKPixel[fn](arg);
+  }
 
   /* ------------------------------------------------------------- language */
 
@@ -198,6 +204,8 @@
         document.querySelectorAll("#projects-grid .card").length + " " + t.entries;
     }
 
+    px("face", lang);
+
     Array.prototype.forEach.call(langButtons, function (b) {
       var on = b.getAttribute("data-lang") === lang;
       b.classList.toggle("is-on", on);
@@ -217,6 +225,7 @@
   function applyTheme() {
     document.documentElement.dataset.theme = theme;
     if (themeButton) themeButton.textContent = theme === "dark" ? "[light]" : "[dark]";
+    px("theme", theme);
   }
 
   function toggleTheme() {
@@ -281,7 +290,7 @@
       case "help":
         push(line, [
           "help  ls [projects]  cd <section>  open <project>  whoami  cv  theme  lang <en|pl>  clear",
-          "systemctl status rhcsa",
+          "systemctl status rhcsa  beaver [loud|quiet]",
           "sections: " + SECTIONS.join(", "),
           "open <project> — see `ls projects` for slugs"
         ]);
@@ -361,12 +370,29 @@
         }
         break;
 
+      case "beaver":
+        if (arg === "loud" || arg === "quiet") {
+          px("mode", arg);
+          push(line, ["beaver -> " + arg]);
+        } else {
+          logsGnawed++;
+          px("chew");
+          push(line, ["*gnaw gnaw*", "logs gnawed this visit: " + logsGnawed]);
+        }
+        break;
+
+      case "sudo":
+        px("shake");
+        push(line, ["hsk is not in the sudoers file. This incident will be reported."]);
+        break;
+
       case "clear":
         out = [];
         render();
         break;
 
       default:
+        px("shake");
         push(line, [cmd + ": command not found"]);
     }
   }
@@ -381,7 +407,10 @@
 
   if (inputEl) {
     inputEl.addEventListener("keydown", function (e) {
-      if (e.key !== "Enter") return;
+      if (e.key !== "Enter") {
+        if (e.key.length === 1 || e.key === "Backspace") px("key");
+        return;
+      }
       run(inputEl.value);
       inputEl.value = "";
     });

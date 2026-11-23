@@ -26,6 +26,9 @@
     t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
   document.documentElement.dataset.theme = t;
+  var b;
+  try { b = localStorage.getItem("hsk.beaver"); } catch (e) {}
+  document.documentElement.dataset.beaver = b === "loud" ? "loud" : "quiet";
 })();
 </script>
 </head>
@@ -46,6 +49,7 @@
     <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
   </div>
   <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+  <button type="button" class="theme-toggle" id="beaver-toggle" title="beaver colours">[loud]</button>
 </header>
 
 <main class="main">
@@ -64,42 +68,35 @@
 
   <article class="section prose">
 
-    <p>Will write about it once I'm done.</p>
+    <p>Mushin is this website: <a href="https://hugokatzer.tech/">hugokatzer.tech</a>. It is plain HTML, CSS and two small files of vanilla JavaScript, with no framework, no theme and no build step. What I care about more is how it gets from a commit to a running server, because that part is ordinary operations work.</p>
 
-    <hr>
-
-    <p>In the meantime, the shape of it: Mushin is the source for the personal website and portfolio at <a href="https://hugokatzer.tech/">hugokatzer.tech</a>. It uses <strong>Hugo</strong> for static site generation, chosen for its speed and markdown-native approach — which lines up neatly with GitHub README files, so writing can be cross-posted rather than rewritten.</p>
-
-    <h2>Sections</h2>
+    <h2>How it runs</h2>
     <ul>
-      <li><strong>Home</strong> — brief introduction and profile</li>
-      <li><strong>Projects</strong> — portfolio of work and research (MSc AI projects, theses)</li>
-      <li><strong>Devlog</strong> — development logs and updates</li>
-      <li><strong>About me</strong> — background information</li>
+      <li><strong>Image:</strong> the <code>Dockerfile</code> copies the static files into <code>nginx:alpine</code>. That is the whole container.</li>
+      <li><strong>Build:</strong> on every push to <code>main</code>, a GitHub Actions workflow builds the image and pushes it to GitHub Container Registry, tagged both <code>latest</code> and with the commit SHA.</li>
+      <li><strong>Server:</strong> a rented VPS runs the container with Docker Compose (<code>compose.prod.yaml</code>), published on port 3000. A reverse proxy in front of it terminates TLS for the domain.</li>
+      <li><strong>Deploy:</strong> manual and deliberate: I pull the new image and recreate the container.</li>
     </ul>
 
-    <h2>Local Development</h2>
+<pre><code># on the VPS
+docker compose -f compose.prod.yaml pull
+docker compose -f compose.prod.yaml up -d</code></pre>
 
-    <p>Requirements: Hugo installed.</p>
+    <p>Because every build is also tagged with its commit SHA, an older version can be pinned and pulled back if a change goes wrong.</p>
 
-<pre><code># clone
-git clone https://github.com/RAGNAROS-HS/Mushin.git &amp;&amp; cd Mushin
+    <h2>Local development</h2>
 
-# run locally, available at localhost:1313
-hugo server -D
+    <p><code>compose.yaml</code> builds the same image locally. A <code>compose.override.yaml</code>, which Compose merges automatically, bind-mounts the repository into the container, so edits show up on refresh without rebuilding.</p>
 
-# build production output into public/
-hugo
+<pre><code>docker compose up -d --build      # dev: live files on localhost:3000
+docker compose -f compose.yaml up -d --build   # the real image, no mount</code></pre>
 
-# create content
-hugo new content/devlog/my-new-post.md</code></pre>
+    <h2>The beaver</h2>
 
-    <h2>Deployment</h2>
-
-    <p>The site runs on a Cloudpanel VPS with automated SFTP deployment via GitHub Actions on every push to <code>main</code>.</p>
+    <p>The pixel beaver and the forest in the margins are drawn in the browser from text sprite maps (<code>pixel.js</code>), with no image files. The beaver comes from the logo of an earlier project, <a href="stumberg.html">Stumberg</a>. Toggle <code>[loud]</code> / <code>[quiet]</code> in the header, or type <code>beaver</code> in the console.</p>
 
     <div class="note">
-      <p><em>Mushin 2.0</em> — the site you are reading now — is a hand-rolled, build-step-free rework of the same material in plain HTML, CSS and one file of vanilla JavaScript. No Hugo, no theme, no generator.</p>
+      <p>Previously, Mushin was a Hugo static site deployed by SFTP to a Cloudpanel VPS. Version 2.0 dropped the generator and moved to a container image, which is simpler to run and to roll back.</p>
     </div>
 
   </article>
@@ -116,6 +113,7 @@ hugo new content/devlog/my-new-post.md</code></pre>
 <div class="console" id="console">
   <div class="console-out" id="console-out" hidden></div>
   <div class="console-in">
+    <span class="beaver-mini" id="beaver-mini" hidden></span>
     <span class="dim">$</span>
     <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
            aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
@@ -124,6 +122,7 @@ hugo new content/devlog/my-new-post.md</code></pre>
 </div>
 
 </div>
+<script src="../pixel.js?v=5"></script>
 <script src="../app.js?v=5"></script>
 </body>
 </html>

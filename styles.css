@@ -537,7 +537,180 @@ input {
   .figs { grid-template-columns: minmax(0, 1fr); }
 }
 
+
+/* ---------------------------------------------------------- pixel layer */
+/* Sprite palettes: quiet (greyscale, default) and loud (natural beaver),
+   each in light and dark. Slots are the letters used in pixel.js. */
+:root {
+  --px-O: #15160f;
+  --px-B: #6b6b66;
+  --px-M: #4a4a46;
+  --px-L: #b3b1aa;
+  --px-G: #ffffff;
+  --px-P: #b3b1aa;
+  --px-N: #15160f;
+  --px-T: #3a3a36;
+  --px-X: #6b6b66;
+  --px-W: #b3b1aa;
+  --px-V: #9e9c95;
+  --px-K: #6b6b66;
+  --px-Q: #55554f;
+  --px-D: #c4c1b9;
+  --px-E: #a3a19a;
+}
+html[data-theme="dark"] {
+  --px-O: #0f1110;
+  --px-B: #e4e2dc;
+  --px-M: #b9b7b0;
+  --px-L: #ffffff;
+  --px-G: #ffffff;
+  --px-P: #ffffff;
+  --px-N: #0f1110;
+  --px-T: #8d8b85;
+  --px-X: #b9b7b0;
+  --px-W: #5d5c57;
+  --px-V: #4a4945;
+  --px-K: #8d8b85;
+  --px-Q: #6b6a65;
+  --px-D: #2a2b29;
+  --px-E: #4a4945;
+}
+html[data-beaver="loud"] {
+  --px-O: #2b1a10;
+  --px-B: #7a4a2a;
+  --px-M: #5c3720;
+  --px-L: #c08a5c;
+  --px-G: #f6eedc;
+  --px-P: #d98a7a;
+  --px-N: #2b1a10;
+  --px-T: #3d2a1f;
+  --px-X: #6b4e3a;
+  --px-W: #7d9a5e;
+  --px-V: #5e7b45;
+  --px-K: #8a5a35;
+  --px-Q: #6b4426;
+  --px-D: #8f6a48;
+  --px-E: #6f8f52;
+}
+html[data-beaver="loud"][data-theme="dark"] {
+  --px-O: #1a0f08;
+  --px-B: #9a6238;
+  --px-M: #7a4a2a;
+  --px-L: #d1a070;
+  --px-G: #f6eedc;
+  --px-P: #e09a88;
+  --px-N: #1a0f08;
+  --px-T: #6b4e3a;
+  --px-X: #8f6d54;
+  --px-W: #6f8f52;
+  --px-V: #4f6b3a;
+  --px-K: #a8743f;
+  --px-Q: #7a5230;
+  --px-D: #4a3626;
+  --px-E: #4f6b3a;
+}
+.pO { fill: var(--px-O); }
+.pB { fill: var(--px-B); }
+.pM { fill: var(--px-M); }
+.pL { fill: var(--px-L); }
+.pG { fill: var(--px-G); }
+.pP { fill: var(--px-P); }
+.pN { fill: var(--px-N); }
+.pT { fill: var(--px-T); }
+.pX { fill: var(--px-X); }
+.pW { fill: var(--px-W); }
+.pV { fill: var(--px-V); }
+.pK { fill: var(--px-K); }
+.pQ { fill: var(--px-Q); }
+.pD { fill: var(--px-D); }
+.pE { fill: var(--px-E); }
+
+svg.px {
+  display: block;
+  shape-rendering: crispEdges;
+  width: calc(var(--cols) * var(--s, 4px));
+  height: calc(var(--rows) * var(--s, 4px));
+}
+
+/* Hero: beaver between a gnawed tree and his stump-and-log. */
+.section--hero { position: relative; }
+.scene {
+  --s: 4px;
+  position: absolute;
+  right: 0;
+  top: 96px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.bv { position: relative; display: block; }
+.bv-sprite { display: block; }
+.bv.is-flipped .bv-sprite { transform: scaleX(-1); }
+.bv.is-shaking { animation: bv-shake 0.4s steps(1) 1; }
+.bv-z {
+  display: none;
+  position: absolute;
+  top: -1.4em;
+  left: 18%;
+  font-size: 12px;
+  color: var(--dim);
+}
+.bv-z sup { font-size: 9px; }
+.bv.is-asleep .bv-z { display: block; }
+
+@keyframes bv-shake {
+  0%   { transform: translateX(-3px); }
+  25%  { transform: translateX(3px); }
+  50%  { transform: translateX(-3px); }
+  75%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+/* Console bar: the small beaver, once the hero one has scrolled away. */
+.beaver-mini { --s: 2px; display: flex; align-items: flex-end; height: 32px; }
+.beaver-mini .bv-z { top: -1.1em; font-size: 10px; }
+.beaver-mini.is-hopping { animation: bv-hop 0.3s steps(1) 1; }
+@keyframes bv-hop { 0% { transform: translateY(-6px); } 50% { transform: translateY(-3px); } 100% { transform: none; } }
+
+/* Margins: a Terraria-ish forest in the gutters, never behind text. */
+.forest-side {
+  --s: 5px;
+  display: none;
+  position: fixed;
+  top: 44px;
+  bottom: 42px;
+  width: calc((100vw - 1080px) / 2);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.forest-side--l {
+  left: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 75%, transparent);
+  mask-image: linear-gradient(to right, #000 75%, transparent);
+}
+.forest-side--r {
+  right: 0;
+  -webkit-mask-image: linear-gradient(to left, #000 75%, transparent);
+  mask-image: linear-gradient(to left, #000 75%, transparent);
+}
+.forest-side svg { position: absolute; bottom: 0; }
+.forest-side--l svg { left: 0; }
+.forest-side--r svg { right: 0; }
+html[data-beaver="loud"] .forest-side { opacity: 0.85; }
+@media (min-width: 1400px) { .forest-side { display: block; } }
+
+/* Status glyphs: a tree's life instead of a dot. */
+.status.has-px::before { content: none; }
+.status .px { --s: 2px; display: inline-block; vertical-align: -2px; margin-right: 6px; }
+
+@media (max-width: 1100px) {
+  .scene { --s: 3px; position: static; margin-top: 22px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .caret { animation: none; }
+  .bv.is-shaking, .beaver-mini.is-hopping { animation: none; }
 }
