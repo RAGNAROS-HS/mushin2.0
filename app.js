@@ -1,42 +1,24 @@
-/* Personal site — language toggle, theme toggle and the command bar.
+/* Personal site — language and theme toggles.
    No build step: this file ships as-is, and is shared by the index and every
    page under projects/. Pages one level down set data-root="../" on <html>. */
 (function () {
   "use strict";
-
-  /* Every project with its own page under projects/. Order and group match
-     the grid on the index: ops/ first, then ml/. */
-  var PROJECTS = [
-    { slug: "log",             name: "RHCSA log",       status: "active",       group: "ops", href: "log/index.html" },
-    { slug: "mushin",          name: "Mushin",          status: "active",       group: "ops" },
-    { slug: "goswin",          name: "Goswin",          status: "active",       group: "ops" },
-    { slug: "bachelor-thesis", name: "Bachelor Thesis", status: "complete",     group: "ml" },
-    { slug: "simurgh",         name: "Simurgh",         status: "complete",     group: "ml" },
-    { slug: "zamin",           name: "Zamin",           status: "active",       group: "ml" },
-    { slug: "halghe",          name: "Jadid Halghe",    status: "active",       group: "ml" },
-    { slug: "tosach",          name: "Tosach",          status: "limbo",        group: "ml" },
-    { slug: "stumberg",        name: "Stumberg",        status: "discontinued", group: "ml" },
-    { slug: "himantes",        name: "Himantes",        status: "abandoned",    group: "ml" }
-  ];
 
   var STRINGS = {
     en: {
       n1: "whoami", n2: "timeline", n3: "projects", cv: "resume", cvfile: "pdfs/CV4_0.pdf",
       role: "IT support → Linux administration",
       loc: "Europe/Amsterdam · EU citizen",
-      hint: "type `help`",
-      now: "open to full-time IT support roles · preparing for RHCSA (EX200), exam planned Q1 2027",
-      g1: "infrastructure, automation, systems", g2: "study and side projects in machine learning",
+      g1: "infrastructure, automation, systems", g2: "study and side projects in machine learning", g3: "older work, kept for the record",
       upd: "last updated", updw: "nov 2026",
       n4: "log",
-      nowLive: "open to full-time IT support roles · RHCSA (EX200): {d} done · {p} practising of {n} objectives · exam planned {t}",
       p10: "RHCSA practice log: weekly writeups and a bash script per chapter",
-      lg_intro: "Practice over memorising. I had read far into the RHCSA book, then started again from chapter one to take it slowly: every chapter gets a bash script that automates something it teaches, and every week a writeup of what I practised, what broke and what I scripted.",
-      lg_legend: "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam.",
+      lg_intro: "I landed on the RHCSA as a solid goal for my Linux development: it's clear-cut, practical and pretty comprehensive for a first cert. I'd already worked through a good chunk of Sander van Vugt's RHCSA prep book, but quickly found that understanding something is a long way from doing it from memory with just a man page at your disposal. Hence this log (badum-ts), where I periodically keep track of how things are progressing. I've thrown away what I did so far and started anew, with an emphasis on repetition: I only move on to the next chapter once I've hammered out a script or two quite a few times with no mistakes. I invite you to take a gander!",
+      lg_legend: "Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam, and its log goes into the cabin above.",
       lg_source: "objective list from Red Hat", lg_clear: "[clear filter]",
       lg_none: "No writeups yet: the first one lands at the end of week one.",
       lg_nomatch: "No writeup covers this objective yet.",
-      lg_cadence: "One writeup a week until the exam. Gaps stay visible.",
+      lg_read: "read",
       lg_scripts: "Scripts", lg_practised: "Objectives practised", lg_passed: "Passed in a timed mock exam",
       lg_back: "back to the log",
       bio: "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
@@ -101,19 +83,16 @@
       n1: "o-mnie", n2: "kariera", n3: "projekty", cv: "cv", cvfile: "pdfs/CV4_0.pdf",
       role: "wsparcie IT → administracja Linuksem",
       loc: "Europe/Amsterdam · obywatel UE",
-      hint: "wpisz `help`",
-      now: "otwarty na pełny etat w IT support · przygotowuję się do RHCSA (EX200), egzamin planowany w Q1 2027",
-      g1: "infrastruktura, automatyzacja, systemy", g2: "projekty z uczenia maszynowego: studia i hobby",
+      g1: "infrastruktura, automatyzacja, systemy", g2: "projekty z uczenia maszynowego: studia i hobby", g3: "starsze projekty, zachowane dla porządku",
       upd: "ostatnia aktualizacja", updw: "listopad 2026",
       n4: "dziennik",
-      nowLive: "otwarty na pełny etat w IT support · RHCSA (EX200): {d} zaliczonych · {p} w trakcie z {n} celów · egzamin planowany w {t}",
       p10: "Dziennik nauki do RHCSA: cotygodniowe wpisy i skrypt w bashu do każdego rozdziału",
-      lg_intro: "Praktyka zamiast wkuwania. Przeczytałem już sporą część książki do RHCSA, ale zacząłem od nowa od pierwszego rozdziału, żeby iść powoli: każdy rozdział dostaje skrypt w bashu, który automatyzuje coś, czego uczy, a każdy tydzień wpis o tym, co przećwiczyłem, co się zepsuło i co oskryptowałem.",
-      lg_legend: "Każde drzewo to jeden oficjalny cel egzaminu. Stojące: jeszcze nie zacząłem. Nadgryzione: przećwiczone we wpisie. Ścięte: zaliczone na egzaminie próbnym na czas.",
+      lg_intro: "Wybrałem RHCSA jako konkretny cel w nauce Linuksa: jest jasno określony, praktyczny i jak na pierwszy certyfikat dość wszechstronny. Przerobiłem już spory kawałek książki przygotowawczej Sandera van Vugta, ale szybko się przekonałem, że rozumieć to jeszcze daleko do zrobienia czegoś z pamięci, mając pod ręką tylko stronę man. Stąd ten log (badum-ts), w którym co jakiś czas zapisuję, jak mi idzie. Wyrzuciłem to, co zrobiłem do tej pory, i zacząłem od nowa, z naciskiem na powtarzanie: do następnego rozdziału przechodzę dopiero wtedy, gdy napiszę skrypt czy dwa wiele razy z rzędu bez błędów. Zapraszam do lektury!",
+      lg_legend: "Każde drzewo to jeden oficjalny cel egzaminu. Stojące: jeszcze nie zacząłem. Nadgryzione: przećwiczone we wpisie. Ścięte: zaliczone na egzaminie próbnym na czas, a jego kłoda idzie na chatkę powyżej.",
       lg_source: "lista celów od Red Hat", lg_clear: "[wyczyść filtr]",
       lg_none: "Jeszcze nie ma wpisów: pierwszy pojawi się pod koniec pierwszego tygodnia.",
       lg_nomatch: "Żaden wpis nie obejmuje jeszcze tego celu.",
-      lg_cadence: "Jeden wpis tygodniowo aż do egzaminu. Przerwy pozostają widoczne.",
+      lg_read: "czytaj",
       lg_scripts: "Skrypty", lg_practised: "Przećwiczone cele", lg_passed: "Zaliczone na egzaminie próbnym na czas",
       lg_back: "wróć do dziennika",
       bio: "Nie boję się zadawać pytań i drążę, dopóki naprawdę nie zrozumiem, dlaczego coś działa tak, a nie inaczej. Lubię łączyć pomysły z miejsc, które naturalnie się nie spotykają, ale pozostaję metodyczny: chcę znać mechanizm, a nie tylko powierzchnię. Brazylijskie jiu-jitsu ukształtowało mój sposób pracy: walczę dalej, gdy robi się gorąco, i nie boję się pobrudzić rąk. Lubię pracować blisko maszyny i dbać o to, by prawdziwe systemy produkcyjne działały wydajnie i bezpiecznie — tam, gdzie brak wiadomości to dobra wiadomość.",
@@ -175,9 +154,6 @@
     }
   };
 
-  var SECTIONS = ["whoami", "timeline", "projects"];
-  var MAX_OUT_LINES = 40;
-
   var store = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -190,28 +166,9 @@
   var themeButton = document.getElementById("theme-toggle");
   var countEl = document.getElementById("projects-count");
   var cvLink = document.getElementById("cv-link");
-  var outEl = document.getElementById("console-out");
-  var inputEl = document.getElementById("console-input");
 
   var lang = STRINGS[store.get("hsk.lang")] ? store.get("hsk.lang") : "en";
   var theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-  var out = [];
-  var logsGnawed = 0;
-  var rhcsa = null;   /* log/status.json, built by bin/build_log.py */
-
-  function loadStatus(cb) {
-    if (rhcsa) { cb(rhcsa); return; }
-    if (!window.fetch) { cb(null); return; }
-    fetch(ROOT + "log/status.json", { cache: "no-cache" })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { rhcsa = j; cb(j); })
-      .catch(function () { cb(null); });
-  }
-
-  function fill(tpl, vals) {
-    return tpl.replace(/\{(\w)\}/g, function (m, k) { return vals[k] !== undefined ? vals[k] : m; });
-  }
-
   /* Pixel layer hooks (pixel.js). Optional: the site works without it. */
   function px(fn, arg) {
     if (window.HSKPixel && window.HSKPixel[fn]) return window.HSKPixel[fn](arg);
@@ -229,11 +186,6 @@
       if (v !== undefined) el.textContent = v;
     });
 
-    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-placeholder]"), function (el) {
-      var v = t[el.getAttribute("data-i18n-placeholder")];
-      if (v !== undefined) el.placeholder = v;
-    });
-
     if (cvLink && t.cvfile) cvLink.href = ROOT + t.cvfile;
 
     if (countEl) {
@@ -242,15 +194,6 @@
     }
 
     px("face", lang);
-
-    /* Live RHCSA counts in the hero line; static text stays if the fetch fails. */
-    var nowEl = document.querySelector('[data-i18n="now"]');
-    if (nowEl && rhcsa && rhcsa.counts) {
-      nowEl.textContent = fill(t.nowLive, {
-        d: rhcsa.counts.done, p: rhcsa.counts.practising, n: rhcsa.counts.total,
-        t: rhcsa.exam.booked || rhcsa.exam.target
-      });
-    }
 
     Array.prototype.forEach.call(langButtons, function (b) {
       var on = b.getAttribute("data-lang") === lang;
@@ -278,189 +221,38 @@
     theme = theme === "dark" ? "light" : "dark";
     store.set("hsk.theme", theme);
     applyTheme();
-    return theme;
   }
 
-  /* -------------------------------------------------------------- console */
+  /* ----------------------------------------------------------------- tree */
 
-  function render() {
-    if (!outEl) return;
-    outEl.hidden = out.length === 0;
-    outEl.textContent = "";
-    out.forEach(function (line) {
-      var d = document.createElement("div");
-      d.textContent = line;
-      outEl.appendChild(d);
-    });
-    outEl.scrollTop = outEl.scrollHeight;
-  }
+  /* Swap the box-drawing prefixes for drawn segments so the connectors run
+     unbroken through tall rows and wrapped notes. The glyphs stay as the
+     no-JS fallback and as the source of truth in the HTML. */
+  var SEG = { "\u2502   ": "pass", "\u251c\u2500\u2500 ": "tee", "\u2514\u2500\u2500 ": "elbow", "    ": "blank", "\u2502": "pass" };
 
-  function push(echo, lines) {
-    out = out.concat(["$ " + echo]).concat(lines).slice(-MAX_OUT_LINES);
-    render();
-  }
-
-  function goTo(id) {
-    var el = document.getElementById(id);
-    if (!el) {
-      /* Not on this page — jump to the index anchor instead. */
-      window.location.href = ROOT + "index.html#" + id;
-      return;
-    }
-    var top = el.getBoundingClientRect().top + window.pageYOffset - 44;
-    window.scrollTo({ top: top, behavior: "smooth" });
-  }
-
-  function findProject(arg) {
-    var q = arg.replace(/\/$/, "");
-    for (var i = 0; i < PROJECTS.length; i++) {
-      if (PROJECTS[i].slug === q) return PROJECTS[i];
-    }
-    return null;
-  }
-
-  function openCv(line) {
-    push(line, ["opening resume.pdf"]);
-    window.location.href = ROOT + STRINGS[lang].cvfile;
-  }
-
-  function projectHref(p) {
-    return ROOT + (p.href || "projects/" + p.slug + ".html");
-  }
-
-  function run(raw) {
-    var line = raw.trim();
-    if (!line) return;
-
-    var parts = line.split(/\s+/);
-    var cmd = parts[0].toLowerCase();
-    var arg = (parts[1] || "").toLowerCase();
-
-    switch (cmd) {
-      case "help":
-        push(line, [
-          "help  ls [projects]  cd <section>  open <project>  whoami  cv  theme  lang <en|pl>  clear",
-          "systemctl status rhcsa  tail log  beaver [loud|quiet]",
-          "sections: " + SECTIONS.join(", "),
-          "open <project> — see `ls projects` for slugs"
-        ]);
-        break;
-
-      case "ls":
-        if (arg === "projects" || arg === "~/projects" || arg === "projects/") {
-          var rows = [];
-          ["ops", "ml"].forEach(function (g) {
-            rows.push(g + "/");
-            PROJECTS.forEach(function (p) {
-              if (p.group !== g) return;
-              rows.push("  " + p.slug + "/" + Array(Math.max(1, 18 - p.slug.length)).join(" ") + p.status);
-            });
-          });
-          push(line, rows);
-        } else {
-          push(line, [SECTIONS.map(function (s) { return s + "/"; }).join("  ")]);
-        }
-        break;
-
-      case "cd":
-      case "goto":
-        if (SECTIONS.indexOf(arg) > -1) {
-          goTo(arg);
-          push(line, ["-> /" + arg]);
-        } else if (findProject(arg)) {
-          window.location.href = projectHref(findProject(arg));
-        } else {
-          push(line, ["cd: no such section: " + arg]);
-        }
-        break;
-
-      case "cv":
-      case "resume":
-        openCv(line);
-        break;
-
-      case "systemctl":
-        if (arg === "status" && (parts[2] || "").toLowerCase().replace(/\.service$/, "") === "rhcsa") {
-          loadStatus(function (s) {
-            var rows = [
-              "● rhcsa.service - Red Hat Certified System Administrator (EX200" + (s ? ", " + s.exam.rhel : "") + ")",
-              "     Active: active (preparing) · exam " + (s && s.exam.booked ? "booked " + s.exam.booked : "planned Q1 2027")
-            ];
-            if (s) {
-              rows.push("   Progress: " + s.counts.done + " done · " + s.counts.practising + " practising · " +
-                        s.counts.todo + " todo (" + s.counts.total + ")");
-              rows.push("    Scripts: " + s.scripts + " · writeups: " + s.writeups + "  → cd log");
-            }
-            push(line, rows);
-          });
-        } else {
-          push(line, ["usage: systemctl status rhcsa"]);
-        }
-        break;
-
-      case "open":
-      case "cat": {
-        if (arg === "resume" || arg === "cv" || arg === "resume.pdf") { openCv(line); break; }
-        var p = findProject(arg);
-        if (p) {
-          window.location.href = projectHref(p);
-        } else {
-          push(line, [cmd + ": no such project: " + arg, "try `ls projects`"]);
-        }
-        break;
+  function pixelTree() {
+    Array.prototype.forEach.call(document.querySelectorAll(".tree .pre"), function (pre) {
+      var src = pre.textContent, kinds = [], i, k;
+      for (i = 0; i < src.length; i += 4) {
+        k = SEG[src.slice(i, i + 4)];
+        if (!k) return;                       /* not a connector, e.g. ~/career/ */
+        kinds.push(k);
       }
-
-      case "whoami":
-        push(line, ["hugo sokolowski-katzer", STRINGS[lang].role]);
-        break;
-
-      case "theme":
-        push(line, ["theme -> " + toggleTheme()]);
-        break;
-
-      case "lang":
-        if (arg === "en" || arg === "pl") {
-          setLang(arg);
-          push(line, ["lang -> " + arg]);
-        } else {
-          push(line, ["usage: lang <en|pl>"]);
+      if (!kinds.length) return;
+      var row = pre.parentNode;
+      pre.setAttribute("data-ascii", src);
+      pre.setAttribute("aria-hidden", "true");
+      pre.textContent = "";
+      pre.classList.add("is-px");
+      kinds.forEach(function (kind, n) {
+        var seg = document.createElement("i");
+        seg.className = "seg seg--" + kind;
+        if (n === kinds.length - 1 && kind !== "pass" && kind !== "blank") {
+          seg.classList.add(row.classList.contains("row--head") ? "is-head" : "is-leaf");
         }
-        break;
-
-      case "tail":
-        if (arg !== "log") { push(line, ["usage: tail log"]); break; }
-        loadStatus(function (s) {
-          if (!s) { push(line, ["tail: cannot read ~/log/status.json"]); return; }
-          if (!s.latest.length) { push(line, ["(no writeups yet)  → cd log"]); return; }
-          push(line, s.latest.map(function (e) { return e.date + "  " + e.title; }));
-        });
-        break;
-
-      case "beaver":
-        if (arg === "loud" || arg === "quiet") {
-          px("mode", arg);
-          push(line, ["beaver -> " + arg]);
-        } else {
-          logsGnawed++;
-          px("chew");
-          push(line, ["*gnaw gnaw*", "logs gnawed this visit: " + logsGnawed]);
-        }
-        break;
-
-      case "sudo":
-        px("shake");
-        push(line, ["hsk is not in the sudoers file. This incident will be reported."]);
-        break;
-
-      case "clear":
-        out = [];
-        render();
-        break;
-
-      default:
-        px("shake");
-        push(line, [cmd + ": command not found"]);
-    }
+        pre.appendChild(seg);
+      });
+    });
   }
 
   /* --------------------------------------------------------------- wiring */
@@ -471,19 +263,7 @@
 
   if (themeButton) themeButton.addEventListener("click", toggleTheme);
 
-  if (inputEl) {
-    inputEl.addEventListener("keydown", function (e) {
-      if (e.key !== "Enter") {
-        if (e.key.length === 1 || e.key === "Backspace") px("key");
-        return;
-      }
-      run(inputEl.value);
-      inputEl.value = "";
-    });
-  }
-
+  pixelTree();
   applyLang();
   applyTheme();
-  render();
-  if (document.querySelector('[data-i18n="now"]')) loadStatus(function (s) { if (s) applyLang(); });
 })();

@@ -2,8 +2,10 @@ services:
   site:
     volumes:
       - .:/usr/share/nginx/html
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
 
 #this yaml auto merges upon compose up, poking a hole in the container and mounting the hosts filesystem. This is so that rapid devlopment can occur.
+#it also swaps in nginx.dev.conf, which tells the browser never to cache, so a plain reload always shows the latest files.
 #if you want to avoid this and go straight to staging you need to manually flag it in the command:
 #docker compose -f compose.yaml up -d --build
 #this line specifically lists on the regular compose.yaml to be merged and ran

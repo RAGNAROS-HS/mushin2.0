@@ -4,9 +4,8 @@
 Reads   log/objectives.json        the 62 official EX200 objectives
         log/entries/*.md           one writeup each, with front matter
         log/templates/shell.html   the page shell shared with the rest of the site
-Writes  log/index.html             progress page: status, dam, objective map, writeups
+Writes  log/index.html             progress page: cabin, objective map, writeups
         log/<slug>.html            one page per writeup
-        log/status.json            counts + latest writeups, for the homepage and console
         log/README.md              how to write an entry + the table of objective ids
 
 Standard library only, so `python3 bin/build_log.py` works anywhere and the
@@ -267,20 +266,16 @@ def page(shell, title, description, url, body, scripts=""):
                             body=body, scripts=scripts)
 
 
-def status_block(exam, counts, entries, n_scripts):
-    last = entries[0] if entries else None
-    active = "active (passed)" if exam.get("passed_exam") else "active (preparing)"
-    when = "exam booked " + exam["booked"] if exam.get("booked") else "exam planned " + exam["target"]
-    lines = [
-        f'<span class="ok">●</span> rhcsa.service - {esc(exam["name"])} ({esc(exam["code"])}, {esc(exam["rhel"])})',
-        f"     Active: {active} · {esc(when)}",
-        f'   Progress: {counts["done"]} done · {counts["practising"]} practising · {counts["todo"]} todo'
-        f'   ({counts["total"]} objectives)',
-        f"    Scripts: {n_scripts} written · {len(entries)} writeup{'s' if len(entries) != 1 else ''}",
-        "   Last log: " + (f'{last["date"].isoformat()} · <a href="{last["slug"]}.html">{esc(last["title"])}</a>'
-                          if last else "none yet"),
-    ]
-    return '<pre class="sysd" aria-label="RHCSA progress">' + "\n".join(lines) + "</pre>"
+def pass_order(entries, by_id):
+    """Passed objectives in the order they were first passed, with the date:
+    the cabin on ~/log is built from them, one piece per objective."""
+    seen, out = set(), []
+    for e in sorted(entries, key=lambda e: (e["date"], e["slug"])):
+        for oid in e["passed"]:
+            if oid not in seen:
+                seen.add(oid)
+                out.append({"id": oid, "text": by_id[oid]["text"], "date": e["date"].isoformat()})
+    return out
 
 
 def build_index(shell, data, by_id, entries, state, counts, n_scripts):
@@ -292,7 +287,7 @@ def build_index(shell, data, by_id, entries, state, counts, n_scripts):
         prac = sum(state[o["id"]] == "practising" for o in objs)
         trees = "".join(
             f'<button type="button" class="obj" data-obj="{o["id"]}" data-state="{state[o["id"]]}" '
-            f'data-glyph="{GLYPH[state[o["id"]]]}" data-text="{esc(o["text"])}" '
+            f'data-text="{esc(o["text"])}" '
             f'aria-label="{esc(o["text"])} — {state[o["id"]]}" title="{esc(o["text"])}">'
             f'<span class="obj-fallback">{state[o["id"]][0]}</span></button>'
             for o in objs)
@@ -306,24 +301,27 @@ def build_index(shell, data, by_id, entries, state, counts, n_scripts):
     rows = []
     for e in entries:
         objs = sorted(set(e["practised"]) | set(e["passed"]))
-        chapter = f'<span class="dim">{esc(e["chapter"])} · </span>' if e["chapter"] else ""
+        chapter = f'<span class="wu-chapter">{esc(e["chapter"])}</span>' if e["chapter"] else ""
+        n_s = len(e["scripts"])
+        summary = f'<span class="wu-sum">{esc(e["summary"])}</span>' if e["summary"] else ""
         rows.append(
             f'<a class="wu" href="{e["slug"]}.html" data-objs="{" ".join(objs)}">'
-            f'<span class="wu-date">{e["date"].isoformat()}</span>'
-            f'<span class="wu-title">{chapter}{esc(e["title"])}</span>'
-            f'<span class="rule rule--dotted"></span>'
-            f'<span class="wu-meta">{len(objs)} obj · {len(e["scripts"])} script{"s" if len(e["scripts"]) != 1 else ""}</span>'
+            f'<span class="wu-head"><span class="wu-date">{e["date"].isoformat()}</span>{chapter}</span>'
+            f'<span class="wu-title">{esc(e["title"])}</span>'
+            f'{summary}'
+            f'<span class="wu-foot"><span class="wu-meta">{len(objs)} obj · {n_s} script{"s" if n_s != 1 else ""}</span>'
+            f'<span class="wu-go"><span data-i18n="lg_read">read</span> &rarr;</span></span>'
             f'</a>')
     writeups = "\n".join(rows) if rows else ""
 
     hat = "1" if exam.get("passed_exam") else "0"
+    logs = esc(json.dumps(pass_order(entries, by_id), ensure_ascii=False, separators=(",", ":")))
     body = f'''  <div class="crumbs">$ cd ~/log</div>
 
   <section class="section section--proj">
     <h1 class="name name--proj">RHCSA log</h1>
-    <p class="proj-sum" data-i18n="lg_intro">Practice over memorising. I had read far into the RHCSA book, then started again from chapter one to take it slowly: every chapter gets a bash script that automates something it teaches, and every week a writeup of what I practised, what broke and what I scripted.</p>
-    {status_block(exam, counts, entries, n_scripts)}
-    <div class="dam-scene" id="dam-scene" data-done="{counts["done"]}" data-hat="{hat}"></div>
+    <p class="proj-sum" data-i18n="lg_intro">I landed on the RHCSA as a solid goal for my Linux development: it's clear-cut, practical and pretty comprehensive for a first cert. I'd already worked through a good chunk of Sander van Vugt's RHCSA prep book, but quickly found that understanding something is a long way from doing it from memory with just a man page at your disposal. Hence this log (badum-ts), where I periodically keep track of how things are progressing. I've thrown away what I did so far and started anew, with an emphasis on repetition: I only move on to the next chapter once I've hammered out a script or two quite a few times with no mistakes. I invite you to take a gander!</p>
+    <div class="build-scene" id="build-scene" data-done="{counts["done"]}" data-total="{counts["total"]}" data-hat="{hat}" data-logs="{logs}"></div>
   </section>
 
   <section class="section" id="objectives">
@@ -332,7 +330,7 @@ def build_index(shell, data, by_id, entries, state, counts, n_scripts):
       <span class="rule rule--dashed"></span>
       <span class="prompt">{counts["total"]} · EX200 · {esc(exam["rhel"])}</span>
     </div>
-    <p class="legend"><span data-i18n="lg_legend">Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam.</span> <a href="{esc(exam["source"])}" data-i18n="lg_source">objective list from Red Hat</a></p>
+    <p class="legend"><span data-i18n="lg_legend">Each tree is one official exam objective. Standing: not started. Gnawed: practised in a writeup. Felled: passed in a timed mock exam, and its log goes into the cabin above.</span> <a href="{esc(exam["source"])}" data-i18n="lg_source">objective list from Red Hat</a></p>
     <div class="groves">
 {chr(10).join(groves)}
     </div>
@@ -352,12 +350,11 @@ def build_index(shell, data, by_id, entries, state, counts, n_scripts):
 {writeups}
     </div>
     <p class="wu-empty" id="wu-empty"{"" if not entries else " hidden"} data-i18n="{"lg_none" if not entries else "lg_nomatch"}">{"No writeups yet: the first one lands at the end of week one." if not entries else "No writeup covers this objective yet."}</p>
-    <p class="legend" data-i18n="lg_cadence">One writeup a week until the exam. Gaps stay visible.</p>
   </section>'''
     desc = (f"RHCSA (EX200, {exam['rhel']}) practice log: {counts['done']} objectives done, "
             f"{counts['practising']} practising, {n_scripts} bash scripts, weekly writeups.")
     return page(shell, "RHCSA log — Hugo Sokołowski-Katzer", desc, f"{SITE}/log/", body,
-                '<script src="log.js?v=6"></script>')
+                '<script src="log.js?v=13"></script>')
 
 
 def build_entry(shell, e, by_id, state, newer, older):
@@ -411,7 +408,7 @@ def build_entry(shell, e, by_id, state, newer, older):
   </nav>'''
     desc = e["summary"] or f"RHCSA practice writeup, {e['date'].isoformat()}."
     return page(shell, f"{e['title']} — RHCSA log", desc, f"{SITE}/log/{e['slug']}.html", body,
-                '<script src="log.js?v=6"></script>')
+                '<script src="log.js?v=13"></script>')
 
 
 def build_readme(data):
@@ -465,15 +462,6 @@ def main():
         older = entries[i + 1] if i + 1 < len(entries) else None
         (LOG / f"{e['slug']}.html").write_text(build_entry(shell, e, by_id, state, newer, older), encoding="utf-8")
 
-    status = {
-        "exam": {k: data["exam"][k] for k in ("code", "rhel", "target", "booked", "passed_exam")},
-        "counts": counts,
-        "scripts": n_scripts,
-        "writeups": len(entries),
-        "latest": [{"slug": e["slug"], "date": e["date"].isoformat(), "title": e["title"],
-                    "chapter": e["chapter"]} for e in entries[:5]],
-    }
-    (LOG / "status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (LOG / "README.md").write_text(build_readme(data), encoding="utf-8")
     print(f"log: {len(entries)} writeups · {counts['done']} done · {counts['practising']} practising · "
           f"{counts['todo']} todo · {n_scripts} scripts")
