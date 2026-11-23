@@ -243,6 +243,16 @@ button {
   line-height: 1.6;
 }
 
+/* A folded group (the archive): closed by default, the whole head is the toggle. */
+.fold { margin-top: 32px; }
+.fold > summary { list-style: none; cursor: pointer; margin-top: 0; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary .group-name::before { content: "[+]\00a0"; color: var(--dim); }
+.fold[open] > summary .group-name::before { content: "[-]\00a0"; }
+.fold > summary:hover .group-name { text-decoration: underline; }
+.fold-count { margin-left: 12px; color: var(--dim); font-size: 12px; }
+.fold[open] > summary { margin-bottom: 12px; }
+
 /* --------------------------------------------------------------- status */
 
 .status { white-space: nowrap; }

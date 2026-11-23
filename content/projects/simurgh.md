@@ -1,6 +1,6 @@
 ---
 title: Simurgh
-group: ml
+group: archive
 order: 2
 status: complete
 date: 2026-03-13

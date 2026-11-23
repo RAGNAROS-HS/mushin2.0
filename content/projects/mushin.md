@@ -1,7 +1,7 @@
 ---
 title: Mushin
 group: archive
-order: 1
+order: 3
 status: active
 date: 2026-02-23
 summary: This very website

@@ -1,8 +1,8 @@
 ---
 title: Jadid Halghe
 name: jadid-halghe
-group: ml
-order: 4
+group: archive
+order: 1
 status: active
 date: 2026-04-05
 summary: RL agents for an agar.io clone

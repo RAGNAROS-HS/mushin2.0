@@ -1,7 +1,7 @@
 ---
 title: Zamin
-group: ml
-order: 3
+group: archive
+order: 4
 status: active
 date: 2026-02-11
 summary: ML algorithms written from scratch

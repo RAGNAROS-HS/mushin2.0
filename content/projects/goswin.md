@@ -1,7 +1,7 @@
 ---
 title: Goswin
 group: archive
-order: 2
+order: 7
 status: active
 date: 2026-01-10
 summary: n8n workflow automation, kept off GitHub

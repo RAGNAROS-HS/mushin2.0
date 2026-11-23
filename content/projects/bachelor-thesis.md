@@ -1,7 +1,7 @@
 ---
 title: Bachelor Thesis
-group: ml
-order: 1
+group: archive
+order: 9
 status: complete
 date: 2025-06-01
 summary: Detecting collapsed buildings with UNET++

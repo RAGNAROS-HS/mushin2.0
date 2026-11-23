@@ -235,6 +235,18 @@
 
   if (themeButton) themeButton.addEventListener("click", toggleTheme);
 
+  /* Folded sections (the archive) open when the URL points at them, e.g.
+     the "back to projects" link on an archived project's page. */
+  function unfold() {
+    var el = window.location.hash && document.getElementById(window.location.hash.slice(1));
+    if (el && el.tagName === "DETAILS" && !el.open) {
+      el.open = true;
+      el.scrollIntoView();
+    }
+  }
+  window.addEventListener("hashchange", unfold);
+  unfold();
+
   pixelTree();
   applyLang();
   applyTheme();

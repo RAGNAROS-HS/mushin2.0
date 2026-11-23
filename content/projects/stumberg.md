@@ -1,7 +1,7 @@
 ---
 title: Stumberg
-group: ml
-order: 6
+group: archive
+order: 8
 status: discontinued
 date: 2025-12-03
 summary: Agentic AI assistant with tool use and RAG

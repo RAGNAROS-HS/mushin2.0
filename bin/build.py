@@ -422,9 +422,11 @@ def href(item, prefix=""):
     return prefix + (f"{item['slug']}/index.html" if item["kind"] == "track" else f"{item['slug']}.html")
 
 
-def proj_nav(items, item, prefix):
+def proj_nav(items, item, prefix, groups):
+    items = [x for x in items if x["group"] == item["group"]]   # prev/next stay within the group
     i = items.index(item)
-    out = [f'<a href="{prefix}../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>',
+    back = item["group"] if groups[item["group"]].get("collapsed") else "projects"
+    out = [f'<a href="{prefix}../index.html#{back}">&larr; <span data-i18n="back">back to projects</span></a>',
            '<span class="grow"></span>']
     if i > 0:
         out.append(f'<a href="{href(items[i - 1], prefix)}">&larr; {esc(items[i - 1]["name"])}</a>')
@@ -433,7 +435,7 @@ def proj_nav(items, item, prefix):
     return '  <nav class="proj-nav">\n    ' + "\n    ".join(out) + "\n  </nav>"
 
 
-def build_project(site, items, p):
+def build_project(site, groups, items, p):
     main = f'''  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/{esc(p["name"])}</div>
 
   <section class="section section--proj">
@@ -449,7 +451,7 @@ def build_project(site, items, p):
 {p["body"].rstrip()}
   </article>
 
-{proj_nav(items, p, "")}'''
+{proj_nav(items, p, "", groups)}'''
     site.page(f"projects/{p['slug']}.html", f"{p['title']} — {OWNER}", p["description"], main)
 
 
@@ -474,7 +476,7 @@ def scene_attrs(t):
             f'data-hat="{"1" if t["finished"] else "0"}" data-logs="{logs}"')
 
 
-def build_track(site, items, t):
+def build_track(site, groups, items, t):
     state, counts, entries, slug = t["state"], t["counts"], t["entries"], t["slug"]
     intro, intro_pl = tr(t, "intro", slug)
     legend, legend_pl = tr(t, "legend", slug)
@@ -553,7 +555,7 @@ def build_track(site, items, t):
     <p class="wu-empty" id="wu-empty"{"" if not entries else " hidden"} data-i18n="{"tr_none" if not entries else "tr_nomatch"}">{"No writeups yet." if not entries else "No writeup covers this objective yet."}</p>
   </section>
 
-{proj_nav(items, t, "../")}'''
+{proj_nav(items, t, "../", groups)}'''
     desc = (f"{t['title']}{' (' + t['label'] + ')' if t.get('label') else ''}: "
             f"{counts['done']} of {counts['total']} objectives done, {counts['practising']} practising, "
             f"{t['n_scripts']} scripts, {len(entries)} writeups.")
@@ -657,11 +659,16 @@ def build_home(site, groups, items):
         members = [i for i in items if i["group"] == g["id"]]
         if not members:
             continue
-        out.append(f'      <div class="group-head"><span class="group-name">{g["id"]}/</span>'
-                   f'<span class="rule rule--dotted"></span>'
-                   f'<span class="prompt"{pl_attr(g.get("pl"))}>{esc(g["en"])}</span></div>\n'
-                   f'      <div class="cells cells--cards">\n' + "\n".join(card(i) for i in members) +
-                   '\n      </div>')
+        head = (f'<span class="group-name">{g["id"]}/</span><span class="rule rule--dotted"></span>'
+                f'<span class="prompt"{pl_attr(g.get("pl"))}>{esc(g["en"])}</span>')
+        cards = '      <div class="cells cells--cards">\n' + "\n".join(card(i) for i in members) + '\n      </div>'
+        if g.get("collapsed"):
+            # Hidden until asked for; #<group> in the URL opens it (app.js).
+            out.append(f'      <details class="fold" id="{g["id"]}">\n'
+                       f'      <summary class="group-head">{head}<span class="fold-count">{len(members)}</span></summary>\n'
+                       f'{cards}\n      </details>')
+        else:
+            out.append(f'      <div class="group-head">{head}</div>\n{cards}')
     main = fill(body, {"projects": "\n".join(out), "count": len(items),
                        "hero_species": active[0]["species"] if active else "oak"}, "templates/home.html")
     site.page("index.html", meta["title"], meta["description"], main.strip("\n"),
@@ -731,9 +738,9 @@ def main():
 
     build_home(site, groups, items)
     for p in projects:
-        build_project(site, items, p)
+        build_project(site, groups, items, p)
     for t in tracks:
-        build_track(site, items, t)
+        build_track(site, groups, items, t)
         (t["tdir"] / "README.md").write_text(build_readme(t), encoding="utf-8")
     for path, target in REDIRECTS.items():
         redirect(path, target)

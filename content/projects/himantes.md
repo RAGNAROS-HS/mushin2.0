@@ -1,7 +1,7 @@
 ---
 title: Himantes
-group: ml
-order: 7
+group: archive
+order: 6
 status: abandoned
 date: 2026-01-22
 summary: Pokémon type classifier and generator
