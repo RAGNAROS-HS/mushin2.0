@@ -582,7 +582,12 @@ def watch(include_drafts):
     started = me.stat().st_mtime
     last = None
     while True:
-        if me.stat().st_mtime != started:
+        try:
+            changed = me.stat().st_mtime != started
+        except FileNotFoundError:   # mid branch switch: wait for it to come back
+            time.sleep(0.5)
+            continue
+        if changed:
             # build.py itself changed: restart, so the new code is what runs.
             print("bin/build.py changed; restarting the watcher")
             os.execv(sys.executable, [sys.executable, str(me)] + sys.argv[1:])
