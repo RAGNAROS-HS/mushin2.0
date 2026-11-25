@@ -1,6 +1,10 @@
+# Production. bin/site deploy copies this to the VPS as ~/mushin2.0/compose.yaml
+# and writes TAG=<commit sha> into the .env next to it, so the VPS runs exactly
+# that build (and keeps running it across restarts). Only the host nginx, which
+# terminates TLS, can reach the port.
 services:
   site:
-    image: ghcr.io/ragnaros-hs/mushin2.0:latest
+    image: ghcr.io/ragnaros-hs/mushin2.0:${TAG:-latest}
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
     restart: unless-stopped

@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+# bin/site: write, preview, publish and deploy hugokatzer.tech.
+#
+#   bin/site new "Title" [tag ...]   start a draft in drafts/ (git-ignored) and open it
+#   bin/site preview                 localhost:3000 with drafts, rebuilt on every save
+#   bin/site publish [drafts/x.md]   date it today, move it to posts/, commit, push, deploy
+#   bin/site deploy [sha]            wait for CI, then run that build on the VPS and check it's live
+#   bin/site rollback                go back to the previous deploy (run again to undo)
+#   bin/site status                  what's local, pushed, built and live
+#
+# Settings can be overridden from the environment, e.g. HOST=otherbox bin/site deploy.
+set -euo pipefail
+
+HOST=${HOST:-websitevps}                    # ssh alias of the VPS (~/.ssh/config)
+DIR=${DIR:-mushin2.0}                       # the site's compose folder on the VPS, under ~
+URL=${URL:-https://www.hugokatzer.tech}
+WORKFLOW=${WORKFLOW:-deploy.yml}            # .github/workflows/ file that builds the image
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$ROOT"
+
+die() { printf 'site: %s\n' "$*" >&2; exit 1; }
+say() { printf '\033[1m==>\033[0m %s\n' "$*"; }
+need() { command -v "$1" >/dev/null 2>&1 || die "needs '$1' on PATH"; }
+
+slugify() {
+  local s
+  s=$(printf '%s' "$1" | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null) || s=$1
+  printf '%s' "$s" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+}
+
+usage() { sed -n '2,11s/^# \{0,1\}//p' "$0"; }
+
+# ------------------------------------------------------------------- new
+
+cmd_new() {
+  [ $# -ge 1 ] || die 'usage: bin/site new "Title" [tag ...]'
+  local title=$1; shift
+  local slug; slug=$(slugify "$title")
+  [ -n "$slug" ] || die "can't make a file name from: $title"
+  local file="drafts/$slug.md"
+  [ -e "$file" ] && die "$file already exists"
+  compgen -G "posts/*-$slug.md" >/dev/null && die "a published post already uses the name '$slug'"
+
+  local tags="" t
+  for t in "$@"; do tags+="${tags:+, }$(slugify "$t")"; done
+
+  mkdir -p drafts
+  {
+    printf -- '---\ntitle: %s\ndate: %s\ntags: [%s]\n' "$title" "$(date +%F)" "$tags"
+    printf -- '# summary: one line for the feed and link previews (defaults to the first paragraph)\n---\n'
+    awk 'n >= 2 { print } /^---$/ { n++ }' posts/_template.md   # the template's body
+  } > "$file"
+  say "started $file"
+  if [ -t 0 ] && [ -t 1 ]; then
+    "${VISUAL:-${EDITOR:-nano}}" "$file"
+  fi
+  echo "preview it with: bin/site preview    publish it with: bin/site publish"
+}
+
+# --------------------------------------------------------------- preview
+
+cmd_preview() {
+  need docker
+  python3 bin/build.py --drafts          # fail now rather than on an empty page
+  docker compose up -d >/dev/null        # compose.override.yaml mounts dist/ into nginx
+  say "preview on http://localhost:3000 (drafts included); rebuilds on save, ctrl-c to stop"
+  exec python3 bin/build.py --drafts --watch
+}
+
+# --------------------------------------------------------------- publish
+
+cmd_publish() {
+  need git
+  local branch; branch=$(git symbolic-ref --short -q HEAD || echo detached)
+  [ "$branch" = main ] || die "publish from main (you're on $branch)"
+  [ -z "$(git status --porcelain --untracked-files=no)" ] || die "commit or stash your other changes first"
+
+  local file=${1:-}
+  if [ -z "$file" ]; then
+    file=$(ls -t drafts/*.md 2>/dev/null | head -n 1 || true)
+    [ -n "$file" ] || die 'no drafts; start one with: bin/site new "Title"'
+  fi
+  [ -f "$file" ] || die "no such file: $file"
+  [ "$(cd "$(dirname "$file")" && pwd)" = "$ROOT/drafts" ] || die "publish takes a file from drafts/"
+
+  git fetch -q origin main
+  git merge -q --ff-only origin/main 2>/dev/null || die "main has diverged from origin/main; sort that out first"
+
+  local today slug title dest
+  today=$(date +%F)
+  slug=$(basename "$file" .md)
+  title=$(sed -n 's/^title:[[:space:]]*//p' "$file" | head -n 1)
+  dest="posts/$today-$slug.md"
+  [ -e "$dest" ] && die "$dest already exists"
+
+  sed "0,/^date:.*/s//date: $today/" "$file" > "$dest"
+  if ! python3 bin/build.py >/dev/null; then
+    rm -f "$dest"
+    die "the build failed (above); $file is untouched"
+  fi
+  git add "$dest"
+  git commit -q -m "post: $title"
+  git push -q origin main || die "push failed; the post is committed locally. Fix it, then: git push && bin/site deploy"
+  rm "$file"
+  say "published $dest"
+  cmd_deploy "$(git rev-parse HEAD)" "$URL/writing/$slug/"
+}
+
+# ---------------------------------------------------------------- deploy
+
+wait_for_ci() {
+  local sha=$1 id=""
+  say "waiting for CI to build ${sha:0:7}"
+  for _ in $(seq 1 30); do
+    id=$(gh run list --workflow "$WORKFLOW" --commit "$sha" --event push --limit 1 \
+           --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null || true)
+    [ -n "$id" ] && break
+    sleep 4
+  done
+  [ -n "$id" ] || die "no CI run for ${sha:0:7} after 2 minutes; see: gh run list"
+  gh run watch "$id" --exit-status --interval 10 >/dev/null \
+    || die "CI failed for ${sha:0:7}; see: gh run view $id --log-failed"
+  say "image built"
+}
+
+ship() {
+  local sha=$1
+  say "deploying ${sha:0:7} to $HOST"
+  scp -q compose.prod.yaml "$HOST:$DIR/compose.yaml"
+  # pull, then up: the container is only recreated once the new image is on
+  # disk, so the site is down for about a second, not for the whole pull.
+  ssh "$HOST" "set -e; cd '$DIR'
+    printf 'TAG=%s\n' '$sha' > .env
+    docker compose pull -q
+    docker compose up -d --remove-orphans
+    printf '%s %s\n' \"\$(date -u +%FT%TZ)\" '$sha' >> deploys.log
+    docker image prune -f >/dev/null"
+}
+
+verify() {
+  local sha=$1 page=${2:-$URL/} live=""
+  for _ in $(seq 1 15); do
+    live=$(curl -fsS --max-time 5 "$URL/version.txt" 2>/dev/null || true)
+    if [ "$live" = "$sha" ]; then
+      say "live: $page"
+      return 0
+    fi
+    sleep 2
+  done
+  die "$URL/version.txt says '${live:-nothing}', expected $sha"
+}
+
+cmd_deploy() {
+  need git; need gh; need ssh; need scp; need curl
+  local sha=${1:-} page=${2:-}
+  git fetch -q origin main
+  if [ -z "$sha" ]; then sha=$(git rev-parse origin/main); fi
+  sha=$(git rev-parse -q --verify "$sha^{commit}") || die "unknown commit: $1"
+  git merge-base --is-ancestor "$sha" origin/main \
+    || die "${sha:0:7} isn't on origin/main, so CI never built an image for it"
+  wait_for_ci "$sha"
+  ship "$sha"
+  verify "$sha" "$page"
+}
+
+cmd_rollback() {
+  need ssh; need scp; need curl
+  local log prev
+  log=$(ssh "$HOST" "tail -n 2 '$DIR/deploys.log' 2>/dev/null" || true)
+  [ "$(printf '%s\n' "$log" | grep -c .)" -ge 2 ] || die "nothing to roll back to: deploys.log has fewer than 2 entries"
+  prev=$(printf '%s\n' "$log" | head -n 1 | cut -d' ' -f2)
+  say "rolling back to ${prev:0:7}"
+  ship "$prev"
+  verify "$prev"
+}
+
+# ---------------------------------------------------------------- status
+
+cmd_status() {
+  git fetch -q origin main 2>/dev/null || true
+  local ci live
+  ci=$(gh run list --workflow "$WORKFLOW" --branch main --limit 1 --json headSha,status,conclusion \
+         --jq '.[0] | "\(.headSha[0:7]) \(.status) \(.conclusion)"' 2>/dev/null || echo '?')
+  live=$(curl -fsS --max-time 5 "$URL/version.txt" 2>/dev/null | cut -c1-7 || true)
+  printf 'local   %s on %s\n' "$(git rev-parse --short HEAD)" "$(git symbolic-ref --short -q HEAD || echo detached)"
+  printf 'origin  %s main\n' "$(git rev-parse --short origin/main)"
+  printf 'ci      %s\n' "${ci:-?}"
+  printf 'live    %s  %s\n' "${live:-? (no version.txt yet)}" "$URL"
+  printf 'drafts  %s\n' "$(compgen -G 'drafts/*.md' | wc -l)"
+}
+
+# ------------------------------------------------------------------ main
+
+case ${1:-} in
+  new)      shift; cmd_new "$@" ;;
+  preview)  shift; cmd_preview "$@" ;;
+  publish)  shift; cmd_publish "$@" ;;
+  deploy)   shift; cmd_deploy "$@" ;;
+  rollback) shift; cmd_rollback "$@" ;;
+  status)   shift; cmd_status "$@" ;;
+  -h|--help|help|"") usage ;;
+  *) usage >&2; exit 2 ;;
+esac

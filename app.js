@@ -1,220 +1,364 @@
-/* Personal site: the theme toggle, and a tiny shell in the footer (press /).
-   The site works without any of this; the shell is a toy that also happens
-   to be a keyboard way around: ls, cd, open, grep. */
+/* hugokatzer.tech: the theme toggle, the writing expander, and less/vim keys
+   (press ? on any page). The site works without any of this. */
 (function () {
   "use strict";
 
   var doc = document.documentElement;
-  var root = doc.getAttribute("data-root") || "";
+  var body = document.body;
+  var $ = function (id) { return document.getElementById(id); };
   var store = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   };
-  var $ = function (id) { return document.getElementById(id); };
-  var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
+  var media = function (q) { return window.matchMedia ? window.matchMedia(q) : null; };
+  var reduced = media("(prefers-reduced-motion: reduce)");
+  var darkQuery = media("(prefers-color-scheme: dark)");
+  var motion = function () { return reduced && reduced.matches ? "auto" : "smooth"; };
 
-  /* ---------------------------------------------------------------- theme */
+  /* ------------------------------------------------------------ theme */
 
   var themeButton = $("theme-toggle");
-  var dark = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-
   function theme() {
-    return doc.dataset.theme || (dark && dark.matches ? "dark" : "light");
+    return doc.dataset.theme || (darkQuery && darkQuery.matches ? "dark" : "light");
   }
-  function label() {
-    if (themeButton) themeButton.textContent = theme() === "dark" ? "[light]" : "[dark]";
+  function showTheme() {
+    $("theme-label").textContent = theme();
+    themeButton.setAttribute("aria-pressed", theme() === "dark" ? "true" : "false");
   }
-  function setTheme(t) {
+  function toggleTheme() {
+    var t = theme() === "dark" ? "light" : "dark";
     doc.dataset.theme = t;
     store.set("hsk.theme", t);
-    label();
+    showTheme();
   }
-  if (themeButton) themeButton.addEventListener("click", function () {
-    setTheme(theme() === "dark" ? "light" : "dark");
+  themeButton.addEventListener("click", toggleTheme);
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener("change", showTheme);
+  showTheme();
+
+  /* ------------------------------------------------- sticky bar height */
+
+  var bar = $("man-bar");
+  function measure() { doc.style.setProperty("--bar", bar.offsetHeight + "px"); }
+  measure();
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
+  else window.addEventListener("resize", measure);
+  var topLine = function () { return bar.offsetHeight + 16; };
+
+  /* ------------------------------------------------- writing expander */
+
+  var list = $("writing-list");
+  var toggle = $("writing-toggle");
+  function expand(open) {
+    if (!list || !toggle) return;
+    list.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    // [--all] <-> [--latest]: only the flag's text changes.
+    toggle.querySelector("b").textContent = open ? "--latest" : "--all";
+    if (!toggle.dataset.more) toggle.dataset.more = toggle.getAttribute("aria-label");
+    toggle.setAttribute("aria-label", open ? toggle.dataset.less : toggle.dataset.more);
+  }
+  if (list && toggle) {
+    toggle.hidden = false;
+    toggle.addEventListener("click", function () { expand(!list.classList.contains("open")); });
+  }
+
+  /* --------------------------------------------------------- sections */
+
+  var headings = Array.prototype.slice.call(
+    document.querySelectorAll(".man-sec > .man-h, .art-head h1, .prose h2"));
+  headings.forEach(function (h) { if (!h.hasAttribute("tabindex")) h.setAttribute("tabindex", "-1"); });
+
+  function go(h) {
+    h.focus({ preventScroll: true });
+    pin(h);
+    h.scrollIntoView({ behavior: motion(), block: "start" });
+  }
+
+  function step(dir) {
+    if (!headings.length) return;
+    var at = headings.indexOf(document.activeElement);
+    var y = topLine();
+    var pick = null;
+    if (at >= 0) {
+      pick = headings[at + dir] || null;
+    } else if (dir > 0) {
+      for (var i = 0; i < headings.length && !pick; i++)
+        if (headings[i].getBoundingClientRect().top > y + 2) pick = headings[i];
+    } else {
+      for (var k = headings.length - 1; k >= 0 && !pick; k--)
+        if (headings[k].getBoundingClientRect().top < y - 2) pick = headings[k];
+    }
+    if (pick) go(pick);
+  }
+
+  // Same-page nav links move focus too, so Tab carries on inside the section.
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav-links a"))
+    .filter(function (a) { return a.getAttribute("href").charAt(0) === "#" && $(a.dataset.target); });
+  navLinks.forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      var sec = $(a.dataset.target);
+      var h = sec.querySelector(".man-h") || sec;
+      ev.preventDefault();
+      go(h);
+      if (history.replaceState) history.replaceState(null, "", "#" + a.dataset.target);
+    });
   });
-  if (dark && dark.addEventListener) dark.addEventListener("change", label);
-  label();
 
-  /* --------------------------------------------------------------- beaver */
+  // Light up the nav link for the part of the page you're reading. Each link
+  // owns everything from its section down to the next linked one (so "cv"
+  // covers EXPERIENCE through OTHER WORK).
+  //
+  // A section is current once its top passes a trigger line 30% down the
+  // visible area. The last few sections can never scroll that far up (the
+  // page ends first), so over the final screen of scrolling the line slides
+  // down to the bottom of the window: each of them still gets its turn, in
+  // order, and the bottom of the page lights the last one.
+  //
+  // A jump (nav click, h / l, or a #section URL) pins the highlight to where
+  // you asked to go, until you scroll yourself.
+  var pinned = null;
+  var settling = 0;     // a jump is scrolling us; ignore scroll events until it lands
 
-  var beaver = $("beaver");
-  function hop() {
-    if (!beaver) return false;
-    beaver.classList.remove("hop");
-    void beaver.offsetWidth;            /* restart the animation */
-    beaver.classList.add("hop");
-    return true;
-  }
-  if (beaver) beaver.addEventListener("click", function (ev) { ev.preventDefault(); hop(); });
-
-  /* ---------------------------------------------------------------- shell */
-
-  var term = $("term"), out = $("term-out"), form = $("term-form"), input = $("term-in");
-  if (!term || !input) return;
-
-  var DIRS = ["blog", "projects", "cv", "rhcsa", "books"];
-  var FILES = { "resume.pdf": "pdfs/CV4_0.pdf", "feed.xml": "feed.xml" };
-  var path = window.location.pathname.replace(/index\.html$/, "");
-  var here = (path.match(/^\/([a-z0-9-]+)\//) || [])[1] || "";   /* top-level dir, "" for ~ */
-  if (DIRS.indexOf(here) < 0) here = "";
-  $("term-cwd").textContent = "~" + (here ? "/" + here : "");
-
-  var history_ = [], hpos = 0;
-
-  function print(text, cls) {
-    var line = document.createElement("div");
-    if (cls) line.className = cls;
-    line.textContent = text;
-    out.appendChild(line);
-    while (out.childNodes.length > 40) out.removeChild(out.firstChild);
-    out.scrollTop = out.scrollHeight;
+  function ownerOf(el) {
+    var owner = null;
+    navLinks.forEach(function (a) {
+      var t = $(a.dataset.target);
+      if (t === el || t.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) owner = a;
+    });
+    return owner;
   }
 
-  function go(href) {
-    print("…");
-    window.location.href = href;
+  function pin(el) {
+    if (!navLinks.length) return;
+    pinned = ownerOf(el) || navLinks[0];
+    settling = Date.now();
+    mark(pinned);
   }
 
-  /* What's listed on this page: posts and projects, by slug. */
-  function entries() {
-    var found = [];
-    each(document.querySelectorAll(".main a.post-title, .main a.ls-name"), function (a) {
-      var slug = a.getAttribute("href").split("/").pop().replace(/\.html$/, "");
-      if (slug && !found.some(function (e) { return e.slug === slug; })) {
-        found.push({ slug: slug, href: a.href, title: a.textContent.replace(/\/$/, "") });
-      }
+  function mark(current) {
+    navLinks.forEach(function (a) {
+      if (a === current) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    });
+  }
+
+  function current() {
+    var top = bar.offsetHeight;
+    var view = window.innerHeight - top;
+    var line = top + view * 0.3;
+    var left = doc.scrollHeight - window.innerHeight - window.scrollY;   // px still to scroll
+    if (left < view) line += (window.innerHeight - line) * (1 - Math.max(left, 0) / view);
+    var found = navLinks[0];
+    navLinks.forEach(function (a) {
+      if ($(a.dataset.target).getBoundingClientRect().top <= line) found = a;
     });
     return found;
   }
 
-  function resolve(arg) {
-    arg = (arg || "").replace(/\/+$/, "").replace(/^~\/?/, "");
-    if (arg === "" || arg === "/" || arg === "..") return { href: root || "./" };   /* everything is one level deep */
-    if (DIRS.indexOf(arg) >= 0) return { href: root + arg + "/" };
-    if (FILES[arg]) return { href: root + FILES[arg], file: true };
-    var m = arg.match(/^(blog|projects)\/([a-z0-9-]+)$/);
-    if (m) return { href: root + m[1] + "/" + m[2] + ".html" };
-    var e = entries().filter(function (x) { return x.slug === arg; })[0];
-    return e ? { href: e.href } : null;
+  var ticking = false;
+  function onScroll() {
+    ticking = false;
+    if (pinned) {
+      // Scroll events while a jump is landing are ours; after that, any
+      // scroll is the reader's own and the highlight follows the page again.
+      if (Date.now() - settling < 1200) return;
+      pinned = null;
+    }
+    mark(current());
   }
 
-  var COMMANDS = {
-    help: function () {
-      print("ls [dir]        list a directory, or what's on this page");
-      print("cd <dir|post>   go somewhere (cd ~, cd .., cd blog, cd <slug>)");
-      print("open <file>     resume.pdf, feed.xml, or anything ls shows");
-      print("grep <word>     filter the posts on this page");
-      print("theme           toggle light/dark");
-      print("whoami · pwd · date · uname · history · clear · exit");
-    },
-    ls: function (a) {
-      if (a[0]) {
-        var r = resolve(a[0]);
-        if (!r || r.file) return print("ls: cannot access '" + a[0] + "': No such file or directory", "err");
-        return go(r.href);
-      }
-      var list = entries();
-      if (list.length) return print(list.map(function (e) { return e.slug; }).join("  "));
-      print(DIRS.map(function (d) { return d + "/"; }).concat(Object.keys(FILES)).join("  "));
-    },
-    cd: function (a) {
-      var r = resolve(a[0] || "~");
-      if (!r || r.file) return print("cd: " + a[0] + ": No such file or directory", "err");
-      go(r.href);
-    },
-    open: function (a) {
-      if (!a[0]) return print("open: missing operand. try: open resume.pdf", "err");
-      var r = resolve(a[0]);
-      if (!r) return print("open: " + a[0] + ": No such file or directory", "err");
-      go(r.href);
-    },
-    grep: function (a) {
-      var rows = document.querySelectorAll(".main .post, .main .ls");
-      if (!rows.length) return print("grep: nothing to search on this page", "err");
-      var q = (a.join(" ") || "").toLowerCase(), n = 0;
-      each(rows, function (r) {
-        var hit = !q || r.textContent.toLowerCase().indexOf(q) >= 0;
-        r.hidden = !hit;
-        if (hit) n++;
+  if (navLinks.length) {
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+    // A jump has landed: keep the pin, but let the next scroll release it.
+    window.addEventListener("scrollend", function () { settling = 0; });
+    window.addEventListener("resize", function () { if (!pinned) mark(current()); });
+    var start = window.location.hash && $(window.location.hash.slice(1));
+    if (start) pin(start); else mark(current());
+  }
+
+  /* ----------------------------------------------------------- search */
+  // Like less: "/" opens a prompt at the bottom, Enter highlights every match
+  // on this page, n / N walk through them, Esc clears. Smartcase: a capital
+  // letter in the query makes it case-sensitive.
+
+  var sbar = $("search-bar");
+  var sform = $("search-form");
+  var sinput = $("search-input");
+  var sstatus = $("search-status");
+  var useHL = !!(window.CSS && CSS.highlights && window.Highlight);
+  var hits = [];
+  var cur = -1;
+  var lastQuery = "";
+
+  function clearHits() {
+    if (useHL) {
+      CSS.highlights.delete("search");
+      CSS.highlights.delete("search-current");
+    } else {
+      hits.forEach(function (m) {
+        var parent = m.parentNode;
+        if (!parent) return;
+        parent.replaceChild(document.createTextNode(m.textContent), m);
+        parent.normalize();
       });
-      each(document.querySelectorAll(".main .year"), function (y) { y.hidden = !y.querySelector(".post:not([hidden])"); });
-      print(q ? n + " match" + (n === 1 ? "" : "es") + " (grep with no word to reset)" : "reset");
-    },
-    pwd: function () { print("/home/hsk" + (here ? "/" + here : "")); },
-    whoami: function () { print("hsk: Hugo Sokołowski-Katzer. IT support → Linux administration. Amsterdam."); },
-    date: function () { print(new Date().toString()); },
-    uname: function () { print("Linux hugokatzer.tech nginx:alpine static x86_64 GNU/Linux"); },
-    theme: function () { setTheme(theme() === "dark" ? "light" : "dark"); print("theme: " + theme()); },
-    history: function () { history_.forEach(function (h, i) { print(String(i + 1).padStart(4) + "  " + h); }); },
-    clear: function () { out.textContent = ""; },
-    exit: function () { close(); },
-    echo: function (a) { print(a.join(" ")); },
-    sudo: function () { print("hsk is not in the sudoers file. This incident will be reported.", "err"); },
-    rm: function () { print("rm: this site is static. it will be back on the next build.", "err"); },
-    vim: function () { print("you are now trapped. just kidding: :q", "err"); },
-    beaver: function () { if (!hop()) print("the beaver lives at ~. try: cd ~"); }
-  };
-  COMMANDS.cat = COMMANDS.less = COMMANDS.xdg = COMMANDS.open;
-  COMMANDS.dir = COMMANDS.ll = COMMANDS.ls;
-  COMMANDS.man = COMMANDS.help;
-  COMMANDS.nano = COMMANDS.emacs = COMMANDS.vi = COMMANDS.vim;
-  COMMANDS.logout = COMMANDS.exit;
-
-  function run(line) {
-    var words = line.trim().split(/\s+/).filter(Boolean);
-    if (!words.length) return;
-    var cmd = words[0], fn = COMMANDS[cmd];
-    if (cmd === "rm" && words.indexOf("-rf") < 0 && words.indexOf("-fr") < 0) fn = function () { print("rm: missing operand", "err"); };
-    if (fn) fn(words.slice(1));
-    else print("bash: " + cmd + ": command not found. try: help", "err");
+    }
+    hits = [];
+    cur = -1;
   }
 
-  function complete() {
-    var v = input.value, parts = v.split(/\s+/), last = parts[parts.length - 1];
-    var pool = parts.length === 1 ? Object.keys(COMMANDS)
-      : DIRS.concat(Object.keys(FILES), entries().map(function (e) { return e.slug; }), ["~", ".."]);
-    var hits = pool.filter(function (p) { return p.indexOf(last) === 0; });
-    if (hits.length === 1) {
-      parts[parts.length - 1] = hits[0] + (parts.length === 1 ? " " : "");
-      input.value = parts.join(" ");
-    } else if (hits.length > 1) {
-      print(hits.join("  "), "dim");
+  function find(q) {
+    clearHits();
+    var smart = q !== q.toLowerCase();
+    var needle = smart ? q : q.toLowerCase();
+    var ranges = [];
+    var walker = document.createTreeWalker($("main"), NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      var text = smart ? node.data : node.data.toLowerCase();
+      for (var i = text.indexOf(needle); i >= 0; i = text.indexOf(needle, i + needle.length)) {
+        var r = document.createRange();
+        r.setStart(node, i);
+        r.setEnd(node, i + needle.length);
+        ranges.push(r);
+      }
+    }
+    // A match in a post row the expander has hidden: show the whole list.
+    if (list && !list.classList.contains("open") && ranges.some(function (r) {
+      var el = r.startContainer.parentElement;
+      return el && el.closest(".more");
+    })) expand(true);
+
+    if (useHL) {
+      hits = ranges;
+      var all = new Highlight();
+      hits.forEach(function (r) { all.add(r); });
+      CSS.highlights.set("search", all);
+    } else {
+      // Wrap from the last match back, so earlier offsets stay valid.
+      for (var k = ranges.length - 1; k >= 0; k--) {
+        var m = document.createElement("mark");
+        m.className = "hit";
+        ranges[k].surroundContents(m);
+        hits.unshift(m);
+      }
     }
   }
 
-  function open() {
-    term.hidden = false;
-    if (!out.childNodes.length) print("type help. esc closes.", "dim");
-    input.focus();
-  }
-  function close() {
-    term.hidden = true;
-    input.blur();
+  function show(index) {
+    if (!hits.length) return;
+    cur = (index + hits.length) % hits.length;
+    if (useHL) {
+      CSS.highlights.set("search-current", new Highlight(hits[cur]));
+    } else {
+      hits.forEach(function (m, i) { m.classList.toggle("current", i === cur); });
+    }
+    var rect = hits[cur].getBoundingClientRect();
+    if (rect.top < topLine() || rect.bottom > window.innerHeight - 64)
+      window.scrollBy({ top: rect.top - window.innerHeight / 2, behavior: motion() });
+    sstatus.textContent = (cur + 1) + " of " + hits.length + "   n/N";
   }
 
-  form.addEventListener("submit", function (ev) {
+  function search(q) {
+    lastQuery = q;
+    find(q);
+    if (!hits.length) { sstatus.textContent = "Pattern not found"; return; }
+    // Start from the first match at or below the top of the screen, like less.
+    var y = topLine();
+    var first = 0;
+    for (var i = 0; i < hits.length; i++)
+      if (hits[i].getBoundingClientRect().top >= y) { first = i; break; }
+    show(first);
+  }
+
+  function openSearch() {
+    sbar.hidden = false;
+    sinput.value = lastQuery;
+    sinput.focus();
+    sinput.select();
+  }
+  function closeSearch() {
+    clearHits();
+    sbar.hidden = true;
+    sstatus.textContent = "";
+  }
+
+  sform.addEventListener("submit", function (ev) {
     ev.preventDefault();
-    var line = input.value;
-    print(document.querySelector(".term-line .ps").textContent + " " + line, "echo");
-    if (line.trim()) { history_.push(line); hpos = history_.length; }
-    input.value = "";
-    run(line);
+    var q = sinput.value || lastQuery;
+    if (!q) { closeSearch(); return; }
+    search(q);
+    // Back to the page, so n / N work straight away.
+    $("main").focus({ preventScroll: true });
+  });
+  sinput.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") { ev.preventDefault(); closeSearch(); $("main").focus({ preventScroll: true }); }
   });
 
-  input.addEventListener("keydown", function (ev) {
-    if (ev.key === "Tab") { ev.preventDefault(); complete(); }
-    else if (ev.key === "Escape") close();
-    else if (ev.key === "ArrowUp" && hpos > 0) { ev.preventDefault(); input.value = history_[--hpos]; }
-    else if (ev.key === "ArrowDown") { ev.preventDefault(); hpos = Math.min(hpos + 1, history_.length); input.value = history_[hpos] || ""; }
-    else if (ev.key === "l" && ev.ctrlKey) { ev.preventDefault(); out.textContent = ""; }
+  /* ------------------------------------------------------- keys dialog */
+
+  var keys = $("keys");
+  var before = null;
+  function openKeys() {
+    if (!keys.showModal || keys.open) return;
+    before = document.activeElement;
+    keys.showModal();
+  }
+  keys.addEventListener("close", function () {
+    if (before && before.focus) before.focus({ preventScroll: true });
   });
+  $("keys-open").addEventListener("click", openKeys);
+
+  /* -------------------------------------------------------------- keys */
+
+  var pendingG = 0;
+  var follow = function (sel) { var a = document.querySelector(sel); if (a) window.location.href = a.href; };
+
+  var actions = {
+    j: function () { window.scrollBy({ top: 60, behavior: "auto" }); },
+    k: function () { window.scrollBy({ top: -60, behavior: "auto" }); },
+    d: function () { window.scrollBy({ top: window.innerHeight / 2, behavior: motion() }); },
+    u: function () { window.scrollBy({ top: -window.innerHeight / 2, behavior: motion() }); },
+    G: function () { window.scrollTo({ top: doc.scrollHeight, behavior: motion() }); },
+    l: function () { step(1); },
+    h: function () { step(-1); },
+    "/": openSearch,
+    n: function () { show(cur + 1); },
+    N: function () { show(cur - 1); },
+    "]": function () { follow('a[rel="next"]'); },
+    "[": function () { follow('a[rel="prev"]'); },
+    q: function () { if (body.dataset.home !== "./") window.location.href = body.dataset.home; },
+    t: toggleTheme,
+    "?": openKeys,
+    Escape: function () { if (!sbar.hidden || hits.length) closeSearch(); }
+  };
 
   document.addEventListener("keydown", function (ev) {
-    var t = ev.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-    if (ev.key === "/" && !typing && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
-      ev.preventDefault();
-      open();
+    if (ev.defaultPrevented || ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing) return;
+    var t = ev.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    if (keys.open) {
+      if (ev.key === "?" || ev.key === "q") { ev.preventDefault(); keys.close(); }
+      return;   // the dialog handles Esc itself
     }
+    if (ev.key === "g") {
+      if (Date.now() - pendingG < 600) {
+        pendingG = 0;
+        window.scrollTo({ top: 0, behavior: motion() });
+      } else {
+        pendingG = Date.now();
+      }
+      ev.preventDefault();
+      return;
+    }
+    pendingG = 0;
+    var fn = actions[ev.key];
+    if (fn) { ev.preventDefault(); fn(); }
   });
-  $("term-open").addEventListener("click", function () { term.hidden ? open() : close(); });
+
+  /* --------------------------------------------------------------- 404 */
+
+  var missing = $("missing");
+  if (missing) missing.textContent = window.location.pathname;
 })();

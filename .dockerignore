@@ -5,3 +5,5 @@ support.js
 README.md
 compose.yaml
 dist
+drafts
+.dist-stage

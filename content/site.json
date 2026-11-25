@@ -1,0 +1,162 @@
+{
+  "page": "HUGO(1)",
+  "domain": "hugokatzer.tech",
+  "handle": "hugo",
+  "name": "Hugo Sokołowski-Katzer",
+  "tagline": "IT support on the way to Linux sysadmin and infrastructure.",
+  "degrees": "BSc Computer Science · MSc Artificial Intelligence (graduating July 2027)",
+  "description": [
+    "I am not afraid to ask the question and keep digging until I truly understand the why. I like connecting ideas from places that do not naturally meet, but I stay methodical: I want the inner workings, not the surface. Brazilian jiu-jitsu shaped how I work: I keep fighting when things hit the fan and never shy away from getting my hands dirty. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news.",
+    "Right now: studying for the RHCSA (EX200), exam planned Q1 2027, on a three-node Proxmox cluster I built at home, alongside an MSc in AI. Based in Amsterdam; EU citizen, no sponsorship needed."
+  ],
+  "nav": [
+    {"label": "name", "id": "name"},
+    {"label": "cv", "id": "experience"},
+    {"label": "projects", "id": "projects"},
+    {"label": "writing", "id": "writing"},
+    {"label": "contact", "id": "see-also"}
+  ],
+  "experience": [
+    {
+      "dates": "2026-04..2026-05",
+      "org": "Talk360",
+      "role": "Data, Automation & AI Intern",
+      "points": [
+        "Built production monitoring for live telecom traffic on self-hosted n8n, using statistical process control to flag anomalies",
+        "Automated detection of fraud patterns that led to bans of spammers",
+        "Automatically flagged customers with poor call experiences and routed support to them",
+        "Replaced manual reporting with scheduled aggregation across internal databases"
+      ]
+    },
+    {
+      "dates": "2024-06..2025-08",
+      "org": "Swapfiets",
+      "role": "IT Operations team",
+      "note": "Recommendation letter from my IT Operations Manager available.",
+      "roles": [
+        {
+          "dates": "2025-06..2025-08",
+          "role": "Information Security Intern",
+          "points": [
+            "Investigated security incidents, incl. damage control after a malicious insider",
+            "Mapped SOC 2 controls in Vanta and collected supporting evidence across systems",
+            "Improved internal awareness and support processes around data privacy and security"
+          ]
+        },
+        {
+          "dates": "2024-12..2025-06",
+          "role": "IT Intern, general IT",
+          "points": [
+            "Owned identity lifecycle in Okta and AccessOwl: daily onboarding, offboarding and access provisioning; automated parts of HR onboarding",
+            "Administered Google Workspace, Atlassian and Slack with attention to security; ran quarterly reviews of Slack app integrations",
+            "Initiated and led disaster recovery tests; a simulated device-loss scenario exposed a gap that would have cut access to a quarter of managed accounts",
+            "Built Slack and Zapier workflow automations that reduced manual work and improved response times",
+            "Worked with internal teams to improve IT onboarding, access requests and product feedback loops",
+            "Trained and mentored new interns through their onboarding"
+          ]
+        },
+        {
+          "dates": "2024-06..2024-12",
+          "role": "IT Support Intern",
+          "points": [
+            "First-line IT support for 1,100 employees across multiple countries: hardware, software, access and network issues, incl. escalated Tier 1 tickets",
+            "Reported and escalated high-impact incidents and platform bugs to engineering teams",
+            "Set up hardware for new hires, handled asset on/offboarding in Meraki MDM and ran inactive-device audits; maintained the IT room and inventory tracking",
+            "Wrote and maintained IT support documentation and the company intranet"
+          ]
+        }
+      ]
+    }
+  ],
+  "otherWork": [
+    {
+      "dates": "2024-01..2024-06",
+      "org": "SPAR VU Amsterdam",
+      "role": "Shop Assistant",
+      "points": [
+        "Served customers at the checkout and handled individual queries in a busy campus store",
+        "Received and organised incoming deliveries and kept stock replenished"
+      ]
+    },
+    {
+      "dates": "2023-07..2023-08",
+      "org": "Radisson Hotel & Suites Amsterdam South",
+      "role": "Housekeeper",
+      "points": [
+        "Handled urgent guest requests",
+        "Kept guest rooms and public areas to the hotel's required standards"
+      ]
+    },
+    {
+      "dates": "2022-06..2022-08",
+      "org": "Hotel Warmia Park, Pluski (PL)",
+      "role": "Lifeguard",
+      "points": [
+        "Responsible for guest safety at the hotel aquapark; gave first aid for injuries and lacerations",
+        "Operated and helped maintain the aquapark attractions"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "dates": "2025..2027-07",
+      "org": "VU Amsterdam / UvA",
+      "role": "MSc Artificial Intelligence, AI for Health track",
+      "note": "Graduating July 2027.",
+      "points": [
+        "Relevant: Medical Informatics Basics, Knowledge Representation",
+        "Master project (from Nov 2026): collapse detection with simulated shadows"
+      ]
+    },
+    {
+      "dates": "2022..2025",
+      "org": "Vrije Universiteit Amsterdam",
+      "role": "BSc Computer Science",
+      "points": [
+        "Systems: Computer Organization (10/10, incl. an IJVM bytecode interpreter in C), Operating Systems, Computer Networks, Databases (8.5)",
+        "Users and process: Human-Computer Interaction (9.5), Software Engineering Processes (9.5), Requirements Engineering (8.5)",
+        "Data and privacy: Data Analytics and Privacy, Statistical Methods (8.5)",
+        "Thesis: hybrid detection of building collapse after the 2023 earthquake in Antakya"
+      ]
+    }
+  ],
+  "skills": [
+    {"term": "linux", "desc": "Ubuntu as my daily system; preparing for the RHCSA (EX200)"},
+    {"term": "homelab", "desc": "Proxmox VE on three bare-metal nodes, built and clustered myself as my RHCSA practice platform"},
+    {"term": "code", "desc": "bash, my main language and current focus through RHCSA prep; Python"},
+    {"term": "identity", "desc": "Okta, AccessOwl, Google Workspace, Meraki MDM"},
+    {"term": "compliance", "desc": "SOC 2 controls and evidence in Vanta"}
+  ],
+  "certifications": [
+    {"term": "RHCSA", "desc": "Red Hat Certified System Administrator (EX200)", "note": "in preparation, exam planned Q1 2027"},
+    {"term": "VLOS", "desc": "UAV operator, visual line of sight"},
+    {"term": "WOPR", "desc": "Lifeguard, 2nd degree"}
+  ],
+  "languages": [
+    {"term": "Polish", "desc": "native"},
+    {"term": "English", "desc": "C2", "note": "Cambridge CAE, grade A"},
+    {"term": "German", "desc": "C1", "note": "DSD II"}
+  ],
+  "awards": [
+    {"term": "2026", "desc": "Go4Poland laureate", "note": "Fundacja GPW, a programme for Poles studying abroad"}
+  ],
+  "cvPdf": "pdfs/CV4_0.pdf",
+  "projects": [
+    {"name": "jadid-halghe", "href": "https://github.com/RAGNAROS-HS/Jadid_Halghe", "desc": "Reinforcement-learning agents for an agar.io clone.", "state": "active"},
+    {"name": "simurgh", "href": "https://github.com/RAGNAROS-HS/Simurgh", "desc": "Chess impossibility recognition with a ResNet-20.", "state": "complete"},
+    {"name": "mushin", "href": "https://github.com/RAGNAROS-HS/mushin2.0", "desc": "This very website: static files, nginx, Docker, a VPS.", "state": "active"},
+    {"name": "zamin", "href": "https://github.com/RAGNAROS-HS/Zamin", "desc": "ML algorithms written from scratch.", "state": "active"},
+    {"name": "tosach", "href": "https://github.com/RAGNAROS-HS/Tosach", "desc": "Scene text recognition with a CRNN.", "state": "limbo"},
+    {"name": "himantes", "href": "https://github.com/RAGNAROS-HS/Himantes", "desc": "Pokémon type classifier and generator.", "state": "abandoned"},
+    {"name": "goswin", "href": "", "desc": "n8n workflow automation, kept off GitHub on purpose.", "state": "active"},
+    {"name": "stumberg", "href": "https://github.com/RAGNAROS-HS/Stumberg", "desc": "Agentic AI assistant with tool use and RAG.", "state": "discontinued"},
+    {"name": "bachelor-thesis", "href": "pdfs/Thesis_Hugo_SK.pdf", "desc": "Detecting collapsed buildings with UNET++.", "state": "complete"}
+  ],
+  "writingShown": 3,
+  "links": [
+    {"label": "github(1)", "href": "https://github.com/RAGNAROS-HS"},
+    {"label": "linkedin(1)", "href": "https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"},
+    {"label": "mail(1)", "href": "mailto:hugo.s.katzer@gmail.com"},
+    {"label": "cv.pdf", "href": "pdfs/CV4_0.pdf"}
+  ]
+}

@@ -1,12 +1,26 @@
 name: Build and push
 
-
+# Every push: check that the site builds, so a broken post fails here and
+# not on the VPS. Pushes to main also build the image and push it to GHCR as
+# :<sha> and :latest; bin/site deploy then runs that exact :<sha> on the VPS.
 on:
   push:
-    branches: [main]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build the site
+        run: python3 bin/build.py
+
   build:
+    needs: check
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,6 +45,18 @@ jobs:
         with:
           context: .
           push: true
+          build-args: GIT_SHA=${{ github.sha }}
           tags: |
             ghcr.io/${{ steps.repo.outputs.name }}:${{ github.sha }}
             ghcr.io/${{ steps.repo.outputs.name }}:latest
+
+      # Keep the last 20 images: plenty to roll back to, without keeping
+      # every build forever.
+      - name: Prune old images
+        # Housekeeping only: never let it fail a deploy.
+        continue-on-error: true
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: mushin2.0
+          package-type: container
+          min-versions-to-keep: 20

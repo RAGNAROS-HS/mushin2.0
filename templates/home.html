@@ -1,35 +1,83 @@
----
-title: Hugo Sokołowski-Katzer
-description: Hugo Sokołowski-Katzer — IT support and operations, working toward Linux administration (RHCSA planned Q1 2027). Posts on the RHCSA, the homelab and whatever I'm poking at; projects; CV.
----
-<!-- The home page: bin/build.py fills in the beaver, the "now" line, recent posts and active projects. -->
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Hugo Sokołowski-Katzer","url":"https://hugokatzer.tech/","jobTitle":"IT support","address":{"@type":"PostalAddress","addressLocality":"Amsterdam","addressCountry":"NL"},"sameAs":["https://github.com/RAGNAROS-HS","https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"]}</script>
-
-<section class="hero">
-  <a class="hero-mark" href="#" id="beaver" title="hi">{{beaver}}</a>
-  <div>
-    <p class="cmd"><span class="ps1">$</span> whoami</p>
-    <h1 class="name">Hugo Sokołowski-Katzer</h1>
-    <p class="role">IT support → Linux administration <span class="dim">· Amsterdam · EU citizen</span></p>
-  </div>
+<section id="name" class="man-sec">
+<h2 class="man-h" tabindex="-1">NAME</h2>
+<p class="man-body"><b>{{name}}</b> — {{tagline}}</p>
+<p class="man-body">{{degrees}}</p>
 </section>
 
-<p class="bio">I ask the question and keep digging until I understand the why. I like working close to the machine and keeping real production systems running efficiently and safely, where no news is good news. Fifteen months in IT Operations at Swapfiets, automation at Talk360, a 3-node Proxmox cluster at home, and an MSc in AI on the side. This is where I write things down.</p>
-{{now}}
-<p class="links"><a href="cv/">cv</a> <a href="pdfs/CV4_0.pdf">resume.pdf</a> <a href="https://github.com/RAGNAROS-HS">github</a> <a href="https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/">linkedin</a> <a href="mailto:hugo.s.katzer@gmail.com">mail</a></p>
-
-<section>
-<h2 class="cmd"><span class="ps1">$</span> ls -t ~/blog | head<span class="dim">{{n_posts}}</span></h2>
-<div class="posts">
-{{recent}}
+<section id="description" class="man-sec">
+<h2 class="man-h" tabindex="-1">DESCRIPTION</h2>
+<div class="stack-p">
+{{description}}
 </div>
-{{more_posts}}
 </section>
 
-<section>
-<h2 class="cmd"><span class="ps1">$</span> ls -l ~/projects | grep active<span class="dim">{{n_projects}}</span></h2>
-<div class="lsl">
+<section id="experience" class="man-sec">
+<h2 class="man-h" tabindex="-1">EXPERIENCE</h2>
+<div class="man-body stack">
+{{experience}}
+</div>
+</section>
+
+<section id="education" class="man-sec">
+<h2 class="man-h" tabindex="-1">EDUCATION</h2>
+<div class="man-body stack">
+{{education}}
+</div>
+</section>
+
+<section id="skills" class="man-sec">
+<h2 class="man-h" tabindex="-1">SKILLS</h2>
+<div class="man-body list">
+{{skills}}
+</div>
+</section>
+
+<section id="certifications" class="man-sec">
+<h2 class="man-h" tabindex="-1">CERTIFICATIONS</h2>
+<div class="man-body list">
+{{certifications}}
+</div>
+</section>
+
+<section id="languages" class="man-sec">
+<h2 class="man-h" tabindex="-1">LANGUAGES</h2>
+<div class="man-body list">
+{{languages}}
+</div>
+</section>
+
+<section id="awards" class="man-sec">
+<h2 class="man-h" tabindex="-1">AWARDS</h2>
+<div class="man-body list">
+{{awards}}
+</div>
+</section>
+
+<section id="other-work" class="man-sec">
+<h2 class="man-h" tabindex="-1">OTHER WORK</h2>
+<div class="man-body stack">
+{{other_work}}
+</div>
+</section>
+
+<section id="projects" class="man-sec">
+<h2 class="man-h" tabindex="-1">PROJECTS</h2>
+<div class="man-body list">
 {{projects}}
 </div>
-<p class="more"><a href="projects/">all projects, incl. the dead ones &rarr;</a></p>
+</section>
+
+<section id="writing" class="man-sec">
+<h2 class="man-h" tabindex="-1">WRITING</h2>
+<div class="man-body list">
+<div class="writing-list" id="writing-list">
+{{posts}}
+</div>
+<div class="writing-foot">{{toggle}}<a href="feed.xml">rss</a></div>
+</div>
+</section>
+
+<section id="see-also" class="man-sec">
+<h2 class="man-h" tabindex="-1">SEE ALSO</h2>
+<p class="man-body links">{{links}}</p>
 </section>

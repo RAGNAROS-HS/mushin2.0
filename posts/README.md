@@ -1,39 +1,65 @@
 # Writing a post
 
-Every post is one Markdown file in this folder. RHCSA updates, opinions,
-homelab fixes and demos all go here; tags and series tell them apart.
+Three commands, run from the repo root on `main`:
 
-1. Copy `_template.md` to `posts/YYYY-MM-DD-short-slug.md`. The date prefix
-   only keeps the folder sorted; the URL is `/blog/short-slug.html`.
-2. Fill in the front matter. Only `date` and `title` are required.
-3. Write the body in Markdown: headings, paragraphs, `-`/`1.` lists, fenced
-   code, `>` quotes, `---`, inline code, **bold**, *italic*, links, images.
-   A block that starts with `<` is passed through as raw HTML, for a demo.
-4. `python3 bin/build.py`, then `docker compose up -d` and open
-   `localhost:3000`. The Docker build runs the same script, so bad input
-   fails the build instead of going live.
+```sh
+bin/site new "Why I broke my LVM on purpose" linux rhcsa   # start a draft, opens $EDITOR
+bin/site preview                                           # localhost:3000, rebuilds on save
+bin/site publish                                           # commit, push, deploy, check it's live
+```
+
+- **`new`** writes `drafts/why-i-broke-my-lvm-on-purpose.md`. `drafts/` is
+  git-ignored, so nothing you write there reaches the public repo until you
+  publish it. (It also means a draft lives only on this machine.)
+- **`preview`** starts the dev container and rebuilds `dist/` whenever you
+  save. Drafts show up, marked `[draft]`. Bad front matter fails the rebuild
+  right there in the terminal.
+- **`publish`** takes the newest draft (or the one you name), sets its date
+  to today and moves it to `posts/YYYY-MM-DD-slug.md`. Then it builds as a
+  check, commits `post: <title>`, pushes, waits for CI to build the image,
+  runs that exact image on the VPS and waits until the site reports the new
+  commit. It ends by printing the post's URL. The URL is `/writing/<slug>/`.
+
+Other commands:
+
+| command                | does                                                         |
+|------------------------|--------------------------------------------------------------|
+| `bin/site deploy`      | ship whatever is on `main` (after editing a post, CSS, ...)  |
+| `bin/site deploy <sha>`| ship a specific commit                                       |
+| `bin/site rollback`    | go back to the previous deploy; run it again to undo         |
+| `bin/site status`      | local vs pushed vs built vs live, and how many drafts        |
+
+To edit a published post: change the file in `posts/`, commit, push, then
+`bin/site deploy`.
 
 ## Front matter
 
-| field       | what                                                                 |
-|-------------|----------------------------------------------------------------------|
-| `date`      | `YYYY-MM-DD`, required                                               |
-| `title`     | required                                                             |
-| `tags`      | `[linux, opinion]`: lowercase words joined by `-`; each gets a page  |
-| `summary`   | one line for the feed and link previews; defaults to the first paragraph |
-| `draft`     | `true` leaves the post out of the build                              |
-| `series`    | `rhcsa`: puts the post in that series (and adds the tag)             |
-| `practised` | objective ids worked on (needs `series`; ids in `series/<slug>/README.md`) |
-| `passed`    | objective ids passed; the series README says what counts            |
-| `scripts`   | list of `name:` / `url:` / `what:`                                   |
-| `books`     | ids from `content/shelf.json`; the post shows up on `/books/`        |
-| `project`   | a file name from `content/projects/`; the post shows up on that project's page |
+| field     | what                                                                     |
+|-----------|--------------------------------------------------------------------------|
+| `title`   | required                                                                 |
+| `date`    | `YYYY-MM-DD`, required; `publish` sets it to the day you publish         |
+| `tags`    | `[linux, rhcsa]`: lowercase words joined by `-`; shown next to the post  |
+| `summary` | one line for the feed and link previews; defaults to the first paragraph |
 
-Objective states on `/rhcsa/` are computed from the posts, never set by hand:
-**todo** (no post mentions it), **practising** (under `practised` in any post),
-**done** (under `passed`).
+Any other field is a build error, so typos don't go unnoticed.
 
-## Adding a book
+## The body
 
-Add it to `content/shelf.json` under one of its topics; cite it from a post
-with `books: [id]`.
+Plain Markdown: paragraphs, `##` headings (each one is a stop for the `h`/`l`
+keys and gets a linkable id), `-`/`1.` lists, `**bold**`, `*italic*`,
+`` `code` ``, links, images, `---` rules, and fenced code for commands and
+output:
+
+    ```
+    $ systemctl --failed
+    0 loaded units listed.
+    ```
+
+A quote starting with `NOTE:`, `WARNING:` or `TIP:` becomes a boxed callout,
+the way a man page sets off NOTES:
+
+    > NOTE: Asides and caveats go here.
+
+Any other `>` quote is an ordinary indented quote. A block that starts with `<`
+is passed through as raw HTML. The site's CSP allows no inline scripts or
+styles, so keep it to plain markup.

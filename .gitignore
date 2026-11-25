@@ -1,2 +1,6 @@
 # bin/build.py output; rebuilt in the Docker image
 /dist/
+# unpublished posts: bin/site new writes here, bin/site publish moves them to posts/
+/drafts/
+# a build in progress (bin/build.py renders here, then swaps into dist/)
+/.dist-stage/
