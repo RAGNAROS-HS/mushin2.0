@@ -1,11 +1,6 @@
 {
   "title": "RHCSA log",
-  "name": "rhcsa",
   "status": "active",
-  "cadence": "weekly",
-  "species": "oak",
-  "structure": "cabin",
-  "finished": false,
   "headline": "Studying for the RHCSA (EX200)",
   "target": "exam planned Q1 2027",
   "summary": "RHCSA practice log: weekly writeups and a bash script per chapter",

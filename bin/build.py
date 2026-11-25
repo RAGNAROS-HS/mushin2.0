@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 """Build the whole site into dist/.
 
-The site is two spaces:
+  /              whoami, what I'm on now, the latest posts, active projects
+  /blog/         every post, newest first, grouped by year; one page per tag
+  /rhcsa/        the RHCSA series: its objectives and the posts that cover them
+  /projects/     everything I've built, `ls -l` style, one page each
+  /cv/           the career tree and the resume PDF
+  /books/        the shelf, and which posts cite each book
+  /feed.xml      Atom feed of the posts
 
-  about (/)      plain and recruiter-first: who, where, career, CV, earlier work
-  the cabin      a pixel-art log cabin room: the desk (weekly tracks), the
-  (/cabin/)      whiteboard (notes), the bookshelf and odd easter eggs
-
-Reads   templates/shell.html       head, header and scripts shared by every page
-        templates/home.html        the about page body (career tree is hand-written there)
-        templates/cabin.html       the cabin room page
-        content/projects/*.md      earlier work, one page each (front matter + Markdown or HTML)
-        content/shelf.json         the books, by topic
-        tracks/<slug>/track.json   a track: species, structure, cadence, objectives (optional)
-        tracks/<slug>/entries/*.md the track's entries
-Writes  dist/                      the deployable site, static files copied in
-        tracks/<slug>/README.md    the track's objective ids, for writing entries
+Reads   templates/shell.html        head, header and footer shared by every page
+        templates/home.html         the home page body (bio is hand-written there)
+        templates/cv.html           the career tree, hand-written
+        posts/*.md                  one post each (front matter + Markdown)
+        series/<slug>/series.json   a series with objectives, e.g. the RHCSA
+        content/projects/*.md       one project each (front matter + Markdown or HTML)
+        content/shelf.json          the books, by topic
+Writes  dist/                       the deployable site, static files copied in
+        series/<slug>/README.md     the series' objective ids, for writing posts
 
 Standard library only, so `python3 bin/build.py` works anywhere and the
 Docker build stage needs no pip install. Fails loudly on bad input (unknown
-objective or book id, two entries in one week, unknown species) instead of
-silently going live.
+tag, objective, project or book id) instead of silently going live.
 """
 
 import hashlib
@@ -29,34 +30,62 @@ import json
 import re
 import shutil
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
 CONTENT = ROOT / "content"
-TRACKS = ROOT / "tracks"
+POSTS = ROOT / "posts"
+SERIES = ROOT / "series"
 DIST = ROOT / "dist"
 SITE = "https://hugokatzer.tech"
 OWNER = "Hugo Sokołowski-Katzer"
+HOST = "hsk@hugokatzer"
+RESUME = "pdfs/CV4_0.pdf"
 
-STATIC_FILES = ("styles.css", "app.js", "pixel.js", "track.js", "cabin.js")
+STATIC_FILES = ("styles.css", "app.js", "series.js")
 STATIC_DIRS = ("img", "pdfs")
-# Old public URLs that must keep working: path in dist -> target, from the site root.
-REDIRECTS = {"log/index.html": "cabin/rhcsa/index.html"}
+RECENT = 10   # posts on the home page
 
-# Must match what pixel.js can draw (SPECIES / STRUCTURES there).
-SPECIES = ("oak", "pine", "birch")
-STRUCTURES = ("cabin", "woodpile", "none")
-CADENCES = ("weekly", "none")
-# Objects in the cabin room that open a popup (pixel.js draws them); eggs in
-# content/cabin.json must name one of these.
-ROOM_OBJECTS = ("gi", "rack", "window", "mug")
-TONES = "CDEFH"   # spine colour per shelf topic, in shelf.json order (--px-C… in styles.css)
+# Old public URLs that must keep working: path in dist -> target, from the site root.
+REDIRECTS = {
+    "log/index.html": "rhcsa/index.html",
+    "cabin/index.html": "blog/index.html",
+    "cabin/rhcsa/index.html": "rhcsa/index.html",
+    "cabin/notes/index.html": "blog/index.html",
+    "earlier/index.html": "projects/index.html",
+}
+
 STATES = ("active", "complete", "abandoned", "discontinued", "limbo")
 OBJ_STATES = ("todo", "practising", "done")
-MONTHS = ("january", "february", "march", "april", "may", "june", "july",
-          "august", "september", "october", "november", "december")
+SLUG = r"[a-z0-9]+(-[a-z0-9]+)*"
+MONTHS = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+
+# The beaver, the site's one bit of pixel art. One letter per palette slot
+# (--px-* in styles.css), "." is empty. EYE cells blink (CSS).
+BEAVER = (
+    ".........MM...................",
+    "....BBBBBMMB..................",
+    "..BBBBBBBBBBB..BBBB...........",
+    ".BBBBBBBBBBBBBBBBBBBBB........",
+    ".BBOGBBBBBBBBBBBBBBBBBB.......",
+    ".BBOOBBBBBBBBBBBBBBBBBBB......",
+    "NLLLBPBBBBBBBBBBBBBBBBBB......",
+    "LLLLLBBBBBBBBBBBBBBBBBBBB.....",
+    ".LGGLBBBBBBBBBBBBBBBBBBBB.....",
+    "..GG.LLLBBBBBBBBBBBBBBBBB.....",
+    "....LLLLBBBBBBBMBBBBBBBBB.....",
+    "....LLLLLBBBBMMBBBBBBBBBB.....",
+    "...BLLLLLBBBMBBBBBBBBBBB..TTT.",
+    "...BLLLLLBBMBBBBBBBBBBB.TXTXTX",
+    "..BBBLLLBBMBBBBBBBBBBB.TXTXTXT",
+    ".BBBB..BBB.BBBBBBBBBB.TTTTTTT.",
+)
+EYE = {(3, 4), (4, 4)}
+# Light-theme colours, for the favicon (which can't read CSS variables).
+FAVICON_FILL = {"O": "#2b1a10", "B": "#7a4a2a", "M": "#5c3720", "L": "#c08a5c", "G": "#f6eedc",
+                "P": "#d98a7a", "N": "#2b1a10", "T": "#3d2a1f", "X": "#6b4e3a"}
 
 
 class BuildError(Exception):
@@ -82,7 +111,7 @@ def _scalar(v):
 
 def parse_front_matter(text, name):
     """A small YAML subset: `key: value`, `key: [a, b]`, and block lists of
-    scalars or of `name:/url:` maps. Enough for an entry header."""
+    scalars or of `name:/url:` maps. Enough for a post header."""
     if not text.startswith("---"):
         raise BuildError(f"{name}: must start with a '---' front matter block")
     end = text.find("\n---", 3)
@@ -122,6 +151,11 @@ def parse_front_matter(text, name):
     return meta, body
 
 
+def id_list(meta, field):
+    v = meta.get(field) or []
+    return [v] if isinstance(v, str) else list(dict.fromkeys(v))
+
+
 # ------------------------------------------------------------------- markdown
 
 def _inline(s):
@@ -144,7 +178,8 @@ def _inline(s):
 def markdown(text):
     """Headings, paragraphs, lists, fenced code, quotes, rules, inline code,
     bold/italic, links and images. Headings never go above h2, since the
-    page title is the only h1 (`#` and `##` both become h2)."""
+    page title is the only h1 (`#` and `##` both become h2). A line that
+    starts with `<` is passed through as raw HTML (for a demo's markup)."""
     out, para, lines, i = [], [], text.splitlines(), 0
 
     def flush():
@@ -167,6 +202,14 @@ def markdown(text):
             out.append(f"<pre><code{cls}>" + esc("\n".join(code)) + "</code></pre>")
         elif not s:
             flush()
+        elif s.startswith("<") and not para:
+            # Raw HTML block, up to the next blank line.
+            block = []
+            while i < len(lines) and lines[i].strip():
+                block.append(lines[i])
+                i += 1
+            out.append("\n".join(block))
+            continue
         elif re.match(r"^#{1,4}\s", s):
             flush()
             level = min(max(len(s) - len(s.lstrip("#")), 2), 5)
@@ -207,7 +250,7 @@ def plain_summary(body, limit=180):
     text = re.sub(r"```.*?```", " ", body, flags=re.S)
     for block in re.split(r"\n\s*\n", text):
         b = block.strip()
-        if b and not b.startswith(("#", "-", "*", ">", "|")):
+        if b and not b.startswith(("#", "-", "*", ">", "|", "<")):
             b = re.sub(r"[`*_]|!\[[^\]]*\]\([^)]*\)", "", b)
             b = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", b)
             b = " ".join(b.split())
@@ -215,6 +258,8 @@ def plain_summary(body, limit=180):
     return ""
 
 
+def words(text):
+    return len(re.findall(r"\w+", re.sub(r"<[^>]+>", " ", text)))
 
 
 def iso_date(value, name):
@@ -233,21 +278,59 @@ def fill(template, values, name):
     return re.sub(r"\{\{(\w+)\}\}", sub, template)
 
 
-def month_label(d):
+def mon(d):
     return f"{MONTHS[d.month - 1]} {d.year}"
 
 
-def json_attr(obj):
-    return esc(json.dumps(obj, ensure_ascii=False, separators=(",", ":")))
+def plural(n, word, many=None):
+    return f"{n} {word if n == 1 else (many or word + 's')}"
+
+
+# ---------------------------------------------------------------------- beaver
+
+def beaver_svg(cls="beaver", fills=None, label=OWNER + "'s beaver"):
+    """The beaver as an SVG of run-length rects. With `fills` the colours are
+    inline (favicon); otherwise each rect gets a palette class for CSS."""
+    h, w = len(BEAVER), max(len(r) for r in BEAVER)
+    rects = []
+
+    def at(x, y):
+        return BEAVER[y][x] if 0 <= y < h and 0 <= x < len(BEAVER[y]) else "."
+
+    # A one-cell outline around the sprite, so it reads on both themes.
+    if not fills:
+        for y in range(-1, h + 1):
+            for x in range(-1, w + 1):
+                if at(x, y) == "." and any(at(x + dx, y + dy) != "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                    rects.append(f'<rect x="{x}" y="{y}" width="1" height="1" class="pZ"/>')
+    for y, row in enumerate(BEAVER):
+        x = 0
+        while x < len(row):
+            c, x2 = row[x], x + 1
+            while x2 < len(row) and row[x2] == c and (x2, y) not in EYE and (x, y) not in EYE:
+                x2 += 1
+            if c != ".":
+                paint = f'fill="{fills[c]}"' if fills else f'class="p{c}{" eye" if (x, y) in EYE else ""}"'
+                rects.append(f'<rect x="{x}" y="{y}" width="{x2 - x}" height="1" {paint}/>')
+            x = x2
+    a = f' role="img" aria-label="{esc(label)}"' if label else ' aria-hidden="true"'
+    pad = 0 if fills else 1
+    return (f'<svg class="{cls}" xmlns="http://www.w3.org/2000/svg" viewBox="{-pad} {-pad} {w + 2 * pad} {h + 2 * pad}" '
+            f'shape-rendering="crispEdges"{a}>' + "".join(rects) + "</svg>")
+
+
+def favicon():
+    svg = beaver_svg(cls="f", fills=FAVICON_FILL, label="")
+    # Square it up: the sprite is 30x16, a favicon wants 1:1.
+    svg = svg.replace('viewBox="0 0 30 16"', 'viewBox="0 -7 30 30"')
+    return "data:image/svg+xml," + svg.replace('"', "'").replace("#", "%23").replace("<", "%3C").replace(">", "%3E")
 
 
 # ---------------------------------------------------------------------- model
 
 def load_shelf():
     data = json.loads((CONTENT / "shelf.json").read_text(encoding="utf-8"))
-    if len(data["topics"]) > len(TONES):
-        raise BuildError(f"content/shelf.json: at most {len(TONES)} topics (one spine colour each)")
-    topics = {t["id"]: dict(t, tone=TONES[i]) for i, t in enumerate(data["topics"])}
+    topics = {t["id"]: t for t in data["topics"]}
     books = {}
     for b in data["books"]:
         for field in ("id", "title", "author", "topic"):
@@ -257,23 +340,8 @@ def load_shelf():
             raise BuildError(f"content/shelf.json: {b['id']}: unknown topic {b['topic']!r}")
         if b["id"] in books:
             raise BuildError(f"content/shelf.json: duplicate book id {b['id']!r}")
-        books[b["id"]] = dict(b, cited=[], tone=topics[b["topic"]]["tone"], topic_label=topics[b["topic"]]["label"])
+        books[b["id"]] = dict(b, cited=[])
     return topics, books
-
-
-def load_cabin():
-    data = json.loads((CONTENT / "cabin.json").read_text(encoding="utf-8"))
-    eggs = []
-    for egg in data.get("eggs", []):
-        for field in ("id", "title", "text"):
-            if not egg.get(field):
-                raise BuildError(f"content/cabin.json: an egg is missing '{field}'")
-        if egg["id"] not in ROOM_OBJECTS:
-            raise BuildError(f"content/cabin.json: no object {egg['id']!r} in the room "
-                             f"(it has: {', '.join(ROOM_OBJECTS)})")
-        eggs.append({"id": egg["id"], "label": egg.get("label") or egg["id"],
-                     "title": egg["title"], "text": egg["text"]})
-    return eggs
 
 
 def load_projects():
@@ -294,7 +362,8 @@ def load_projects():
                 "slug": path.stem, "name": meta.get("name") or path.stem, "title": meta["title"],
                 "status": meta["status"], "date": iso_date(meta["date"], name),
                 "summary": meta["summary"], "description": meta.get("description") or meta["summary"],
-                "body": body if fmt == "html" else markdown(body),
+                "repo": meta.get("repo") or "",
+                "body": body if fmt == "html" else markdown(body), "posts": [],
             })
         except BuildError as e:
             problems.append(str(e))
@@ -304,47 +373,86 @@ def load_projects():
     return out
 
 
-def load_entries(tdir, by_id, cadence, books):
-    entries, problems = [], []
-    for path in sorted((tdir / "entries").glob("*.md")):
+def load_series():
+    out = {}
+    for path in sorted(SERIES.glob("*/series.json")):
+        name = str(path.relative_to(ROOT))
+        try:
+            s = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            raise BuildError(f"{name}: {e}")
+        for field in ("title", "summary", "intro"):
+            if not s.get(field):
+                raise BuildError(f"{name}: missing '{field}'")
+        if s.get("status", "active") not in STATES:
+            raise BuildError(f"{name}: status must be one of {', '.join(STATES)}")
+        by_id = {}
+        for g in s.get("groups") or []:
+            for o in g["objectives"]:
+                if not re.fullmatch(SLUG, o["id"]):
+                    raise BuildError(f"{name}: objective id {o['id']!r} must be lowercase words joined by '-'")
+                if o["id"] in by_id:
+                    raise BuildError(f"{name}: duplicate objective id {o['id']!r}")
+                o["group"] = g["name"]
+                by_id[o["id"]] = o
+        slug = path.parent.name
+        out[slug] = dict(s, slug=slug, dir=path.parent, by_id=by_id, posts=[],
+                         status=s.get("status", "active"))
+    return out
+
+
+def load_posts(series, projects, books):
+    by_project = {p["slug"]: p for p in projects}
+    posts, problems = [], []
+    for path in sorted(POSTS.glob("*.md")):
+        if path.name.startswith("_") or path.name == "README.md":
+            continue
         name = str(path.relative_to(ROOT))
         try:
             meta, body = parse_front_matter(path.read_text(encoding="utf-8"), name)
             for field in ("date", "title"):
                 if not meta.get(field):
                     raise BuildError(f"{name}: missing '{field}'")
-            when = iso_date(meta["date"], name)
-            lists = {}
-            for field in ("practised", "passed", "books"):
-                ids = meta.get(field) or []
-                if isinstance(ids, str):
-                    ids = [ids]
-                known = books if field == "books" else by_id
-                unknown = [x for x in ids if x not in known]
+            if str(meta.get("draft", "")).lower() == "true":
+                continue
+            slug = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", path.stem.lower())
+            if not re.fullmatch(SLUG, slug) or slug in ("index", "tag"):
+                raise BuildError(f"{name}: file name must be lowercase words joined by '-' (not 'index' or 'tag')")
+            tags = id_list(meta, "tags")
+            bad = [t for t in tags if not re.fullmatch(SLUG, t)]
+            if bad:
+                raise BuildError(f"{name}: tags must be lowercase words joined by '-': {', '.join(bad)}")
+            s = meta.get("series") or ""
+            if s and s not in series:
+                raise BuildError(f"{name}: unknown series {s!r} (have: {', '.join(series) or 'none'})")
+            if s and s not in tags:
+                tags.insert(0, s)
+            obj = {f: id_list(meta, f) for f in ("practised", "passed")}
+            for f, ids in obj.items():
+                if ids and not s:
+                    raise BuildError(f"{name}: '{f}' needs a 'series' to say whose objectives these are")
+                unknown = [x for x in ids if x not in series[s]["by_id"]] if s else []
                 if unknown:
-                    where = "content/shelf.json" if field == "books" else f"{tdir.relative_to(ROOT)}/README.md"
-                    raise BuildError(f"{name}: unknown id(s) in '{field}': {', '.join(unknown)} (see {where})")
-                lists[field] = list(dict.fromkeys(ids))
+                    raise BuildError(f"{name}: unknown id(s) in '{f}': {', '.join(unknown)} (see series/{s}/README.md)")
+            cites = id_list(meta, "books")
+            unknown = [b for b in cites if b not in books]
+            if unknown:
+                raise BuildError(f"{name}: unknown book id(s): {', '.join(unknown)} (see content/shelf.json)")
+            proj = meta.get("project") or ""
+            if proj and proj not in by_project:
+                raise BuildError(f"{name}: unknown project {proj!r} (see content/projects/)")
             scripts = []
-            for s in meta.get("scripts") or []:
-                s = s if isinstance(s, dict) else {"name": s}
-                if not s.get("name"):
+            for sc in meta.get("scripts") or []:
+                sc = sc if isinstance(sc, dict) else {"name": sc}
+                if not sc.get("name"):
                     raise BuildError(f"{name}: every script needs a 'name'")
-                scripts.append(s)
-            if cadence == "weekly":
-                # Weekly entries are keyed by ISO week: predictable URLs, one per week.
-                year, week, _ = when.isocalendar()
-                slug, label = f"{year}-w{week:02d}", f"w{week:02d}"
-            else:
-                slug = re.sub(r"[^a-z0-9-]+", "-", path.stem.lower()).strip("-")
-                label = f"{when.day} {MONTHS[when.month - 1][:3]}"
-            if slug == "index":
-                raise BuildError(f"{name}: 'index' is reserved for the track page")
-            entries.append({
-                "slug": slug, "label": label, "date": when, "title": str(meta["title"]),
-                "chapter": str(meta.get("chapter") or ""), "file": name,
-                "practised": lists["practised"], "passed": lists["passed"], "books": lists["books"],
-                "scripts": scripts, "body": body,
+                scripts.append(sc)
+            html_body = markdown(body)
+            posts.append({
+                "slug": slug, "file": name, "date": iso_date(meta["date"], name),
+                "title": str(meta["title"]), "tags": tags, "series": s, "project": proj,
+                "practised": obj["practised"], "passed": obj["passed"], "books": cites,
+                "scripts": scripts, "body": html_body, "words": words(html_body),
                 "summary": str(meta.get("summary") or plain_summary(body)),
             })
         except BuildError as e:
@@ -352,118 +460,81 @@ def load_entries(tdir, by_id, cadence, books):
     if problems:
         raise BuildError("\n".join(problems))
     seen = {}
-    for e in entries:
-        if e["slug"] in seen:
-            what = "the same week" if cadence == "weekly" else "the same slug"
-            raise BuildError(f"{e['file']} and {seen[e['slug']]} are in {what} ({e['slug']})")
-        seen[e["slug"]] = e["file"]
-    entries.sort(key=lambda e: (e["date"], e["slug"]), reverse=True)
-    return entries
+    for p in posts:
+        if p["slug"] in seen:
+            raise BuildError(f"{p['file']} and {seen[p['slug']]} have the same slug ({p['slug']})")
+        seen[p["slug"]] = p["file"]
+    posts.sort(key=lambda p: (p["date"], p["slug"]), reverse=True)
 
-
-def load_track(tdir, books):
-    name = str((tdir / "track.json").relative_to(ROOT))
-    try:
-        t = json.loads((tdir / "track.json").read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        raise BuildError(f"{name}: {e}")
-    for field in ("title", "summary", "intro"):
-        if not t.get(field):
-            raise BuildError(f"{name}: missing '{field}'")
-    checks = (("species", SPECIES), ("structure", STRUCTURES), ("cadence", CADENCES), ("status", STATES))
-    for field, allowed in checks:
-        if t.get(field) not in allowed:
-            raise BuildError(f"{name}: {field} must be one of {', '.join(allowed)}")
-    by_id = {}
-    for g in t.get("groups") or []:
-        for o in g["objectives"]:
-            if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", o["id"]):
-                raise BuildError(f"{name}: objective id {o['id']!r} must be lowercase words joined by '-'")
-            if o["id"] in by_id:
-                raise BuildError(f"{name}: duplicate objective id {o['id']!r}")
-            o["group"] = g["name"]
-            by_id[o["id"]] = o
-    if t["structure"] != "none" and not by_id:
-        raise BuildError(f"{name}: a structure is built from objectives; add 'groups' or use structure 'none'")
-    entries = load_entries(tdir, by_id, t["cadence"], books)
-    state = {oid: "todo" for oid in by_id}
-    for e in entries:
-        for oid in e["practised"]:
-            if state[oid] == "todo":
-                state[oid] = "practising"
-    for e in entries:
-        for oid in e["passed"]:
-            state[oid] = "done"
-    counts = {s: sum(v == s for v in state.values()) for s in OBJ_STATES}
-    counts["total"] = len(state)
-    return dict(t, slug=tdir.name, name=t.get("name") or tdir.name, tdir=tdir, by_id=by_id,
-                entries=entries, state=state, counts=counts, finished=bool(t.get("finished")),
-                n_scripts=len({s["name"] for e in entries for s in e["scripts"]}))
-
-
-def load_tracks(books):
-    tracks, problems = [], []
-    for tdir in sorted(p.parent for p in TRACKS.glob("*/track.json")):
-        try:
-            tracks.append(load_track(tdir, books))
-        except BuildError as e:
-            problems.append(str(e))
-    if problems:
-        raise BuildError("\n".join(problems))
-    # Weekly tracks first (they sit on the desk), then the journals.
-    tracks.sort(key=lambda t: (t["cadence"] != "weekly", t["status"] != "active", t["slug"]))
-    for b in books.values():
-        if b.get("track") and b["track"] not in {t["slug"] for t in tracks}:
-            raise BuildError(f"content/shelf.json: {b['id']}: unknown track {b['track']!r}")
-    for t in tracks:
-        for e in t["entries"]:
-            for bid in e["books"]:
-                books[bid]["cited"].append((t, e))
-    return tracks
+    for p in posts:
+        if p["series"]:
+            series[p["series"]]["posts"].append(p)
+        if p["project"]:
+            by_project[p["project"]]["posts"].append(p)
+        for b in p["books"]:
+            books[b]["cited"].append(p)
+    for s in series.values():
+        state = {oid: "todo" for oid in s["by_id"]}
+        for p in s["posts"]:
+            for oid in p["practised"]:
+                if state[oid] == "todo":
+                    state[oid] = "practising"
+        for p in s["posts"]:
+            for oid in p["passed"]:
+                state[oid] = "done"
+        s["state"] = state
+        s["counts"] = dict({k: sum(v == k for v in state.values()) for k in OBJ_STATES}, total=len(state))
+    return posts
 
 
 # ------------------------------------------------------------------ fragments
 
-def progress(t):
-    """Plain-words progress for a track, e.g. '1/62 objectives · 3 weekly logs'."""
-    n = len(t["entries"])
+def progress(s):
     bits = []
-    if t["by_id"]:
-        bits.append(f'{t["counts"]["done"]}/{t["counts"]["total"]} objectives')
-    kind = "weekly log" if t["cadence"] == "weekly" else "note"
-    bits.append(f'{n} {kind}{"s" if n != 1 else ""}')
+    if s["by_id"]:
+        bits.append(f'{s["counts"]["done"]}/{s["counts"]["total"]} objectives')
+    bits.append(plural(len(s["posts"]), "post"))
     return " · ".join(bits)
 
 
-def feed(items, prefix, show_track):
-    """Entries as one line each, grouped by month, newest first.
-    items: [(track, entry)]; prefix: path from the page to cabin/."""
-    if not items:
-        return ""
-    out, month = [], None
-    for t, e in items:
-        m = month_label(e["date"])
-        if m != month:
-            if month:
-                out.append("    </div>")
-            out.append(f'    <div class="month"><h3 class="month-name">{m}</h3>')
-            month = m
-        objs = sorted(set(e["practised"]) | set(e["passed"]))
-        if show_track:
-            right = esc(t["name"])
-        else:
-            bits = []
-            if objs:
-                bits.append(f'{len(objs)} obj')
-            if e["scripts"]:
-                bits.append(f'{len(e["scripts"])} script{"s" if len(e["scripts"]) != 1 else ""}')
-            right = " · ".join(bits)
+def tag_links(tags, prefix):
+    return " ".join(f'<a class="tag" href="{prefix}blog/tag/{t}.html">#{t}</a>' for t in tags)
+
+
+def post_rows(posts, prefix, by_year=False, objs=False):
+    """One line per post: date, title, tags. `prefix` is the path to the root."""
+    out, year = [], None
+    for p in posts:
+        if by_year and p["date"].year != year:
+            if year is not None:
+                out.append("</div>")
+            year = p["date"].year
+            n = sum(q["date"].year == year for q in posts)
+            out.append(f'<div class="year"><h2 class="year-head"><span>{year}</span>'
+                       f'<span class="dim">{plural(n, "post")}</span></h2>')
+        data = f' data-objs="{" ".join(sorted(set(p["practised"]) | set(p["passed"])))}"' if objs else ""
         out.append(
-            f'      <a class="row-line lrow" href="{prefix}{t["slug"]}/{e["slug"]}.html" data-objs="{" ".join(objs)}">'
-            f'<span class="lrow-when">{e["label"]}</span><span class="label">{esc(e["title"])}</span>'
-            f'<span class="rule rule--dotted"></span><span class="meta">{right}</span></a>')
-    out.append("    </div>")
+            f'<div class="post"{data}><time datetime="{p["date"].isoformat()}">{p["date"].isoformat()}</time>'
+            f'<a class="post-title" href="{prefix}blog/{p["slug"]}.html">{esc(p["title"])}</a>'
+            f'<span class="post-tags">{tag_links(p["tags"], prefix)}</span></div>')
+    if by_year and year is not None:
+        out.append("</div>")
     return "\n".join(out)
+
+
+def project_rows(projects, prefix):
+    return "\n".join(
+        f'<div class="ls"><span class="ls-state s-{p["status"]}">{p["status"]}</span>'
+        f'<span class="ls-when">{mon(p["date"])}</span>'
+        f'<a class="ls-name" href="{prefix}projects/{p["slug"]}.html">{esc(p["name"])}/</a>'
+        f'<span class="ls-sum">{esc(p["summary"])}</span></div>'
+        for p in projects)
+
+
+def head(cmd, right=""):
+    """A section heading written as the command that would list it."""
+    r = f'<span class="dim">{right}</span>' if right else ""
+    return f'<h2 class="cmd"><span class="ps1">$</span> {cmd}{r}</h2>'
 
 
 # ---------------------------------------------------------------------- pages
@@ -475,282 +546,314 @@ class Site:
         for f in STATIC_FILES:
             digest.update((ROOT / f).read_bytes())
         self.v = digest.hexdigest()[:8]
+        self.icon = favicon()
 
-    def page(self, path, title, description, main, section, og_type="article", head="",
-             body_class="", scripts=()):
-        """Write dist/<path>. Links inside `main` are relative to that page."""
+    def page(self, path, title, description, main, cwd, og_type="article", scripts=()):
+        """Write dist/<path>. Links inside `main` are relative to that page.
+        `cwd` is the prompt's working directory, e.g. "blog/tag"."""
         root = "../" * path.count("/")
         url = SITE + "/" + (path[: -len("index.html")] if path.endswith("index.html") else path)
+        # The prompt in the header: every directory above the current one in
+        # ~/a/b is a link; the last part is where you are.
+        parts = [p for p in cwd.split("/") if p]
+        crumbs = [f'<a href="{root or "./"}">~</a>' if parts else "~"]
+        for i, part in enumerate(parts):
+            last = i == len(parts) - 1
+            crumbs.append(esc(part) if last else f'<a href="{root}{"/".join(parts[: i + 1])}/">{esc(part)}</a>')
+        section = parts[0] if parts else "home"
         tags = "".join(f'<script src="{root}{s}?v={self.v}"></script>\n' for s in scripts)
         out = fill(self.shell, {
-            "root": root, "home": "./" if path == "index.html" else root + "index.html",
-            "section": section, "title": esc(title), "description": esc(description), "url": esc(url),
-            "og_type": og_type, "head": head + "\n" if head else "",
-            "body_class": f' class="{body_class}"' if body_class else "",
-            "main": main, "scripts": tags, "v": self.v,
+            "root": root, "home": root or "./", "section": section, "title": esc(title),
+            "description": esc(description), "url": esc(url), "og_type": og_type,
+            "cwd": "/".join(crumbs), "icon": self.icon, "resume": root + RESUME,
+            "main": main, "scripts": tags, "v": self.v, "year": date.today().year,
         }, f"{path} (templates/shell.html)")
         target = DIST / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(out, encoding="utf-8")
 
 
-# --- about
-
-def build_home(site, projects, tracks):
+def build_home(site, posts, projects, series):
     meta, body = parse_front_matter((TEMPLATES / "home.html").read_text(encoding="utf-8"), "templates/home.html")
-    weekly = [t for t in tracks if t["cadence"] == "weekly" and t["status"] == "active"]
-    lines = []
-    for t in weekly:
-        bits = [esc(t.get("headline") or t["title"])]
-        if t.get("target"):
-            bits.append(esc(t["target"]))
-        bits.append(progress(t))
-        lines.append(f'<a href="cabin/{t["slug"]}/index.html">{" · ".join(bits)}</a>')
-    status = (f'    <p class="status-line">{"<br>".join(lines)} '
-              f'<a class="dim" href="cabin/index.html">&rarr; the cabin</a></p>') if lines else ""
-
-    rows = "\n".join(
-        f'        <div class="row-line"><span class="label"><a class="label-link" href="projects/{p["slug"]}.html">'
-        f'{esc(p["name"])}/</a></span><span class="rule rule--dotted"></span>'
-        f'<span class="meta">{esc(p["summary"])}</span><span class="when">{MONTHS[p["date"].month - 1][:3]} {p["date"].year}</span></div>'
-        for p in projects)
-    earlier = f'''    <details class="fold" id="earlier">
-      <summary class="sec-head"><span class="prompt">$ ls ~/earlier</span><span class="rule rule--dashed"></span><span class="prompt">projects from before the RHCSA · {len(projects)}</span></summary>
-      <div class="earlier">
-{rows}
-      </div>
-    </details>''' if projects else ""
-
-    main = fill(body, {"status": status, "earlier": earlier,
-                       "hero_species": weekly[0]["species"] if weekly else "oak"}, "templates/home.html")
-    site.page("index.html", meta["title"], meta["description"], main.strip("\n"), "about",
-              og_type="website", head=meta.get("head", ""), body_class="home")
-
-
-def build_project(site, projects, p):
-    i = projects.index(p)
-    nav = ['<a href="../index.html#earlier">&larr; back to about</a>', '<span class="grow"></span>']
-    if i + 1 < len(projects):
-        nav.append(f'<a href="{projects[i + 1]["slug"]}.html">&larr; {esc(projects[i + 1]["name"])}</a>')
-    if i > 0:
-        nav.append(f'<a href="{projects[i - 1]["slug"]}.html">{esc(projects[i - 1]["name"])} &rarr;</a>')
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html#earlier">~/earlier</a>/{esc(p["name"])}</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">{esc(p["title"])}</h1>
-    <p class="proj-sum">{esc(p["summary"])}</p>
-    <div class="proj-meta">
-      <span>{p["status"]}</span>
-      <span>{p["date"].isoformat()}</span>
-    </div>
-  </section>
-
-  <article class="section prose">
-{p["body"].rstrip()}
-  </article>
-
-  <nav class="proj-nav">
-    {chr(10).join("    " + n for n in nav).strip()}
-  </nav>'''
-    site.page(f"projects/{p['slug']}.html", f"{p['title']} — {OWNER}", p["description"], main, "about")
-
-
-# --- the cabin
-
-def sec_head(left, right=""):
-    return (f'    <div class="sec-head">\n      <span class="prompt">{left}</span>\n'
-            f'      <span class="rule rule--dashed"></span>\n      <span class="prompt">{right}</span>\n    </div>')
-
-
-def build_cabin(site, tracks, books, eggs):
-    meta, body = parse_front_matter((TEMPLATES / "cabin.html").read_text(encoding="utf-8"), "templates/cabin.html")
-    weekly = [t for t in tracks if t["cadence"] == "weekly" and t["status"] == "active"]
-    notes = next((t for t in tracks if t["cadence"] == "none"), None)
-    room = {
-        "tracks": [{"href": f'{t["slug"]}/index.html', "name": t["name"], "title": t["title"],
-                    "done": t["counts"]["done"], "total": t["counts"]["total"],
-                    "last": t["entries"][0]["label"] if t["entries"] else ""} for t in weekly],
-        "notes": {"href": f'{notes["slug"]}/index.html', "count": len(notes["entries"]),
-                  "titles": [e["title"] for e in notes["entries"][:8]]} if notes else None,
-        "books": [{"id": b["id"], "title": b["title"], "author": b["author"], "tone": b["tone"],
-                   "topic": b["topic_label"],
-                   "cited": [{"label": f'{t["name"]} {e["label"]}', "href": f'{t["slug"]}/{e["slug"]}.html'}
-                             for t, e in b["cited"]]} for b in books.values()],
-        "eggs": eggs,
-    }
-
-    rows = []
-    for t in tracks:
-        last = t["entries"][0]["label"] if t["entries"] else "nothing yet"
-        where = "desk" if t["cadence"] == "weekly" else "whiteboard"
-        right = f'{t["counts"]["done"]}/{t["counts"]["total"]} · ' if t["by_id"] else ""
-        rows.append(
-            f'      <a class="row-line trow" href="{t["slug"]}/index.html">'
-            f'<span class="label">{esc(t["name"])}/</span><span class="trow-sum">{esc(t["summary"])}</span>'
-            f'<span class="rule rule--dotted"></span><span class="meta">{where}</span>'
-            f'<span class="when">{right}{last}</span></a>')
-    shelf = "\n".join(
-        f'        <a class="row-line" href="#book={b["id"]}"><span class="label">{esc(b["title"])}</span>'
-        f'<span class="rule rule--dotted"></span><span class="meta">{esc(b["author"])}</span></a>'
-        for b in books.values())
-    items = sorted(((t, e) for t in tracks for e in t["entries"]),
-                   key=lambda x: (x[1]["date"], x[0]["slug"]), reverse=True)
+    now = []
+    for s in series.values():
+        if s["status"] == "active":
+            bits = [esc(s.get("headline") or s["title"])]
+            if s.get("target"):
+                bits.append(esc(s["target"]))
+            bits.append(progress(s))
+            now.append(f'<p class="now"><span class="dim">now:</span> <a href="{s["slug"]}/">{" · ".join(bits)}</a></p>')
+    recent = posts[:RECENT]
+    more = (f'<p class="more"><a href="blog/">all {len(posts)} posts &rarr;</a></p>'
+            if len(posts) > RECENT else "")
+    active = [p for p in projects if p["status"] == "active"]
     main = fill(body, {
-        "room": json_attr(room), "tracks": "\n".join(rows), "shelf": shelf, "n_books": len(books),
-        "feed": feed(items, "", True) or '    <p class="wu-empty">Nothing here yet.</p>',
-        "n_entries": f'{len(items)} entr{"y" if len(items) == 1 else "ies"}',
-    }, "templates/cabin.html")
-    site.page("cabin/index.html", meta["title"], meta["description"], main.strip("\n"), "cabin",
-              body_class="cabin", scripts=["cabin.js"])
+        "beaver": beaver_svg(), "now": "\n".join(now),
+        "recent": post_rows(recent, "") or '<p class="dim">Nothing yet. Soon.</p>',
+        "more_posts": more, "n_posts": plural(len(posts), "post"),
+        "projects": project_rows(active, ""),
+        "n_projects": f"{len(active)} active of {len(projects)}",
+    }, "templates/home.html")
+    site.page("index.html", meta["title"], meta["description"], main.strip("\n"), "",
+              og_type="website")
 
 
-def build_track(site, t, books):
-    state, counts, entries, slug = t["state"], t["counts"], t["entries"], t["slug"]
-    sections = [f'''  <section class="section" id="entries">
-{sec_head(f"$ ls -t ~/cabin/{esc(t['name'])}", str(len(entries)))}
-    <div class="obj-detail" id="obj-detail" hidden>
-      <span class="obj-detail-text" id="obj-detail-text"></span>
-      <button type="button" class="theme-toggle" id="obj-clear">[clear filter]</button>
-    </div>
-    <div class="lrows" id="wus">
-{feed([(t, e) for e in entries], "../", False)}
-    </div>
-    <p class="wu-empty" id="wu-empty"{" hidden" if entries else ""}>{"Nothing here yet." if not entries else "No entry covers this objective yet."}</p>
-  </section>''']
+def build_blog(site, posts):
+    tags = {}
+    for p in posts:
+        for t in p["tags"]:
+            tags.setdefault(t, []).append(p)
+    cloud = " ".join(f'<a class="tag" href="tag/{t}.html">#{t}<sup>{len(ps)}</sup></a>'
+                     for t, ps in sorted(tags.items(), key=lambda x: (-len(x[1]), x[0])))
+    main = f'''<h1 class="title">Blog</h1>
+<p class="lede">RHCSA progress, homelab notes, opinions and small demos. Newest first.
+Subscribe with <a href="../feed.xml">the feed</a>.</p>
+{f'<p class="tags">{cloud}</p>' if cloud else ""}
+<section class="posts">
+{post_rows(posts, "../", by_year=True) or '<p class="dim">Nothing yet.</p>'}
+</section>'''
+    site.page("blog/index.html", f"Blog — {OWNER}", "Posts by Hugo Sokołowski-Katzer: RHCSA progress, "
+              "homelab notes, opinions and small demos.", main, "blog", og_type="website")
 
-    if t["by_id"]:
-        groups = []
-        for g in t["groups"]:
-            objs = g["objectives"]
-            done = sum(state[o["id"]] == "done" for o in objs)
-            cells = "".join(
-                f'<button type="button" class="obj" data-obj="{o["id"]}" data-state="{state[o["id"]]}" '
-                f'data-text="{esc(o["text"])}" aria-label="{esc(o["text"])} — {state[o["id"]]}" '
-                f'title="{esc(o["text"])}"></button>'
-                for o in objs)
-            groups.append(
-                f'      <div class="row-line ogroup"><span class="label">{esc(g["name"])}</span>'
-                f'<span class="rule rule--dotted"></span><span class="ocells">{cells}</span>'
-                f'<span class="when">{done}/{len(objs)}</span></div>')
-        source = f' <a href="{esc(t["source"]["url"])}">{esc(t["source"].get("label", "source"))}</a>' if t.get("source") else ""
-        label = f' · {esc(t["label"])}' if t.get("label") else ""
-        sections.append(f'''  <section class="section section--last" id="objectives">
-{sec_head(f"$ ls ~/cabin/{esc(t['name'])}/objectives", f"{counts['done']}/{counts['total']}{label}")}
-    <p class="legend"><span class="obj obj--key" data-state="todo"></span>not started
-      <span class="obj obj--key" data-state="practising"></span>practised
-      <span class="obj obj--key" data-state="done"></span>{esc(t.get("passed_label", "done")).lower()}.
-      Click one to see the entries that cover it.{source}</p>
-    <div class="ogroups">
-{chr(10).join(groups)}
-    </div>
-  </section>''')
-    else:
-        sections[0] = sections[0].replace('class="section" id="entries"', 'class="section section--last" id="entries"')
+    for t, ps in tags.items():
+        main = f'''<h1 class="title">#{esc(t)}</h1>
+<p class="lede">{plural(len(ps), "post")} tagged <code>{esc(t)}</code>. <a href="../">All posts</a>.</p>
+<section class="posts">
+{post_rows(ps, "../../", by_year=True)}
+</section>'''
+        site.page(f"blog/tag/{t}.html", f"#{t} — {OWNER}", f"Posts tagged {t}.", main, f"blog/tag/{t}")
+    redirect("blog/tag/index.html", "blog/index.html")   # the prompt links ~/blog/tag
 
-    target = f' · {esc(t["target"])}' if t.get("target") else ""
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/cabin</a>/{esc(t["name"])}</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">{esc(t["title"])}</h1>
-    <p class="proj-sum">{esc(t["intro"])}</p>
-    <div class="proj-meta"><span>{progress(t)}{target}</span></div>
-  </section>
-
-{chr(10).join(sections)}
-
-  <nav class="proj-nav">
-    <a href="../index.html">&larr; back to the cabin</a>
-  </nav>'''
-    desc = f"{t['title']}: {progress(t)}. {t['summary']}."
-    site.page(f"cabin/{slug}/index.html", f"{t['title']} — {OWNER}", desc, main, "cabin",
-              scripts=["track.js"])
-
-    for i, e in enumerate(entries):
-        newer = entries[i - 1] if i > 0 else None
-        older = entries[i + 1] if i + 1 < len(entries) else None
-        build_entry(site, t, e, newer, older, books)
+    for i, p in enumerate(posts):
+        build_post(site, p, posts[i - 1] if i else None, posts[i + 1] if i + 1 < len(posts) else None)
+    return tags
 
 
-def build_entry(site, t, e, newer, older, books):
-    by_id, state = t["by_id"], t["state"]
+def build_post(site, p, newer, older):
+    r = "../"
+    extra = []
+    s = SERIES_BY_SLUG.get(p["series"])
+    if s:
+        by_id, state = s["by_id"], s["state"]
 
-    def obj_list(ids, heading):
-        if not ids:
-            return ""
-        items = "".join(
-            f'<li><a href="index.html#obj={oid}"><span class="obj obj--key" data-state="{state[oid]}"></span>'
-            f'{esc(by_id[oid]["text"])}</a> <span class="dim">· {esc(by_id[oid]["group"])}</span></li>'
-            for oid in ids)
-        return f'<h2>{heading}</h2>\n<ul class="objs">{items}</ul>'
-
-    scripts = ""
-    if e["scripts"]:
+        def objs(ids, heading):
+            if not ids:
+                return ""
+            items = "".join(
+                f'<li><a href="{r}{s["slug"]}/#obj={oid}"><span class="obj" data-state="{state[oid]}"></span>'
+                f'{esc(by_id[oid]["text"])}</a> <span class="dim">· {esc(by_id[oid]["group"])}</span></li>'
+                for oid in ids)
+            return f'<h2>{heading}</h2>\n<ul class="objs">{items}</ul>'
+        extra.append(objs(p["practised"], "Objectives practised"))
+        extra.append(objs(p["passed"], esc(s.get("passed_label", "Done"))))
+    if p["scripts"]:
         items = []
-        for s in e["scripts"]:
-            name = f'<code>{esc(s["name"])}</code>'
-            if s.get("url"):
-                name = f'<a href="{esc(s["url"])}">{name}</a>'
-            what = f' — {esc(s["what"])}' if s.get("what") else ""
-            items.append(f"<li>{name}{what}</li>")
-        scripts = '<h2>Scripts</h2>\n<ul>' + "".join(items) + "</ul>"
+        for sc in p["scripts"]:
+            n = f'<code>{esc(sc["name"])}</code>'
+            if sc.get("url"):
+                n = f'<a href="{esc(sc["url"])}">{n}</a>'
+            what = " — " + esc(sc["what"]) if sc.get("what") else ""
+            items.append(f"<li>{n}{what}</li>")
+        extra.append("<h2>Scripts</h2>\n<ul>" + "".join(items) + "</ul>")
+    if p["books"]:
+        items = "".join(f'<li><a href="{r}books/#{b}">{esc(BOOKS[b]["title"])}</a> '
+                        f'<span class="dim">· {esc(BOOKS[b]["author"])}</span></li>' for b in p["books"])
+        extra.append(f"<h2>From the shelf</h2>\n<ul>{items}</ul>")
 
-    shelf = ""
-    if e["books"]:
-        items = "".join(
-            f'<li><a href="../index.html#book={b}">{esc(books[b]["title"])}</a> '
-            f'<span class="dim">· {esc(books[b]["author"])}</span></li>'
-            for b in e["books"])
-        shelf = f'<h2>From the shelf</h2>\n<ul>{items}</ul>'
+    meta = [f'<time datetime="{p["date"].isoformat()}">{p["date"].isoformat()}</time>',
+            f'{max(1, round(p["words"] / 220))} min read']
+    if s:
+        n = len(s["posts"]) - s["posts"].index(p)
+        meta.append(f'<a href="{r}{s["slug"]}/">{esc(s["title"])}</a> #{n}')
+    if p["project"]:
+        meta.append(f'about <a href="{r}projects/{p["project"]}.html">{esc(PROJECTS[p["project"]]["name"])}/</a>')
 
-    nav = [f'<a href="index.html">&larr; {esc(t["name"])}</a>', '<span class="grow"></span>']
+    nav = [f'<a href="./">&larr; all posts</a>', '<span class="grow"></span>']
     if older:
-        nav.append(f'<a href="{older["slug"]}.html">&larr; {older["label"]}</a>')
+        nav.append(f'<a href="{older["slug"]}.html" title="{esc(older["title"])}">older</a>')
     if newer:
-        nav.append(f'<a href="{newer["slug"]}.html">{newer["label"]} &rarr;</a>')
-
-    bits = [f'{e["label"]} · {e["date"].isoformat()}' if t["cadence"] == "weekly" else e["date"].isoformat()]
-    if e["chapter"]:
-        bits.append(esc(e["chapter"]))
-    main = f'''  <div class="crumbs">$ cd <a href="../index.html">~/cabin</a>/<a href="index.html">{esc(t["name"])}</a>/{e["slug"]}</div>
-
-  <section class="section section--proj">
-    <h1 class="name name--proj">{esc(e["title"])}</h1>
-    <div class="proj-meta">{"".join(f"<span>{b}</span>" for b in bits)}</div>
-  </section>
-
-  <article class="section prose">
-{markdown(e["body"])}
-{scripts}
-{obj_list(e["practised"], "Objectives practised")}
-{obj_list(e["passed"], esc(t.get("passed_label", "Done")))}
-{shelf}
-  </article>
-
-  <nav class="proj-nav">
-    {" ".join(nav)}
-  </nav>'''
-    desc = e["summary"] or f"{t['title']}, {e['date'].isoformat()}."
-    site.page(f"cabin/{t['slug']}/{e['slug']}.html", f"{e['title']} — {t['title']}", desc, main, "cabin")
+        nav.append(f'<a href="{newer["slug"]}.html" title="{esc(newer["title"])}">newer</a>')
+    main = f'''<article class="article">
+<header class="art-head">
+<h1 class="title">{esc(p["title"])}</h1>
+<p class="art-meta">{" · ".join(meta)}</p>
+<p class="art-tags">{tag_links(p["tags"], r)}</p>
+</header>
+<div class="prose">
+{p["body"]}
+{"".join(x for x in extra if x)}
+</div>
+</article>
+<nav class="pager">{" ".join(nav)}</nav>'''
+    site.page(f"blog/{p['slug']}.html", f"{p['title']} — {OWNER}",
+              p["summary"] or p["title"], main, f"blog/{p['slug']}")
 
 
-def build_readme(t):
+def build_series(site, s):
+    state, counts = s["state"], s["counts"]
+    groups = []
+    for g in s.get("groups") or []:
+        done = sum(state[o["id"]] == "done" for o in g["objectives"])
+        cells = "".join(
+            f'<button type="button" class="obj" data-obj="{o["id"]}" data-state="{state[o["id"]]}" '
+            f'data-text="{esc(o["text"])}" aria-label="{esc(o["text"])} — {state[o["id"]]}" '
+            f'title="{esc(o["text"])}"></button>' for o in g["objectives"])
+        groups.append(f'<div class="ogroup"><span class="og-name">{esc(g["name"])}</span>'
+                      f'<span class="og-cells">{cells}</span><span class="og-n dim">{done}/{len(g["objectives"])}</span></div>')
+    objectives = ""
+    if groups:
+        src = f' <a href="{esc(s["source"]["url"])}">{esc(s["source"].get("label", "source"))}</a>.' if s.get("source") else ""
+        objectives = f'''<section id="objectives">
+{head(f"ls ~/{s['slug']}/objectives", f"{counts['done']}/{counts['total']}{' · ' + esc(s['label']) if s.get('label') else ''}")}
+<p class="legend"><span class="obj" data-state="todo"></span> not started
+<span class="obj" data-state="practising"></span> practised
+<span class="obj" data-state="done"></span> {esc(s.get("passed_label", "done")).lower()}.
+Click one to filter the posts.{src}</p>
+<div class="ogroups">
+{chr(10).join(groups)}
+</div>
+</section>'''
+    target = f' · {esc(s["target"])}' if s.get("target") else ""
+    main = f'''<h1 class="title">{esc(s["title"])}</h1>
+<p class="lede">{esc(s["intro"])}</p>
+<p class="art-meta">{progress(s)}{target}</p>
+<section id="entries">
+{head(f"ls -t ~/blog | grep {s['slug']}", plural(len(s["posts"]), "post"))}
+<div class="obj-detail" id="obj-detail" hidden><span id="obj-detail-text"></span>
+<button type="button" class="btn" id="obj-clear">[clear]</button></div>
+<div class="posts">
+{post_rows(s["posts"], "../", objs=True)}
+</div>
+<p class="dim" id="wu-empty"{" hidden" if s["posts"] else ""}>{"Nothing yet." if not s["posts"] else "No post covers this objective yet."}</p>
+</section>
+{objectives}'''
+    site.page(f"{s['slug']}/index.html", f"{s['title']} — {OWNER}",
+              f"{s['title']}: {progress(s)}. {s['summary']}.", main, s["slug"], scripts=["series.js"])
+    if s["by_id"]:
+        (s["dir"] / "README.md").write_text(series_readme(s), encoding="utf-8")
+
+
+def series_readme(s):
     rows = []
-    for g in t["groups"]:
+    for g in s["groups"]:
         rows.append(f"\n### {g['name']}\n\n| id | objective |\n|---|---|")
         rows += [f"| `{o['id']}` | {o['text'].replace('|', '/')} |" for o in g["objectives"]]
-    src = t.get("source") or {}
+    src = s.get("source") or {}
     source = (f"Source: [{src.get('label', 'source')}]({src['url']})"
               + (f" (fetched {src['fetched']}).\n" if src.get("fetched") else ".\n")) if src.get("url") else ""
-    rule = t.get("passed_rule", "done for real, not just practised")
-    return f"""# {t['title']} — objective ids
+    rule = s.get("passed_rule", "done for real, not just practised")
+    return f"""# {s['title']} — objective ids
 
-Generated by `bin/build.py` from `track.json`. How to write an entry: `tracks/README.md`.
+Generated by `bin/build.py` from `series.json`. How to write a post: `posts/README.md`.
 
-- **practised**: list ids you worked on in the entry
+In a post with `series: {s['slug']}`:
+
+- **practised**: list ids you worked on in the post
 - **passed**: {rule}
 
 {source}{chr(10).join(rows)}
 """
+
+
+def build_projects(site, projects):
+    main = f'''<h1 class="title">Projects</h1>
+<p class="lede">Things I've built, newest first, including the ones that didn't work out.
+Each has a write-up; the status says how it ended.</p>
+{head("ls -l ~/projects", plural(len(projects), "project"))}
+<div class="lsl">
+{project_rows(projects, "../")}
+</div>'''
+    site.page("projects/index.html", f"Projects — {OWNER}", "Projects by Hugo Sokołowski-Katzer, "
+              "newest first, with write-ups.", main, "projects", og_type="website")
+    for i, p in enumerate(projects):
+        nav = ['<a href="./">&larr; all projects</a>', '<span class="grow"></span>']
+        if i + 1 < len(projects):
+            nav.append(f'<a href="{projects[i + 1]["slug"]}.html">{esc(projects[i + 1]["name"])}/</a>')
+        if i:
+            nav.append(f'<a href="{projects[i - 1]["slug"]}.html">{esc(projects[i - 1]["name"])}/</a>')
+        meta = [f'<span class="s-{p["status"]}">{p["status"]}</span>', mon(p["date"])]
+        if p["repo"]:
+            meta.append(f'<a href="{esc(p["repo"])}">source</a>')
+        related = ""
+        if p["posts"]:
+            related = (f'<section>{head("grep -l " + esc(p["name"]) + " ~/blog/*")}<div class="posts">'
+                       f'{post_rows(p["posts"], "../")}</div></section>')
+        main = f'''<article class="article">
+<header class="art-head">
+<h1 class="title">{esc(p["title"])}</h1>
+<p class="lede">{esc(p["summary"])}</p>
+<p class="art-meta">{" · ".join(meta)}</p>
+</header>
+<div class="prose">
+{p["body"].strip()}
+</div>
+</article>
+{related}
+<nav class="pager">{" ".join(nav)}</nav>'''
+        site.page(f"projects/{p['slug']}.html", f"{p['title']} — {OWNER}", p["description"], main,
+                  f"projects/{p['name']}")
+
+
+def build_cv(site):
+    meta, body = parse_front_matter((TEMPLATES / "cv.html").read_text(encoding="utf-8"), "templates/cv.html")
+    main = fill(body, {"resume": "../" + RESUME}, "templates/cv.html")
+    site.page("cv/index.html", meta["title"], meta["description"], main.strip("\n"), "cv",
+              og_type="profile")
+
+
+def build_books(site, topics, books):
+    out = []
+    for tid, t in topics.items():
+        rows = []
+        for b in (b for b in books.values() if b["topic"] == tid):
+            cited = ""
+            if b["cited"]:
+                cited = ' <span class="dim">· cited in ' + ", ".join(
+                    f'<a href="../blog/{p["slug"]}.html">{esc(p["title"])}</a>' for p in b["cited"]) + "</span>"
+            rows.append(f'<li id="{b["id"]}"><span class="book">{esc(b["title"])}</span> '
+                        f'<span class="dim">— {esc(b["author"])}</span>{cited}</li>')
+        if rows:
+            out.append(f'<h2 class="cmd-sub">{esc(t["label"])}/</h2>\n<ul class="books">{"".join(rows)}</ul>')
+    main = f'''<h1 class="title">Books</h1>
+<p class="lede">What's on the shelf: what I'm reading and what I reach for. Posts cite them where they helped.</p>
+{head("ls ~/books", plural(len(books), "book"))}
+{chr(10).join(out)}'''
+    site.page("books/index.html", f"Books — {OWNER}", "The books on Hugo Sokołowski-Katzer's shelf.",
+              main, "books", og_type="website")
+
+
+def build_feed(posts):
+    def stamp(d):
+        return datetime(d.year, d.month, d.day, tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
+    entries = []
+    for p in posts[:30]:
+        url = f"{SITE}/blog/{p['slug']}.html"
+        # Relative links in the body would break in a feed reader: make them absolute.
+        body = re.sub(r'(href|src)="(?!https?:|mailto:|#)(?:\.\./)*([^"]*)"',
+                      lambda m: f'{m.group(1)}="{SITE}/{m.group(2)}"', p["body"])
+        cats = "".join(f'<category term="{esc(t)}"/>' for t in p["tags"])
+        entries.append(f"""  <entry>
+    <title>{esc(p['title'])}</title>
+    <link href="{url}"/>
+    <id>{url}</id>
+    <updated>{stamp(p['date'])}</updated>
+    <summary>{esc(p['summary'])}</summary>
+    {cats}
+    <content type="html">{esc(body)}</content>
+  </entry>""")
+    updated = stamp(posts[0]["date"]) if posts else stamp(date.today())
+    (DIST / "feed.xml").write_text(f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{esc(OWNER)}</title>
+  <subtitle>RHCSA progress, homelab notes, opinions and small demos.</subtitle>
+  <link href="{SITE}/feed.xml" rel="self"/>
+  <link href="{SITE}/"/>
+  <id>{SITE}/</id>
+  <updated>{updated}</updated>
+  <author><name>{esc(OWNER)}</name></author>
+{chr(10).join(entries)}
+</feed>
+""", encoding="utf-8")
 
 
 def redirect(path, target):
@@ -777,15 +880,21 @@ def clean_dist():
             child.unlink()
 
 
+SERIES_BY_SLUG, BOOKS, PROJECTS = {}, {}, {}
+
+
 def main():
     topics, books = load_shelf()
     projects = load_projects()
-    tracks = load_tracks(books)
-    eggs = load_cabin()
-    reserved = {"index"}
-    clash = reserved & {t["slug"] for t in tracks}
+    series = load_series()
+    reserved = {"blog", "projects", "cv", "books", "img", "pdfs"} | {p.split("/")[0] for p in REDIRECTS}
+    clash = reserved & set(series)
     if clash:
-        raise BuildError(f"track folder name(s) reserved in the cabin: {', '.join(sorted(clash))}")
+        raise BuildError(f"series folder name(s) reserved for site paths: {', '.join(sorted(clash))}")
+    posts = load_posts(series, projects, books)
+    SERIES_BY_SLUG.update(series)
+    BOOKS.update(books)
+    PROJECTS.update({p["slug"]: p for p in projects})
 
     site = Site()
     clean_dist()
@@ -794,21 +903,21 @@ def main():
     for d in STATIC_DIRS:
         shutil.copytree(ROOT / d, DIST / d)
 
-    build_home(site, projects, tracks)
-    for p in projects:
-        build_project(site, projects, p)
-    build_cabin(site, tracks, books, eggs)
-    for t in tracks:
-        build_track(site, t, books)
-        if t["by_id"]:
-            (t["tdir"] / "README.md").write_text(build_readme(t), encoding="utf-8")
+    build_home(site, posts, projects, series)
+    tags = build_blog(site, posts)
+    for s in series.values():
+        build_series(site, s)
+    build_projects(site, projects)
+    build_cv(site)
+    build_books(site, topics, books)
+    build_feed(posts)
     for path, target in REDIRECTS.items():
         redirect(path, target)
 
-    print(f"site: about + {len(projects)} earlier projects · cabin: {len(tracks)} tracks, "
-          f"{len(books)} books → dist/ (v={site.v})")
-    for t in tracks:
-        print(f"  {t['slug']}: {progress(t)}")
+    print(f"site: {plural(len(posts), 'post')}, {plural(len(tags), 'tag')}, "
+          f"{plural(len(projects), 'project')}, {plural(len(books), 'book')} → dist/ (v={site.v})")
+    for s in series.values():
+        print(f"  {s['slug']}: {progress(s)}")
 
 
 if __name__ == "__main__":

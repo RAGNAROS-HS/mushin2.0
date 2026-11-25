@@ -4,7 +4,8 @@ WORKDIR /src
 COPY bin/ bin/
 COPY templates/ templates/
 COPY content/ content/
-COPY tracks/ tracks/
+COPY posts/ posts/
+COPY series/ series/
 COPY img/ img/
 COPY pdfs/ pdfs/
 COPY styles.css *.js ./

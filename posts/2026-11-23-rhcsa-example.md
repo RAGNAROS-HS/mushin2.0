@@ -1,7 +1,8 @@
 ---
 date: 2026-11-23
 title: Example — lorem ipsum dolor sit amet
-chapter: "Ch. 1 — Lorem ipsum"
+series: rhcsa
+tags: [linux]
 practised: [tools-01, tools-02, tools-03, tools-08]
 passed: [tools-01]
 books: [rhcsa-10-cert-guide]
